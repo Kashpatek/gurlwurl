@@ -276,6 +276,56 @@ section{padding:56px 20px}
 .skincare-name{font-size:.85rem;font-weight:500}
 .skincare-time{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--carn);margin-left:auto}
 
+/* ANALYTICS */
+function initAnalytics(){
+  const visits=JSON.parse(LS.getItem('gw_stamps')||'[]');
+  const diary=JSON.parse(LS.getItem('gw_diary')||'[]');
+  const grat=JSON.parse(LS.getItem('gw_grat')||'[]');
+  const ratings=JSON.parse(LS.getItem('gw_ratings')||'[]');
+  const bucket=JSON.parse(LS.getItem('gw_bucket')||'[]');
+  const bucketDone=bucket.filter(b=>b.done).length;
+  let streak=0;const dd=new Date();
+  for(let i=0;i<30;i++){const ds=new Date(dd);ds.setDate(ds.getDate()-i);if(visits.includes(ds.toDateString()))streak++;else break}
+  const todayHabits=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');
+  const habitPct=Math.round(todayHabits.length/8*100);
+  const water=parseInt(LS.getItem('gw_water_'+today)||'0');
+  const avgR=ratings.length?Math.round(ratings.reduce((a,r)=>a+r.stars,0)/ratings.length*10)/10:0;
+  let h=`<div style="text-align:center;margin-bottom:24px"><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:rgba(255,255,255,.4)">Your Gurlwurl journey</p></div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">`;
+  h+=`<div style="background:rgba(216,71,115,.1);border:1px solid rgba(216,71,115,.15);border-radius:14px;padding:18px;text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--carn)">${streak}</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px">Day Streak</div></div>`;
+  h+=`<div style="background:rgba(200,168,233,.08);border:1px solid rgba(200,168,233,.12);border-radius:14px;padding:18px;text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--lavender)">${visits.length}</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px">Total Visits</div></div>`;
+  h+=`<div style="background:rgba(168,216,234,.08);border:1px solid rgba(168,216,234,.12);border-radius:14px;padding:18px;text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--sky)">${habitPct}%</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px">Habits Today</div></div>`;
+  h+=`<div style="background:rgba(181,201,168,.08);border:1px solid rgba(181,201,168,.12);border-radius:14px;padding:18px;text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--sage)">${water}/8</div><div style="font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-top:2px">Water Today</div></div></div>`;
+  h+=`<div style="display:flex;flex-direction:column;gap:8px">`;
+  h+=`<div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;display:flex;justify-content:space-between"><span style="font-size:.82rem;color:rgba(255,255,255,.5)">Diary Entries</span><span style="font-family:'Space Mono',monospace;font-size:.82rem;color:var(--carn)">${diary.length}</span></div>`;
+  h+=`<div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;display:flex;justify-content:space-between"><span style="font-size:.82rem;color:rgba(255,255,255,.5)">Gratitude Notes</span><span style="font-family:'Space Mono',monospace;font-size:.82rem;color:var(--carn)">${grat.length}</span></div>`;
+  h+=`<div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;display:flex;justify-content:space-between"><span style="font-size:.82rem;color:rgba(255,255,255,.5)">Avg Day Rating</span><span style="font-family:'Space Mono',monospace;font-size:.82rem;color:var(--carn)">${avgR?avgR+' ⭐':'—'}</span></div>`;
+  h+=`<div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px;display:flex;justify-content:space-between"><span style="font-size:.82rem;color:rgba(255,255,255,.5)">Bucket List</span><span style="font-family:'Space Mono',monospace;font-size:.82rem;color:var(--carn)">${bucketDone}/${bucket.length}</span></div></div>`;
+  if(ratings.length){h+=`<div style="margin-top:24px"><p style="font-size:.65rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin-bottom:12px">Recent Mood</p><div style="display:flex;align-items:flex-end;gap:6px;height:100px">`;ratings.slice(-7).forEach(r=>{h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(180deg,var(--carn),rgba(216,71,115,.3));border-radius:6px 6px 0 0;height:${r.stars/5*100}%"></div><span style="font-size:.45rem;color:rgba(255,255,255,.3)">${r.date.split(' ')[0]}</span></div>`});h+=`</div></div>`}
+  document.getElementById('analyticsBody').innerHTML=h;
+}
+
+/* ORACLE */
+const oracleBank={
+fortune:["A spontaneous dance party is in your forecast","The next person you text will have exactly the energy you need","Your plants are conspiring to give you a good week","An unexpected refund is making its way to your account","The universe just scheduled a glow-up maintenance update","A really good parking spot has your name on it","Your next impulse buy will actually be worth it","Someone is about to ask for your skincare routine","A cozy movie night of legendary proportions awaits","Your next brunch will be the best one yet","A compliment that makes you cry happy tears is coming","The stars say this week is your week","A new friendship is loading at 87%","Your Spotify Wrapped will be elite this year","Someone is about to introduce you to your new favorite song","Your next outfit will receive a standing ovation","A moment of unexpected peace is heading your way","The Gurlwurl council has extended your golden hour","Your aura just leveled up","A notification that makes you smile is loading"],
+compliment:["You are literally the human version of a sunset","Your brain is beautiful and so is your face","If confidence was a currency you'd be a billionaire","You could charge admission for your presence","Your laugh alone could cure seasonal depression","You're not a snack you're the entire buffet","The way you handle life deserves a documentary","Your existence is a public service","You walk in and the whole energy shifts","You're the plot twist everyone needed"],
+affirmation:["You are exactly where you need to be right now","Your feelings are valid and your boundaries are beautiful","You don't have to earn rest","Your softness is not weakness it's revolution","You are allowed to take up space unapologetically","Growth isn't linear and you're still growing beautifully","Your worth is not measured by productivity","You are more than enough you are extraordinary","It's okay to outgrow people and places","You are writing the most interesting story"],
+advice:["Drink the water. Actually drink it right now","That thing you've been putting off? Do 5 minutes of it","Stop doom scrolling and go touch some grass bestie","Set one boundary today. Just one","Eat something green that isn't a Skittle","Say no to one thing this week without explaining","Stretch right now. Your back is begging","Go to bed 30 minutes earlier. Revolutionary I know","Delete that draft you keep re-reading","Unfollow one account that makes you feel bad"],
+motivation:["You didn't come this far to only come this far","The girl who said she would? You're her. Go do the thing","Your comfort zone is nice but nothing iconic ever happened there","You're one decision away from a different life","Discipline looks really cute on you","The hardest flex is consistency and you're flexing","Stop waiting for permission to be who you want to be","Your future self is cheering so loud right now","The only thing in your way is you being dramatic about it","Every queen was once a girl who got up and tried again"],
+roast:["You're so indecisive you took 20 minutes to click this","Your screen time report is concerned","Your 'going to bed early' is a personality trait AND a lie","You have 47 tabs open and none are relevant","Your shopping cart has been 'saved' since 2023","You said you'd start Monday and it's been 17 Mondays","Your houseplant is alive out of spite not your care","You've said 'last episode' four episodes ago","Your gym membership is the most expensive thing you never use","You screenshot motivational quotes and then do nothing"],
+poem:["Roses are red, vibes are immaculate / You walked in the room and the universe clapped for it","There once was a girl with a glow / who entered a room and stole the show / they asked her secret / she said 'I just be it' / and left them all shook in a row","She said 'watch me' when they said 'you can't' / now she's thriving like a houseplant / in the sun / having fun / living life like a grant","Dear you: you are the poem other poems wish they were about","In Gurlwurl where the matcha grows / lives a girl whose energy shows / she sips Coke Zero rain / feels zero pain / and the flowers reincarnate for her glow"],
+peptalk:["Whatever you're stressed about? You've survived worse. You've survived 100% of your worst days. This one won't take you out. You're built different and that's not motivational speaking that's facts","That thing you keep doubting yourself about? Stop. You are MORE than qualified, capable, and ready. The only person who doesn't see it is you and that's imposter syndrome talking. Tell it to shut up","Quick reminder you don't need it all figured out. Nobody does. Everyone is vibing and pretending. You're doing better than you think","You are not behind. Not late. Not failing. You're on YOUR timeline and it's exactly right. Stop comparing your chapter 3 to someone's chapter 20","The fact that you're here, trying, growing, existing? That's the flex. You don't need to be perfect. Just keep going. And you ARE keeping going. Look at you"]
+};
+function initOracle(){
+  const topics=['fortune','compliment','affirmation','advice','motivation','roast','poem','peptalk'];
+  const labels={'fortune':'🔮 Fortune','compliment':'💕 Compliment','affirmation':'✨ Affirmation','advice':'💡 Advice','motivation':'🔥 Motivation','roast':'😏 Roast (loving)','poem':'📝 Poem','peptalk':'💪 Pep Talk'};
+  let h=`<div style="text-align:center;padding:20px 0"><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:rgba(255,255,255,.4);margin-bottom:20px">The Oracle sees all</p><div style="font-size:3.5rem;margin-bottom:20px;animation:cf 3s ease-in-out infinite">🔮</div><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px">`;
+  topics.forEach(t=>{h+=`<button class="dp-btn-outline" onclick="askOracle('${t}')" style="font-size:.62rem">${labels[t]}</button>`});
+  h+=`</div><div id="oracleResult" style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:600;color:var(--carn-light);min-height:60px;padding:10px 20px;line-height:1.4;transition:opacity .6s"></div></div>`;
+  document.getElementById('oracleBody').innerHTML=h;
+}
+function askOracle(topic){const bank=oracleBank[topic]||oracleBank.fortune;const r=bank[Math.floor(Math.random()*bank.length)];const el=document.getElementById('oracleResult');el.style.opacity='0';setTimeout(()=>{el.textContent=r;el.style.opacity='1'},200)}
+
 /* CHILL TAB */
 .chill-wrap{background:var(--carn-dark);min-height:100vh;display:flex;flex-direction:column;padding-bottom:70px}
 .chill-header-tab{padding:20px 20px 0;text-align:center}
@@ -463,6 +513,8 @@ section{padding:56px 20px}
     <div class="desk-btn" onclick="openPanel('skincare')"><div class="desk-btn-ico">🧴</div><div class="desk-btn-label">Skincare</div></div>
     <div class="desk-btn" onclick="openPanel('news')"><div class="desk-btn-ico">📰</div><div class="desk-btn-label">News</div></div>
     <div class="desk-btn" onclick="openPanel('fortune')"><div class="desk-btn-ico">🥠</div><div class="desk-btn-label">Fortune</div></div>
+    <div class="desk-btn" onclick="openPanel('analytics')" style="border-color:rgba(216,71,115,.2)"><div class="desk-btn-ico">📊</div><div class="desk-btn-label">Analytics</div></div>
+    <div class="desk-btn" onclick="openPanel('oracle')" style="border-color:rgba(200,168,233,.2)"><div class="desk-btn-ico">🔮</div><div class="desk-btn-label">Oracle</div></div>
   </div>
 </div>
 </div>
@@ -480,6 +532,9 @@ section{padding:56px 20px}
 <div class="desk-panel" id="dp-skincare"><div class="dp-header"><div class="dp-title">🧴 Skincare</div><div class="dp-close" onclick="closePanel('skincare')">✕</div></div><div class="dp-body" id="skinBody"></div></div>
 <div class="desk-panel" id="dp-news"><div class="dp-header"><div class="dp-title">📰 Women's News</div><div class="dp-close" onclick="closePanel('news')">✕</div></div><div class="dp-body" id="newsBody"></div></div>
 <div class="desk-panel" id="dp-fortune"><div class="dp-header"><div class="dp-title">🥠 Fortune</div><div class="dp-close" onclick="closePanel('fortune')">✕</div></div><div class="dp-body"><div class="fortune-wrap" style="min-height:60vh"><div class="fortune-cookie" id="fc2">🥠</div><div class="fortune-text" id="ft2"></div><button class="fortune-reset" id="fr2">another cookie</button></div></div></div>
+
+<div class="desk-panel" id="dp-analytics"><div class="dp-header"><div class="dp-title">📊 Analytics</div><div class="dp-close" onclick="closePanel('analytics')">✕</div></div><div class="dp-body" id="analyticsBody"></div></div>
+<div class="desk-panel" id="dp-oracle"><div class="dp-header"><div class="dp-title">🔮 Gurlwurl Oracle</div><div class="dp-close" onclick="closePanel('oracle')">✕</div></div><div class="dp-body" id="oracleBody"></div></div>
 
 <!-- ========== TAB: CHILL ========== -->
 <div class="tab-view" id="tab-chill">
@@ -615,6 +670,8 @@ function initPanel(id){
   if(id==='countdown')initCountdown();
   if(id==='skincare')initSkincare();
   if(id==='news')initNews();
+  if(id==='analytics')initAnalytics();
+  if(id==='oracle')initOracle();
 }
 
 /* DIARY */
@@ -629,11 +686,11 @@ function setupDiary(){const pw=document.getElementById('dSetPw').value,q=documen
 function unlockDiary(){const pw=document.getElementById('dPw').value;if(btoa(pw)===LS.getItem('gw_diary_pw')){sessionStorage.setItem('gw_diary_unlocked','1');showDiaryEntries()}else{document.getElementById('dPw').style.borderColor='#ff4444'}}
 function forgotDiary(){const q=LS.getItem('gw_diary_q');document.getElementById('diaryBody').innerHTML=`<div class="diary-lock"><div class="diary-lock-ico">🔑</div><h3>${q}</h3><input class="dp-input" id="dFA" placeholder="Your answer"><input class="dp-input" id="dNewPw" type="password" placeholder="New password"><button class="dp-btn" onclick="resetDiary()">Reset</button></div>`}
 function resetDiary(){const a=document.getElementById('dFA').value,np=document.getElementById('dNewPw').value;if(btoa(a.toLowerCase().trim())===LS.getItem('gw_diary_a')&&np){LS.setItem('gw_diary_pw',btoa(np));sessionStorage.setItem('gw_diary_unlocked','1');showDiaryEntries()}else{document.getElementById('dFA').style.borderColor='#ff4444'}}
-function showDiaryEntries(){const entries=JSON.parse(LS.getItem('gw_diary')||'[]');let h=`<textarea class="dp-textarea" id="diaryText" placeholder="What's on your mind..."></textarea><button class="dp-btn" onclick="saveDiary()">Save Entry</button><div style="margin-top:20px">`;entries.reverse().forEach(e=>{h+=`<div class="dp-entry"><div class="dp-entry-date">${e.date}</div><div class="dp-entry-text">${e.text}</div></div>`});h+='</div>';document.getElementById('diaryBody').innerHTML=h}
+function showDiaryEntries(){const entries=JSON.parse(LS.getItem('gw_diary')||'[]');let h=`<textarea class="dp-textarea" id="diaryText" placeholder="What's on your mind..."></textarea><button class="dp-btn" onclick="saveDiary()">Save Entry</button>`;if(entries.length)h+=`<button class="dp-btn-outline" style="margin-left:8px" onclick="if(confirm('Clear all diary entries?')){localStorage.removeItem('gw_diary');showDiaryEntries()}">Clear All</button>`;h+=`<div style="margin-top:20px">`;entries.reverse().forEach(e=>{h+=`<div class="dp-entry"><div class="dp-entry-date">${e.date}</div><div class="dp-entry-text">${e.text}</div></div>`});h+='</div>';document.getElementById('diaryBody').innerHTML=h}
 function saveDiary(){const t=document.getElementById('diaryText').value.trim();if(!t)return;const entries=JSON.parse(LS.getItem('gw_diary')||'[]');entries.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t});LS.setItem('gw_diary',JSON.stringify(entries));showDiaryEntries()}
 
 /* GRATITUDE */
-function initGratitude(){const entries=JSON.parse(LS.getItem('gw_grat')||'[]');let h=`<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for today?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:20px">`;entries.reverse().forEach(e=>{h+=`<div class="dp-entry"><div class="dp-entry-date">${e.date}</div><div class="dp-entry-text">${e.text}</div></div>`});h+='</div>';document.getElementById('gratBody').innerHTML=h}
+function initGratitude(){const entries=JSON.parse(LS.getItem('gw_grat')||'[]');let h=`<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for today?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button>`;if(entries.length)h+=`<button class="dp-btn-outline" style="margin-left:8px" onclick="if(confirm('Clear gratitude log?')){localStorage.removeItem('gw_grat');initGratitude()}">Clear</button>`;h+=`<div style="margin-top:20px">`;entries.reverse().forEach(e=>{h+=`<div class="dp-entry"><div class="dp-entry-date">${e.date}</div><div class="dp-entry-text">${e.text}</div></div>`});h+='</div>';document.getElementById('gratBody').innerHTML=h}
 function saveGrat(){const t=document.getElementById('gratText').value.trim();if(!t)return;const entries=JSON.parse(LS.getItem('gw_grat')||'[]');entries.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t});LS.setItem('gw_grat',JSON.stringify(entries));initGratitude()}
 
 /* HABITS */
@@ -642,7 +699,7 @@ const done=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');let h='';habits.forE
 function toggleHabit(i){let done=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');if(done.includes(i))done=done.filter(x=>x!==i);else done.push(i);LS.setItem('gw_habits_'+today,JSON.stringify(done));initHabits()}
 
 /* WATER */
-function initWater(){const count=parseInt(LS.getItem('gw_water_'+today)||'0');const pct=Math.min(count/8*100,100);document.getElementById('waterBody').innerHTML=`<div class="water-display"><div class="water-glass"><div class="water-fill" style="height:${pct}%"></div></div><div class="water-count">${count}/8</div><div class="water-label">glasses today</div><button class="dp-btn" onclick="addWater()">+ Add Glass</button></div>`}
+function initWater(){const count=parseInt(LS.getItem('gw_water_'+today)||'0');const pct=Math.min(count/8*100,100);document.getElementById('waterBody').innerHTML=`<div class="water-display"><div class="water-glass"><div class="water-fill" style="height:${pct}%"></div></div><div class="water-count">${count}/8</div><div class="water-label">glasses today</div><button class="dp-btn" onclick="addWater()">+ Add Glass</button><br><button class="dp-btn-outline" style="margin-top:10px" onclick="localStorage.removeItem('gw_water_'+today);initWater()">Reset</button></div>`}
 function addWater(){const count=parseInt(LS.getItem('gw_water_'+today)||'0');LS.setItem('gw_water_'+today,''+(count+1));initWater()}
 
 /* BREATHE */
@@ -658,12 +715,114 @@ h+='</div></div><div class="rate-history">';ratings.slice(-7).reverse().forEach(
 function rateDay(n){let ratings=JSON.parse(LS.getItem('gw_ratings')||'[]');ratings=ratings.filter(r=>r.date!==today);ratings.push({date:today,stars:n});LS.setItem('gw_ratings',JSON.stringify(ratings));initRate()}
 
 /* BUCKET LIST */
-function initBucket(){const items=JSON.parse(LS.getItem('gw_bucket')||'[]');let h=`<div style="display:flex;gap:8px;margin-bottom:16px"><input class="dp-input" id="bucketIn" placeholder="Add a dream..." style="margin:0;flex:1"><button class="dp-btn" onclick="addBucket()">+</button></div>`;items.forEach((item,i)=>{h+=`<div class="bucket-item${item.done?' done':''}"><div class="bucket-check" onclick="toggleBucket(${i})">${item.done?'✓':''}</div><div class="bucket-text">${item.text}</div></div>`});document.getElementById('bucketBody').innerHTML=h}
+function initBucket(){const items=JSON.parse(LS.getItem('gw_bucket')||'[]');let h=`<div style="display:flex;gap:8px;margin-bottom:16px"><input class="dp-input" id="bucketIn" placeholder="Add a dream..." style="margin:0;flex:1"><button class="dp-btn" onclick="addBucket()">+</button></div>`;if(items.length)h+=`<button class="dp-btn-outline" style="margin-bottom:14px" onclick="if(confirm('Clear bucket list?')){localStorage.removeItem('gw_bucket');initBucket()}">Clear All</button>`;items.forEach((item,i)=>{h+=`<div class="bucket-item${item.done?' done':''}"><div class="bucket-check" onclick="toggleBucket(${i})">${item.done?'\u2713':''}</div><div class="bucket-text">${item.text}</div></div>`});document.getElementById('bucketBody').innerHTML=h}
 function addBucket(){const t=document.getElementById('bucketIn').value.trim();if(!t)return;const items=JSON.parse(LS.getItem('gw_bucket')||'[]');items.push({text:t,done:false});LS.setItem('gw_bucket',JSON.stringify(items));initBucket()}
 function toggleBucket(i){const items=JSON.parse(LS.getItem('gw_bucket')||'[]');items[i].done=!items[i].done;LS.setItem('gw_bucket',JSON.stringify(items));initBucket()}
 
 /* COMPLIMENTS */
-function initCompliments(){const comps=["You literally light up every room you walk into","Your energy is unmatched and everyone knows it","You're the main character and it's not even close","The world is better because you're in it","Your smile could end wars","You're giving what needs to be gave","Everything you touch turns to gold","You deserve every good thing coming your way","You're not just that girl, you're THE girl","Your vibe is immaculate and we're all just living in it","You radiate the kind of energy that makes flowers bloom","Someone somewhere is smiling because of something you did"];
+function initCompliments(){const comps=[
+"You literally light up every room you walk into",
+"Your energy is unmatched and everyone knows it",
+"You're the main character and it's not even close",
+"The world is better because you're in it",
+"Your smile could end wars and start movements",
+"You're giving what needs to be gave, always",
+"Everything you touch turns to gold",
+"You deserve every good thing coming your way",
+"You're not just that girl, you're THE girl",
+"Your vibe is immaculate and we're all just living in it",
+"You radiate the kind of energy that makes flowers bloom",
+"Someone somewhere is smiling because of something you did",
+"You make hard things look effortless",
+"Your confidence is contagious in the best way",
+"You're proof that good things come in legendary packages",
+"The sun literally rises for you",
+"You walk into a room and the whole energy shifts",
+"Your presence is a gift to everyone around you",
+"You're the blueprint they're all trying to copy",
+"Your aura alone could power a small city",
+"You're the reason they had to update the definition of iconic",
+"Your heart is as beautiful as your face and that's saying something",
+"You're the kind of person people write songs about",
+"The universe really said 'let me make a masterpiece' with you",
+"Your laugh is literally the best sound in any room",
+"You make the impossible look like a tuesday",
+"You're an entire vibe and a half",
+"People don't meet people like you every day",
+"You're the calm in someone's storm and you don't even know it",
+"You could wear a trash bag and still serve",
+"Your kindness makes the world less scary",
+"You were born to stand out and you're nailing it",
+"Your potential is literally terrifying in the best way",
+"You're the friend everyone wishes they had",
+"Even your bad days are someone else's dream",
+"You set the bar and then float above it",
+"Your intelligence is just as stunning as everything else about you",
+"You make people want to be better just by existing",
+"The way you carry yourself is honestly art",
+"You're the plot twist everyone needed",
+"Your taste is impeccable and non-negotiable",
+"You turned your pain into power and that's legendary",
+"You're going places that GPS hasn't mapped yet",
+"Your boundaries are beautiful and so is your softness",
+"You're a limited edition in a world of copies",
+"The stars literally aligned for you to exist",
+"Your vulnerability is your superpower",
+"You bring out the best in everyone around you",
+"You're proof that magic is real",
+"You handle your business like a CEO and your friendships like a queen",
+"Your growth has been so beautiful to witness",
+"You turn ordinary moments into core memories",
+"Your perspective is a gift not everyone deserves",
+"You love people so well it's honestly inspiring",
+"The world would be so boring without your chaos",
+"You make self-care look like a lifestyle brand",
+"Your glow up isn't even done and people are already shook",
+"You're the embodiment of 'she did THAT'",
+"People google how to be more like you",
+"Your standards are high because you know your worth",
+"You're not for everyone and that's your flex",
+"Your creativity could fund a whole museum",
+"You're the reason someone believes in good people",
+"Your energy drink is just being yourself",
+"You make 'effortless' look like an understatement",
+"You're a whole holiday that should be on the calendar",
+"Your spirit animal is probably a phoenix",
+"You're the secret ingredient in every good thing",
+"Your strength doesn't go unnoticed even when it's quiet",
+"The way you love yourself gives other people permission to do the same",
+"You're someone's answered prayer",
+"Your future self is so proud of you right now",
+"You've survived 100% of your worst days",
+"You're not lucky, you're just that good",
+"Your work ethic could motivate a sloth into a marathon",
+"You deserve a standing ovation for just being you",
+"You're the intersection of beauty brains and audacity",
+"Your comeback stories are better than most people's highlights",
+"You're a masterclass in grace under pressure",
+"You make growth look glamorous",
+"Your intuition is elite and you should trust it more",
+"You're someone's favorite notification",
+"The universe keeps receipts and yours are immaculate",
+"You turned 'they said I couldn't' into 'watch me'",
+"Your softness in a hard world is revolutionary",
+"You don't need a crown because you ARE the crown",
+"Your existence raised the global serotonin levels",
+"You're the type of person poets try to describe",
+"Every room you leave remembers you were there",
+"You're what happens when a wish comes true",
+"Your life is someone else's vision board",
+"You're the warm hug the whole world needs",
+"You make even mondays feel like a vibe",
+"Your power move is just showing up as yourself",
+"You're living proof that real ones exist",
+"The algorithm couldn't even predict how iconic you are",
+"You bring the weather wherever you go and it's always sunny",
+"You're an entire era, not just a phase",
+"Your heart beats with purpose and it shows",
+"You didn't just break the mold, you redesigned it",
+"You're the main event and the encore"
+];
 document.getElementById('compBody').innerHTML=`<div class="compliment-card"><div class="compliment-text" id="compText">${comps[Math.floor(Math.random()*comps.length)]}</div><button class="dp-btn" onclick="newComp()">another one 💕</button></div>`;
 window._comps=comps}
 function newComp(){document.getElementById('compText').textContent=window._comps[Math.floor(Math.random()*window._comps.length)]}
@@ -683,70 +842,43 @@ document.getElementById('skinBody').innerHTML=h;window._skinInt=null}
 function startSkin(i,total){if(window._skinInt)clearInterval(window._skinInt);document.querySelectorAll('.skincare-step').forEach(x=>x.classList.remove('active'));document.getElementById('sk'+i).classList.add('active');let t=total;const el=document.getElementById('skt'+i);window._skinInt=setInterval(()=>{t--;el.textContent=t+'s';if(t<=0){clearInterval(window._skinInt);el.textContent='✓';document.getElementById('sk'+i).classList.remove('active')}},1000)}
 
 /* NEWS */
-function initNews(){const news=[
-{t:"Women now hold record number of CEO positions at Fortune 500",s:"Fortune"},
-{t:"Global gender pay gap narrowing but still decades from parity",s:"World Economic Forum"},
-{t:"New legislation expands paid family leave in 12 states",s:"NPR"},
-{t:"Women in STEM: enrollment numbers hit all-time high",s:"Nature"},
-{t:"Reproductive rights ballot measures pass in multiple states",s:"AP News"},
-{t:"Women's sports viewership breaks records for third consecutive year",s:"ESPN"},
-{t:"New maternal health initiative launches nationwide",s:"CDC"},
-{t:"Female founders receive record venture capital funding",s:"TechCrunch"},
-{t:"Equal Rights Amendment sees renewed push in Congress",s:"Reuters"},
-{t:"Women's history curriculum expansion adopted by 20 states",s:"Education Week"}
-];const dayOff=new Date().getDate()%5;const shown=news.slice(dayOff,dayOff+5);
-let h='<p style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px">Stories refreshed daily</p>';
-shown.forEach(n=>{h+=`<div class="news-item"><h4>${n.t}</h4><p>${n.s}</p></div>`});
-document.getElementById('newsBody').innerHTML=h}
-
-/* ===== CHILL TAB ===== */
-document.getElementById('chillTabs').addEventListener('click',e=>{const t=e.target.closest('.chill-tab');if(!t)return;document.querySelectorAll('.chill-tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.querySelectorAll('.chill-panel').forEach(x=>x.classList.remove('active'));document.getElementById('cp-'+t.dataset.p).classList.add('active');initChillPanel()});
-function initChillPanel(){const p=document.querySelector('#tab-chill .chill-panel.active');if(p.id==='cp-sand')initSand();if(p.id==='cp-nails')initNails();if(p.id==='cp-bubbles')startBubbles()}
-
-/* SAND */
-const sCv=document.getElementById('sandCv'),sCtx=sCv.getContext('2d');let sGrains=[],sRAF=null;
-function initSand(){const w=sCv.parentElement;sCv.width=w.clientWidth*2;sCv.height=w.clientHeight*2;sCv.style.width=w.clientWidth+'px';sCv.style.height=w.clientHeight+'px';sCtx.setTransform(2,0,0,2,0,0);animS()}
-class SG{constructor(x,y){this.x=x;this.y=y;this.vx=(Math.random()-.5)*3;this.vy=(Math.random()-.5)*3;this.life=1;this.d=.004+Math.random()*.007;this.s=1.5+Math.random()*3;this.c=['#E8D5B0','#D4C4A0','#C8B898','#F0E4CC','#BFB090'][Math.floor(Math.random()*5)];this.g=.02+Math.random()*.03}u(){this.vy+=this.g;this.vx*=.99;this.vy*=.99;this.x+=this.vx;this.y+=this.vy;this.life-=this.d}dr(c){c.globalAlpha=this.life*.8;c.fillStyle=this.c;c.beginPath();c.arc(this.x,this.y,this.s,0,Math.PI*2);c.fill()}}
-function animS(){const w=sCv.width/2,h=sCv.height/2;sCtx.clearRect(0,0,w,h);sCtx.globalAlpha=.03;sCtx.fillStyle='#D4C4A0';for(let i=0;i<5;i++){const y=h-12-i*8+Math.sin(Date.now()*.001+i)*3;sCtx.beginPath();sCtx.moveTo(0,y);for(let x=0;x<w;x+=20)sCtx.quadraticCurveTo(x+10,y-2+Math.sin(Date.now()*.0008+x*.02+i)*2,x+20,y);sCtx.lineTo(w,h);sCtx.lineTo(0,h);sCtx.fill()}sCtx.globalAlpha=1;sGrains=sGrains.filter(p=>p.life>0);sGrains.forEach(p=>{p.u();p.dr(sCtx)});sRAF=requestAnimationFrame(animS)}
-let sDraw=false;
-sCv.addEventListener('touchstart',e=>{e.preventDefault();sDraw=true;[...e.touches].forEach(t=>{const r=sCv.getBoundingClientRect();for(let i=0;i<8;i++)sGrains.push(new SG(t.clientX-r.left,t.clientY-r.top))});document.getElementById('sandHint').classList.add('gone')},{passive:false});
-sCv.addEventListener('touchmove',e=>{e.preventDefault();if(sDraw)[...e.touches].forEach(t=>{const r=sCv.getBoundingClientRect();for(let i=0;i<5;i++)sGrains.push(new SG(t.clientX-r.left,t.clientY-r.top))})},{passive:false});
-sCv.addEventListener('touchend',()=>sDraw=false);
-
-/* NAILS */
-const nCv=document.getElementById('nailCv'),nCtx=nCv.getContext('2d');let nColor='#FF69B4',nFlower=false,nails=[];
-function initNails(){const w=nCv.parentElement;nCv.width=w.clientWidth*2;nCv.height=w.clientHeight*2;nCv.style.width=w.clientWidth+'px';nCv.style.height=w.clientHeight+'px';nCtx.setTransform(2,0,0,2,0,0);const cw=w.clientWidth,ch=w.clientHeight;nails=[];
-const lx=cw*.32,ly=ch*.45,rx=cw*.68,ry=ch*.45;
-[{x:lx,y:ly-45,w:20,h:26},{x:lx-26,y:ly-40,w:16,h:22},{x:lx-44,y:ly-32,w:14,h:20},{x:lx-58,y:ly-20,w:12,h:18},{x:lx-68,y:ly-6,w:11,h:16},{x:rx,y:ry-45,w:20,h:26},{x:rx+26,y:ry-40,w:16,h:22},{x:rx+44,y:ry-32,w:14,h:20},{x:rx+58,y:ry-20,w:12,h:18},{x:rx+68,y:ry-6,w:11,h:16}].forEach(t=>nails.push({...t,color:null,flower:false}));drawN()}
-function drawN(){const w=nCv.width/2,h=nCv.height/2;nCtx.clearRect(0,0,w,h);nCtx.fillStyle='#F5D0B8';nCtx.beginPath();nCtx.ellipse(w*.32,h*.55,45,72,-.1,0,Math.PI*2);nCtx.fill();nCtx.beginPath();nCtx.ellipse(w*.68,h*.55,45,72,.1,0,Math.PI*2);nCtx.fill();
-nails.forEach(n=>{nCtx.fillStyle=n.color||'#FADBD8';nCtx.beginPath();nCtx.ellipse(n.x,n.y,n.w/2,n.h/2,0,0,Math.PI*2);nCtx.fill();nCtx.strokeStyle='rgba(0,0,0,.06)';nCtx.lineWidth=1;nCtx.stroke();if(n.flower){nCtx.font=(n.w*.5)+'px serif';nCtx.textAlign='center';nCtx.textBaseline='middle';nCtx.fillText('🌸',n.x,n.y)}})}
-nCv.addEventListener('click',e=>{const r=nCv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;nails.forEach(n=>{if(Math.abs(x-n.x)<n.w&&Math.abs(y-n.y)<n.h){if(nFlower)n.flower=true;else{n.color=nColor;n.flower=false}drawN()}})});
-document.getElementById('nailPal').addEventListener('click',e=>{const c=e.target.closest('.nail-color');if(c){nFlower=false;document.getElementById('nfBtn').classList.remove('active');document.querySelectorAll('.nail-color').forEach(x=>x.classList.remove('active'));c.classList.add('active');nColor=c.dataset.c}});
-document.getElementById('nfBtn').addEventListener('click',function(){nFlower=!nFlower;this.classList.toggle('active')});
-
-/* SLOTS */
-const sWords=[["You're","She's","Main","Certified","Total","Effortless"],["that","a","the","one","pure","100%"],["girl ✨","queen 👑","icon 💅","slay 💕","vibe 🌸","serve ✿"]];
-(function initSlots(){sWords.forEach((w,i)=>{const inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.innerHTML='';w.forEach(t=>{const d=document.createElement('div');d.className='slot-item';d.textContent=t;inner.appendChild(d)})})})();
-document.getElementById('slotPull').addEventListener('click',()=>{const res=[];sWords.forEach((w,i)=>{const idx=Math.floor(Math.random()*w.length);res.push(w[idx]);const inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.style.transition='none';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='transform '+(0.8+i*0.2)+'s cubic-bezier(.16,1,.3,1)';inner.style.transform='translateY(-'+(idx*46)+'px)'});setTimeout(()=>document.getElementById('slotRes').textContent=res.join(' '),1400)});
-
-/* MOOD RING */
-const mr=document.getElementById('moodRing'),mRes=document.getElementById('moodRes');
-const auras=["unhinged slay","immaculate vibes","main character unlocked","too cute to care","chaotic good glow","certified moment","soft-launch goddess","delulu is the solulu","glitter in human form"];
-let mTimer=null;
-mr.addEventListener('touchstart',e=>{e.preventDefault();mr.classList.add('active','spin');mRes.classList.remove('show');mTimer=setTimeout(()=>{mr.classList.remove('spin');mRes.textContent="Today's aura: "+auras[Math.floor(Math.random()*auras.length)];mRes.classList.add('show')},2500)},{passive:false});
-mr.addEventListener('touchend',()=>{if(mTimer){clearTimeout(mTimer);mr.classList.remove('active','spin')}});
-
-/* BUBBLES */
-const bw=document.getElementById('bubWrap');let bInt=null;
-const bCols=['rgba(244,160,176,.35)','rgba(200,168,233,.35)','rgba(168,216,234,.35)','rgba(255,218,185,.35)','rgba(181,201,168,.35)'];
-function startBubbles(){if(bInt)return;spB();bInt=setInterval(spB,700)}
-function spB(){if(bw.children.length>20)return;const b=document.createElement('div');b.className='bubble';const sz=30+Math.random()*45;b.style.width=sz+'px';b.style.height=sz+'px';b.style.left=Math.random()*88+'%';b.style.bottom='-50px';b.style.background=bCols[Math.floor(Math.random()*bCols.length)];b.style.border='1px solid rgba(255,255,255,.15)';b.style.setProperty('--dur',(4+Math.random()*4)+'s');b.addEventListener('click',()=>{const fx=document.createElement('div');fx.className='bubble-pop-fx';fx.textContent='🌸';fx.style.left=b.offsetLeft+sz/2+'px';fx.style.top=b.offsetTop+'px';bw.appendChild(fx);setTimeout(()=>fx.remove(),600);b.remove()});bw.appendChild(b);setTimeout(()=>{if(b.parentNode)b.remove()},8000)}
-
-/* FORTUNE (shared) */
-const fortunes=["You will receive free guac this week","A pool robot is being dispatched","Your hair will wash itself extra well tomorrow","A Sephora is opening near you","President Barbie approved your vibe","Your next coffee is on the state","A flower is reincarnating in your honor","Your EBT balance just went up","Coke Zero showers in your area","Someone is failing their entry test for you rn","Your matcha lawn is growing strong","A cake pop awaits on the next block"];
-function setupFortune(cookieId,textId,resetId){
-  document.getElementById(cookieId).onclick=function(){this.classList.add('crack');setTimeout(()=>{this.style.display='none';const t=document.getElementById(textId);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.classList.add('show');document.getElementById(resetId).classList.add('show')},500)};
-  document.getElementById(resetId).onclick=function(){const c=document.getElementById(cookieId);c.classList.remove('crack');c.style.display='';document.getElementById(textId).classList.remove('show');document.getElementById(textId).textContent='';this.classList.remove('show')};
+function initNews(){
+  const body=document.getElementById('newsBody');
+  body.innerHTML='<p style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px">Loading latest stories...</p>';
+  fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.feedburner.com/womens-enews/feed&count=8')
+  .then(r=>r.json()).then(d=>{
+    if(d.status!=='ok'||!d.items||!d.items.length)throw new Error('no items');
+    let h='<p style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px">Tap a story to read more</p>';
+    d.items.slice(0,8).forEach(item=>{
+      const desc=(item.description||'').replace(/<[^>]*>/g,'').slice(0,200);
+      h+=`<div class="news-item" onclick="this.classList.toggle('expanded')" style="cursor:pointer"><h4>${item.title}</h4><p class="news-summary" style="max-height:0;overflow:hidden;transition:max-height .4s">${desc}...</p><a href="${item.link}" target="_blank" rel="noopener" style="display:none;font-size:.65rem;color:var(--carn);margin-top:6px;text-decoration:none" class="news-link">Read full article ↗</a></div>`;
+    });
+    body.innerHTML=h;
+    // add expand styles
+    body.querySelectorAll('.news-item').forEach(el=>{
+      el.addEventListener('click',function(){
+        const s=this.querySelector('.news-summary');
+        const l=this.querySelector('.news-link');
+        if(this.classList.contains('expanded')){s.style.maxHeight='200px';l.style.display='inline-block'}
+        else{s.style.maxHeight='0';l.style.display='none'}
+      });
+    });
+  }).catch(()=>{
+    // Fallback curated content
+    const news=[
+      {t:"Women now hold record number of Fortune 500 CEO positions",u:"https://fortune.com"},
+      {t:"Global gender pay gap narrowing but decades from parity",u:"https://weforum.org"},
+      {t:"New legislation expands paid family leave in 12 states",u:"https://npr.org"},
+      {t:"Women in STEM enrollment hits all-time high",u:"https://nature.com"},
+      {t:"Reproductive rights ballot measures pass in multiple states",u:"https://apnews.com"},
+      {t:"Women's sports viewership breaks records third consecutive year",u:"https://espn.com"},
+      {t:"Female founders receive record venture capital funding",u:"https://techcrunch.com"},
+      {t:"Equal Rights Amendment sees renewed congressional push",u:"https://reuters.com"}
+    ];
+    let h='<p style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px">Curated stories</p>';
+    news.forEach(n=>{h+=`<a href="${n.u}" target="_blank" rel="noopener" style="text-decoration:none"><div class="news-item"><h4>${n.t}</h4><p style="font-size:.65rem;color:var(--carn);margin-top:4px">Read more ↗</p></div></a>`});
+    body.innerHTML=h;
+  });
 }
 setupFortune('fc2','ft2','fr2');setupFortune('fc3','ft3','fr3');
 </script>
