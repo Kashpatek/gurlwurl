@@ -374,7 +374,7 @@ document.getElementById('kissBtn').addEventListener('click',e=>{
     p.style.fontSize=(1+Math.random()*1.4)+'rem';
     document.body.appendChild(p);setTimeout(()=>p.remove(),1600);
   }
-  anthem.volume=0.55;anthem.currentTime=6;
+  anthem.volume=0.55;anthem.currentTime=7;
   anthem.play().then(()=>{playing=true;document.getElementById('musicBtn').classList.add('show');document.getElementById('viz').classList.add('show');updBtn()}).catch(()=>{});
   setTimeout(()=>document.getElementById('splash').classList.add('gone'),400);
 });
