@@ -563,7 +563,7 @@ section{padding:56px 20px}
 <div class="game-card" onclick="openGame('wyr')"><div class="game-card-ico">🤔</div><div class="game-card-name">Would You Rather</div><div class="game-card-desc">Impossible choices</div></div>
 <div class="game-card" onclick="openGame('bingo')"><div class="game-card-ico">🎯</div><div class="game-card-name">Bingo</div><div class="game-card-desc">Weekly girly challenge card</div></div>
 <div class="game-card" onclick="openGame('redflag')"><div class="game-card-ico">🚩</div><div class="game-card-name">Red or Green Flag</div><div class="game-card-desc">Swipe on dating scenarios</div></div>
-<div class="game-card" onclick="openGame('quotes')"><div class="game-card-ico">🎬</div><div class="game-card-name">Who Said It</div><div class="game-card-desc">Guess the movie quote</div></div>
+<div class="game-card" onclick="openGame('quotes')"><div class="game-card-ico">🎬</div><div class="game-card-name">Trivia</div><div class="game-card-desc">Movies, culture, girlie stuff</div></div>
 <div class="game-card" onclick="openGame('flappy')"><div class="game-card-ico">🦋</div><div class="game-card-name">Flappy Butterfly</div><div class="game-card-desc">Tap to fly through cake pops</div></div>
 <div class="game-card" onclick="openGame('glowjump')"><div class="game-card-ico">⬆️</div><div class="game-card-name">Glow Jump</div><div class="game-card-desc">Bounce to the top</div></div>
 <div class="game-card" onclick="openGame('2048')"><div class="game-card-ico">💎</div><div class="game-card-name">2048 Glam</div><div class="game-card-desc">Merge tiles to sparkle</div></div>
@@ -590,9 +590,9 @@ section{padding:56px 20px}
 <div class="game-panel" id="gp-2048"><div class="gp-header"><div class="gp-title">💎 2048 Glam</div><div class="gp-close" onclick="closeGame('2048')">✕</div></div><div class="gp-body" id="g2048Body"></div></div>
 <div class="game-panel" id="gp-casino"><div class="gp-header"><div class="gp-title">🎰 Casino</div><div class="gp-close" onclick="closeGame('casino')">✕</div></div><div class="gp-body" id="casinoBody"></div></div>
 <div class="game-panel" id="gp-wheel"><div class="gp-header"><div class="gp-title">🎡 What Should I Eat</div><div class="gp-close" onclick="closeGame('wheel')">✕</div></div><div class="gp-body" id="wheelBody"></div></div>
-<div class="game-panel" id="gp-compliment"><div class="gp-header"><div class="gp-title">\u{1F48C} Compliment Generator</div><div class="gp-close" onclick="closeGame('compliment')">\u2715</div></div><div class="gp-body" id="complimentBody"></div></div>
-<div class="game-panel" id="gp-mixer"><div class="gp-header"><div class="gp-title">ð§ Sound Mixer</div><div class="gp-close" onclick="closeGame('mixer')">â</div></div><div class="gp-body" id="mixerGameBody"></div></div>
-<div class="game-panel" id="gp-colorrush"><div class="gp-header"><div class="gp-title">\u{1F3B9} Color Rush</div><div class="gp-close" onclick="closeGame('colorrush')">\u2715</div></div><div class="gp-body" id="crBody" style="padding:0;overflow:hidden"></div></div>
+<div class="game-panel" id="gp-compliment"><div class="gp-header"><div class="gp-title">💌 Compliment Generator</div><div class="gp-close" onclick="closeGame('compliment')">✕</div></div><div class="gp-body" id="complimentBody"></div></div>
+<div class="game-panel" id="gp-mixer"><div class="gp-header"><div class="gp-title">ð§ Sound Mixer</div><div class="gp-close" onclick="closeGame('mixer')">✕</div></div><div class="gp-body" id="mixerGameBody"></div></div>
+<div class="game-panel" id="gp-colorrush"><div class="gp-header"><div class="gp-title">🎹 Color Rush</div><div class="gp-close" onclick="closeGame('colorrush')">✕</div></div><div class="gp-body" id="crBody" style="padding:0;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-thisorthat"><div class="gp-header"><div class="gp-title">⚡ This or That</div><div class="gp-close" onclick="closeGame('thisorthat')">✕</div></div><div class="gp-body" id="totBody"></div></div>
 
 <!-- TAB: DESK -->
@@ -611,11 +611,12 @@ section{padding:56px 20px}
 <div class="desk-panel" id="dp-countdown"><div class="dp-header"><div class="dp-title">⏰ Countdown</div><div class="dp-close" onclick="closePanel('countdown')">✕</div></div><div class="dp-body" id="countBody"></div></div>
 <div class="desk-panel" id="dp-skincare"><div class="dp-header"><div class="dp-title">🧴 Skincare</div><div class="dp-close" onclick="closePanel('skincare')">✕</div></div><div class="dp-body" id="skinBody"></div></div>
 <div class="desk-panel" id="dp-shop"><div class="dp-header"><div class="dp-title">🛒 Shopping</div><div class="dp-close" onclick="closePanel('shop')">✕</div></div><div class="dp-body" id="shopBody"></div></div>
-<div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">ð Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">â</div></div><div class="dp-body" id="lbBody"></div></div>
-<div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">ð Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">â</div></div><div class="dp-body" id="cycleBody"></div></div>
-<div class="desk-panel" id="dp-diary"><div class="dp-header"><div class="dp-title">\u{1F4D4} Diary</div><div class="dp-close" onclick="closePanel('diary')">\u2715</div></div><div class="dp-body" id="diaryBody"></div></div>
-<div class="desk-panel" id="dp-dreams"><div class="dp-header"><div class="dp-title">\u{1F4AD} Dream Journal</div><div class="dp-close" onclick="closePanel('dreams')">\u2715</div></div><div class="dp-body" id="dreamsBody"></div></div>
-<div class="desk-panel" id="dp-gazette"><div class="dp-header"><div class="dp-title">\u{1F4F0} The Gurlwurl Gazette</div><div class="dp-close" onclick="closePanel('gazette')">\u2715</div></div><div class="dp-body" id="gazetteBody"></div></div>
+<div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">ð Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">✕</div></div><div class="dp-body" id="lbBody"></div></div>
+<div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">ð Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">✕</div></div><div class="dp-body" id="cycleBody"></div></div>
+<div class="desk-panel" id="dp-vision"><div class="dp-header"><div class="dp-title">📋 Vision Board</div><div class="dp-close" onclick="closePanel('vision')">✕</div></div><div class="dp-body" id="visionBody"></div></div>
+<div class="desk-panel" id="dp-diary"><div class="dp-header"><div class="dp-title">📔 Diary</div><div class="dp-close" onclick="closePanel('diary')">✕</div></div><div class="dp-body" id="diaryBody"></div></div>
+<div class="desk-panel" id="dp-dreams"><div class="dp-header"><div class="dp-title">💭 Dream Journal</div><div class="dp-close" onclick="closePanel('dreams')">✕</div></div><div class="dp-body" id="dreamsBody"></div></div>
+<div class="desk-panel" id="dp-gazette"><div class="dp-header"><div class="dp-title">📰 The Gurlwurl Gazette</div><div class="dp-close" onclick="closePanel('gazette')">✕</div></div><div class="dp-body" id="gazetteBody"></div></div>
 <div class="desk-panel" id="dp-hub"><div class="dp-header"><div class="dp-title">🪪 My Hub</div><div class="dp-close" onclick="closePanel('hub')">✕</div></div><div class="dp-body" id="hubBody"></div></div>
 <div class="desk-panel" id="dp-achievements"><div class="dp-header"><div class="dp-title">🏆 Achievements</div><div class="dp-close" onclick="closePanel('achievements')">✕</div></div><div class="dp-body" id="achBody"></div></div>
 <div class="desk-panel" id="dp-guestbook"><div class="dp-header"><div class="dp-title">📖 Guestbook</div><div class="dp-close" onclick="closePanel('guestbook')">✕</div></div><div class="dp-body" id="gbBody"></div></div>
@@ -1330,7 +1331,7 @@ function initHub(){
   var xp=getXP();var lvl=getLevel();var next=getNextLevel();
   var h='<div style="text-align:center;margin-bottom:20px">';
   var selfie=LS.getItem('gw_selfie');
-  h+='<div style="width:70px;height:70px;border-radius:50%;margin:0 auto 10px;border:3px solid var(--gold);overflow:visible;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
+  h+='<div style="width:70px;height:70px;border-radius:50%;margin:0 auto 10px;border:3px solid var(--gold);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
   if(selfie)h+='<img src="'+selfie+'" style="width:100%;height:100%;object-fit:cover">';
   else h+='<span style="font-size:2rem">'+(currentUser.status||'👩')+'</span>';
   h+='</div><h3 style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff">'+currentUser.name+'</h3>';
@@ -1746,9 +1747,8 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
   h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
-  h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
-  h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
-  h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'vision\')"><div class="desk-btn-ico">\u{1F4CB}</div><div class="desk-btn-label">Vision Board</div></div>';
+
   h+='</div></div></div>';
 
   // TOOLS TAB
@@ -1798,7 +1798,7 @@ function setupJournalLock(){
 
 function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
 function closePanel(id){document.getElementById('dp-'+id).classList.remove('open')}
-function initPanel(id){var fn={hub:initHub,leaderboard:initLeaderboard,cycle:initCycle,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
+function initPanel(id){var fn={hub:initHub,leaderboard:initLeaderboard,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
 function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);LS.setItem(key,JSON.stringify(e));triggerSync();cb()}
 
 function initGratitude(){var entries=JSON.parse(LS.getItem('gw_grat')||'[]');var h='<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:16px">';entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_grat\','+i+',initGratitude)">✕</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});h+='</div>';document.getElementById('gratBody').innerHTML=h}
@@ -1858,6 +1858,7 @@ function openPassport(){
   if(selfie)h+='<img src="'+selfie+'" style="width:100%;height:100%;object-fit:cover">';
   else h+='<span style="font-size:2.5rem">'+(currentUser.status||'👩')+'</span>';
   h+='</div>';
+  h+='<div style="font-size:1.4rem;margin-top:-6px;text-align:center">'+(currentUser.status||'\u{1F469}')+'</div>';
   h+='<h3 style="font-family:Playfair Display,serif;font-size:1.3rem;color:#fff;margin-bottom:2px">'+currentUser.name+'</h3>';
   h+='<p style="font-family:Space Mono,monospace;font-size:.6rem;color:rgba(255,255,255,.3);margin-bottom:4px">CITIZEN #'+String(currentUser.number||3).padStart(3,'0')+'</p>';
   h+='<p style="font-size:.7rem;color:var(--carn);margin-bottom:20px">'+(currentUser.title||'Certified Citizen')+'</p>';
@@ -1929,8 +1930,12 @@ function initGazette(){
   document.getElementById('gazetteBody').innerHTML=h;
   fetch('/api/news').then(function(r){return r.json()}).then(function(data){
     if(!data.ok||!data.articles||!data.articles.length){gazetteLocal();return}
-    var nh='';data.articles.slice(0,8).forEach(function(a,i){
-      nh+='<a href="'+a.url+'" target="_blank" rel="noopener" style="display:block;padding:14px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+';text-decoration:none"><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'1rem':'.85rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+a.title+'</p><p style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:4px">'+a.source+' \u{2022} '+a.date+'</p></a>'});
+    var nh='';data.articles.slice(0,15).forEach(function(a,i){
+      nh+='<a href="'+a.url+'" target="_blank" rel="noopener" style="display:flex;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+';text-decoration:none;align-items:center">';
+      if(a.image)nh+='<img src="'+a.image+'" style="width:60px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">';
+      nh+='<div><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'.95rem':'.8rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+a.title+'</p>';
+      if(a.desc)nh+='<p style="font-size:.6rem;color:rgba(255,255,255,.3);margin-top:3px;line-height:1.3">'+a.desc.slice(0,80)+'...</p>';
+      nh+='<p style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:4px">'+a.source+' \u{2022} '+a.date+'</p></div></a>'});
     document.getElementById('gazetteNews').innerHTML=nh;
   }).catch(gazetteLocal);
 }
@@ -2061,6 +2066,23 @@ function initLeaderboard(){
   h+='<div style="background:rgba(255,255,255,.03);border-radius:14px;padding:16px;text-align:center"><p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">Your Position</p><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:700;color:var(--gold)">'+xp+' XP</p><p style="font-size:.8rem;color:var(--carn-light)">'+lvl.name+'</p></div>';
   document.getElementById('lbBody').innerHTML=h;
 }
+
+
+/* VISION BOARD */
+function initVision(){
+  var items=JSON.parse(LS.getItem('gw_vision')||'[]');
+  var h='<p style="text-align:center;font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:14px">Write down who you are becoming</p>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:12px"><input class="dp-input" id="visionText" placeholder="A dream, goal, or intention..." style="margin:0;flex:1"><button class="dp-btn" onclick="addVision()">+</button></div>';
+  var cats=['Career','Love','Health','Travel','Growth','Creative','Money','Spirit'];
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px">';
+  cats.forEach(function(c){h+='<span style="padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.08);font-size:.55rem;color:rgba(255,255,255,.3);cursor:pointer" onclick="document.getElementById(\'visionText\').value+=\' #'+c.toLowerCase()+'\'">#'+c+'</span>'});
+  h+='</div>';
+  var colors=['rgba(216,71,115,.08)','rgba(200,168,233,.08)','rgba(168,216,234,.08)','rgba(181,201,168,.08)','rgba(255,218,185,.08)'];
+  if(items.length){items.slice().reverse().forEach(function(item,ri){var i=items.length-1-ri;h+='<div style="background:'+colors[i%colors.length]+';border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:16px;margin-bottom:8px"><p style="font-family:Playfair Display,serif;font-size:.9rem;color:rgba(255,255,255,.7);line-height:1.4">'+item.text+'</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span style="font-size:.5rem;color:rgba(255,255,255,.2)">'+item.date+'</span><span style="cursor:pointer;font-size:.55rem;opacity:.3" onclick="delEntry(\'gw_vision\','+i+',initVision)">x</span></div></div>'})}
+  else{h+='<div style="text-align:center;padding:30px;opacity:.3"><p style="font-size:2rem;margin-bottom:8px">\u{2728}</p><p style="font-size:.75rem">Your vision board is empty. Start dreaming.</p></div>'}
+  document.getElementById('visionBody').innerHTML=h;
+}
+function addVision(){var t=document.getElementById('visionText').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_vision')||'[]');items.push({text:t,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});LS.setItem('gw_vision',JSON.stringify(items));addXP(5,'Vision board');triggerSync();initVision()}
 
 /* STOCK TICKER */
 (function(){
