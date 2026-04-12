@@ -366,7 +366,7 @@ section{padding:56px 20px}
 .ach-card.earned .ach-name{color:var(--gold)}
 
 /* FLAPPY */
-.flappy-canvas{display:block;width:100%;max-width:400px;height:auto;border-radius:16px;touch-action:none;background:linear-gradient(180deg,#A8D8EA,#D5E8F0 40%,#E8F0E5 70%,#B5C9A8)}
+.flappy-canvas{touch-action:none}
 .flappy-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(13,10,15,.6);border-radius:16px;z-index:2}
 
 /* CHILL */
@@ -537,8 +537,8 @@ section{padding:56px 20px}
 <div class="game-panel" id="gp-bingo"><div class="gp-header"><div class="gp-title">🎯 Bingo</div><div class="gp-close" onclick="closeGame('bingo')">✕</div></div><div class="gp-body" id="bingoBody"></div></div>
 <div class="game-panel" id="gp-redflag"><div class="gp-header"><div class="gp-title">🚩 Red or Green Flag</div><div class="gp-close" onclick="closeGame('redflag')">✕</div></div><div class="gp-body" id="rfBody"></div></div>
 <div class="game-panel" id="gp-quotes"><div class="gp-header"><div class="gp-title">🎬 Who Said It</div><div class="gp-close" onclick="closeGame('quotes')">✕</div></div><div class="gp-body" id="quotesBody"></div></div>
-<div class="game-panel" id="gp-flappy"><div class="gp-header"><div class="gp-title">🦋 Flappy Butterfly</div><div class="gp-close" onclick="closeGame('flappy')">✕</div></div><div class="gp-body" id="flappyBody" style="padding:10px;display:flex;flex-direction:column;align-items:center"></div></div>
-<div class="game-panel" id="gp-glowjump"><div class="gp-header"><div class="gp-title">⬆️ Glow Jump</div><div class="gp-close" onclick="closeGame('glowjump')">✕</div></div><div class="gp-body" id="gjBody" style="padding:10px;display:flex;flex-direction:column;align-items:center"></div></div>
+<div class="game-panel" id="gp-flappy"><div class="gp-header"><div class="gp-title">🦋 Flappy Butterfly</div><div class="gp-close" onclick="closeGame('flappy')">✕</div></div><div class="gp-body" id="flappyBody" style="padding:0;position:relative;overflow:hidden"></div></div>
+<div class="game-panel" id="gp-glowjump"><div class="gp-header"><div class="gp-title">⬆️ Glow Jump</div><div class="gp-close" onclick="closeGame('glowjump')">✕</div></div><div class="gp-body" id="gjBody" style="padding:0;position:relative;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-2048"><div class="gp-header"><div class="gp-title">💎 2048 Glam</div><div class="gp-close" onclick="closeGame('2048')">✕</div></div><div class="gp-body" id="g2048Body"></div></div>
 <div class="game-panel" id="gp-casino"><div class="gp-header"><div class="gp-title">🎰 Casino</div><div class="gp-close" onclick="closeGame('casino')">✕</div></div><div class="gp-body" id="casinoBody"></div></div>
 <div class="game-panel" id="gp-wheel"><div class="gp-header"><div class="gp-title">🎡 What Should I Eat</div><div class="gp-close" onclick="closeGame('wheel')">✕</div></div><div class="gp-body" id="wheelBody"></div></div>
@@ -1307,105 +1307,92 @@ function changeHubEmoji(){
 /* ========== FLAPPY BUTTERFLY ========== */
 function initFlappy(){
   trackGame('flappy');
+  if(window._fRaf)cancelAnimationFrame(window._fRaf);
   var b=document.getElementById('flappyBody');
   var best=parseInt(LS.getItem('gw_flappy_best')||'0');
+  var emoji=LS.getItem('gw_flappy_char')||'\u{1F98B}';
   var fchars=['\u{1F98B}','\u{1F426}','\u{1F338}','\u{1F478}','\u{1F9DA}','\u{1F41D}','\u{1F54A}','\u{1F4AB}'];
-  b.innerHTML='<p style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:4px">Tap to flap. Best: '+best+'</p><div style="display:flex;gap:4px;justify-content:center;margin-bottom:6px" id="fCharSel"></div><div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center"><canvas id="fCv" class="flappy-canvas" width="320" height="480"></canvas></div>';
-  var fSel=document.getElementById('fCharSel');fchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.3rem;cursor:pointer;padding:4px 6px;border-radius:8px;'+(c===emoji?'background:rgba(216,71,115,.2);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.06)');s.onclick=function(){LS.setItem('gw_flappy_char',c);initFlappy()};fSel.appendChild(s)});
-  var cv=document.getElementById('fCv');var ctx=cv.getContext('2d');
-  if(window._fRaf)cancelAnimationFrame(window._fRaf);var W=320,H=480,bird={x:80,y:240,vy:0,r:14},pipes=[],gap=130,score=0,frame=0,started=false,dead=false;
-  var emoji=currentUser?currentUser.status||'👩':'🦋';
-  function reset(){bird.y=240;bird.vy=0;pipes=[];score=0;frame=0;started=false;dead=false}
-  function addPipe(){var top=40+Math.random()*(H-gap-80);pipes.push({x:W,top:top,bottom:top+gap,passed:false})}
+  b.style.padding='0';
+  b.innerHTML='<div style="position:absolute;top:4px;left:0;right:0;z-index:3;text-align:center"><p style="font-size:.65rem;color:rgba(255,255,255,.5)">Best: '+best+'</p><div style="display:flex;gap:3px;justify-content:center;margin-top:2px" id="fCharSel"></div></div><canvas id="fCv" style="display:block;width:100%;height:100%"></canvas>';
+  var fSel=document.getElementById('fCharSel');fchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.1rem;cursor:pointer;padding:3px 5px;border-radius:6px;'+(c===emoji?'background:rgba(216,71,115,.3);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.1)');s.onclick=function(){LS.setItem('gw_flappy_char',c);initFlappy()};fSel.appendChild(s)});
+  var cv=document.getElementById('fCv');
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext('2d');
+  var bird={x:Math.round(W*.22),y:Math.round(H*.45),vy:0,r:18},pipes=[],gap=Math.round(H*.24),score=0,frame=0,started=false,dead=false;
+  function reset(){bird.y=Math.round(H*.45);bird.vy=0;pipes=[];score=0;frame=0;started=false;dead=false}
+  function addPipe(){var top=Math.round(H*.1)+Math.random()*(H-gap-Math.round(H*.2));pipes.push({x:W,top:top,bottom:top+gap,passed:false})}
   function draw(){
     ctx.clearRect(0,0,W,H);
-    // BG gradient
     var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#A8D8EA');bg.addColorStop(.4,'#D5E8F0');bg.addColorStop(.7,'#E8F0E5');bg.addColorStop(1,'#B5C9A8');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-    // Pipes (cake pops)
-    pipes.forEach(function(p){
-      ctx.fillStyle='#F4A0B0';ctx.fillRect(p.x,0,44,p.top);ctx.fillRect(p.x,p.bottom,44,H-p.bottom);
-      ctx.fillStyle='#C7405A';ctx.fillRect(p.x-2,p.top-8,48,8);ctx.fillRect(p.x-2,p.bottom,48,8);
-    });
-    // Bird
+    pipes.forEach(function(p){ctx.fillStyle='#F4A0B0';ctx.fillRect(p.x,0,48,p.top);ctx.fillRect(p.x,p.bottom,48,H-p.bottom);ctx.fillStyle='#C7405A';ctx.fillRect(p.x-3,p.top-8,54,8);ctx.fillRect(p.x-3,p.bottom,54,8)});
     ctx.font='44px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(emoji,bird.x,bird.y);
-    // Score
-    ctx.fillStyle='#fff';ctx.font='bold 32px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,50);
-    if(!started){ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='18px Outfit,sans-serif';ctx.fillText('Tap to start',W/2,H/2)}
-    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 24px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='14px Outfit,sans-serif';ctx.fillText('Tap to retry',W/2,H/2+20)}
+    ctx.fillStyle='#fff';ctx.font='bold 36px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,Math.round(H*.1));
+    if(!started){ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='20px Outfit,sans-serif';ctx.fillText('Tap to start',W/2,H/2)}
+    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='16px Outfit,sans-serif';ctx.fillText('Tap to retry',W/2,H/2+24)}
   }
   function update(){
     if(!started||dead){draw();window._fRaf=requestAnimationFrame(update);return}
-    bird.vy+=.45;bird.y+=bird.vy;frame++;
-    if(frame%90===0)addPipe();
-    pipes.forEach(function(p){p.x-=2.5;if(!p.passed&&p.x+44<bird.x){p.passed=true;score++;addXP(2,'Flappy: pipe cleared')}});
-    pipes=pipes.filter(function(p){return p.x>-50});
-    // Collision
+    bird.vy+=.42;bird.y+=bird.vy;frame++;
+    if(frame%85===0)addPipe();
+    pipes.forEach(function(p){p.x-=2.8;if(!p.passed&&p.x+48<bird.x){p.passed=true;score++;addXP(2,'Flappy: pipe cleared')}});
+    pipes=pipes.filter(function(p){return p.x>-54});
     var hit=bird.y<0||bird.y>H;
-    pipes.forEach(function(p){if(bird.x+bird.r>p.x&&bird.x-bird.r<p.x+44){if(bird.y-bird.r<p.top||bird.y+bird.r>p.bottom)hit=true}});
+    pipes.forEach(function(p){if(bird.x+bird.r>p.x&&bird.x-bird.r<p.x+48){if(bird.y-bird.r<p.top||bird.y+bird.r>p.bottom)hit=true}});
     if(hit){dead=true;if(score>best){best=score;LS.setItem('gw_flappy_best',''+best)}checkAchievements()}
     draw();window._fRaf=requestAnimationFrame(update);
   }
-  function tap(){if(dead){reset();return}if(!started){started=true;addPipe()}bird.vy=-7}
+  function tap(){if(dead){reset();return}if(!started){started=true;addPipe()}bird.vy=-7.5}
   cv.addEventListener('touchstart',function(e){e.preventDefault();tap()},{passive:false});
   cv.addEventListener('click',tap);
   update();
-  // Cleanup on close
-  var closeBtn=document.querySelector('#gp-flappy .gp-close');
-  closeBtn.addEventListener('click',function(){if(window._fRaf)cancelAnimationFrame(window._fRaf)});
+  document.querySelector('#gp-flappy .gp-close').addEventListener('click',function(){if(window._fRaf)cancelAnimationFrame(window._fRaf)});
 }
 
 /* ========== GLOW JUMP ========== */
 function initGlowJump(){
   trackGame('glowjump');
+  if(window._gjRaf)cancelAnimationFrame(window._gjRaf);
   var b=document.getElementById('gjBody');
+  var emoji=LS.getItem('gw_gj_char')||'\u{1F3C3}\u{200D}\u{2640}\u{FE0F}';
   var gjchars=['\u{1F3C3}\u{200D}\u{2640}\u{FE0F}','\u{1F3C3}\u{200D}\u{2642}\u{FE0F}','\u{1F9CD}\u{200D}\u{2640}\u{FE0F}','\u{1F9CD}\u{200D}\u{2642}\u{FE0F}','\u{1F6B6}\u{200D}\u{2640}\u{FE0F}','\u{1F6B6}\u{200D}\u{2642}\u{FE0F}','\u{1F9DA}','\u{1F478}'];
-  b.innerHTML='<p style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:4px">Tap left/right to move</p><div style="display:flex;gap:4px;justify-content:center;margin-bottom:6px" id="gjCharSel"></div><div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center"><canvas id="gjCv" class="flappy-canvas" width="320" height="480"></canvas></div>';
-  var gjSel=document.getElementById('gjCharSel');gjchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.3rem;cursor:pointer;padding:4px 6px;border-radius:8px;'+(c===emoji?'background:rgba(216,71,115,.2);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.06)');s.onclick=function(){LS.setItem('gw_gj_char',c);initGlowJump()};gjSel.appendChild(s)});
-  var cv=document.getElementById('gjCv');var ctx=cv.getContext('2d');
-  if(window._gjRaf)cancelAnimationFrame(window._gjRaf);var W=320,H=480,player={x:160,y:400,vx:0,vy:-8,w:24,h:24},platforms=[],score=0,camY=0,dead=false;
-  var emoji=currentUser?currentUser.status||'👩':'🦋';
-  function genPlatforms(){platforms=[];for(var i=0;i<8;i++){platforms.push({x:20+Math.random()*(W-80),y:H-60-i*60,w:60})}}
+  b.style.padding='0';
+  b.innerHTML='<div style="position:absolute;top:4px;left:0;right:0;z-index:3;text-align:center"><p style="font-size:.65rem;color:rgba(255,255,255,.5)">Tap left/right</p><div style="display:flex;gap:3px;justify-content:center;margin-top:2px" id="gjCharSel"></div></div><canvas id="gjCv" style="display:block;width:100%;height:100%"></canvas>';
+  var gjSel=document.getElementById('gjCharSel');gjchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.1rem;cursor:pointer;padding:3px 5px;border-radius:6px;'+(c===emoji?'background:rgba(216,71,115,.3);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.1)');s.onclick=function(){LS.setItem('gw_gj_char',c);initGlowJump()};gjSel.appendChild(s)});
+  var cv=document.getElementById('gjCv');
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext('2d');
+  var player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24},platforms=[],score=0,camY=0,dead=false;
+  function genPlatforms(){platforms=[];for(var i=0;i<8;i++){platforms.push({x:20+Math.random()*(W-80),y:H-60-i*(H/8),w:50+Math.random()*30})}}
   genPlatforms();
   function draw(){
     ctx.clearRect(0,0,W,H);
     var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1A0A1E');bg.addColorStop(1,'#2D1B30');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-    platforms.forEach(function(p){
-      var sy=p.y-camY;if(sy<-20||sy>H+20)return;
-      ctx.fillStyle='rgba(200,168,233,.3)';ctx.shadowColor='rgba(200,168,233,.4)';ctx.shadowBlur=10;
-      ctx.fillRect(p.x,sy,p.w,8);ctx.shadowBlur=0;
-    });
+    platforms.forEach(function(p){var sy=p.y-camY;if(sy<-20||sy>H+20)return;ctx.fillStyle='rgba(200,168,233,.3)';ctx.shadowColor='rgba(200,168,233,.4)';ctx.shadowBlur=10;ctx.fillRect(p.x,sy,p.w,8);ctx.shadowBlur=0});
     var py=player.y-camY;
     ctx.font='40px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(emoji,player.x,py);
-    ctx.fillStyle='#fff';ctx.font='bold 24px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,40);
-    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 24px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='14px Outfit';ctx.fillText('Tap to retry',W/2,H/2+20)}
+    ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,40);
+    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='16px Outfit';ctx.fillText('Tap to retry',W/2,H/2+24)}
   }
   function update(){
     if(dead){draw();window._gjRaf=requestAnimationFrame(update);return}
     player.vy+=.35;player.x+=player.vx;player.y+=player.vy;
     if(player.x<0)player.x=W;if(player.x>W)player.x=0;
-    // Platform collision (only going down)
-    if(player.vy>0){platforms.forEach(function(p){
-      var py=player.y+player.h/2;
-      if(py>p.y&&py<p.y+12&&player.x>p.x-10&&player.x<p.x+p.w+10){player.vy=-10;addXP(1,'Jump: platform')}
-    })}
-    // Camera follows
-    if(player.y-camY<200){camY=player.y-200;score=Math.max(score,Math.floor(-camY/10));
-      // Gen new platforms above
-      while(platforms[0].y-camY>-20){var ny=platforms[0].y-50-Math.random()*30;platforms.unshift({x:20+Math.random()*(W-80),y:ny,w:50+Math.random()*30})}
-      platforms=platforms.filter(function(p){return p.y-camY<H+40});
-    }
+    if(player.vy>0){platforms.forEach(function(p){var py=player.y+player.h/2;if(py>p.y&&py<p.y+12&&player.x>p.x-10&&player.x<p.x+p.w+10){player.vy=-10;addXP(1,'Jump: platform')}})}
+    if(player.y-camY<200){camY=player.y-200;score=Math.max(score,Math.floor(-camY/10));while(platforms[0].y-camY>-20){var ny=platforms[0].y-50-Math.random()*30;platforms.unshift({x:20+Math.random()*(W-80),y:ny,w:50+Math.random()*30})}platforms=platforms.filter(function(p){return p.y-camY<H+40})}
     if(player.y-camY>H+50){dead=true;addXP(Math.floor(score/2),'Glow Jump: '+score+'pts')}
     draw();window._gjRaf=requestAnimationFrame(update);
   }
   cv.addEventListener('touchstart',function(e){
     e.preventDefault();
-    if(dead){player={x:160,y:400,vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
+    if(dead){player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
     var x=e.touches[0].clientX-cv.getBoundingClientRect().left;
     player.vx=x<W/2?-4:4;
   },{passive:false});
   cv.addEventListener('touchend',function(){player.vx=0});
   cv.addEventListener('click',function(e){
-    if(dead){player={x:160,y:400,vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
+    if(dead){player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
     var x=e.clientX-cv.getBoundingClientRect().left;player.vx=x<W/2?-4:4;setTimeout(function(){player.vx=0},200);
   });
   update();
