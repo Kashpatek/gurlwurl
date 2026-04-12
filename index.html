@@ -199,16 +199,16 @@ section{padding:56px 20px}
 .ttt-reset{display:block;margin:0 auto;padding:10px 24px;border-radius:100px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);font-family:'Outfit',sans-serif;font-size:.68rem;cursor:pointer}
 
 /* WORDLE */
-.wordle-grid{display:flex;flex-direction:column;gap:6px;max-width:280px;margin:16px auto}
+.wordle-grid{display:flex;flex-direction:column;gap:6px;max-width:100%;margin:16px auto;padding:0 10px}
 .wordle-row{display:flex;gap:6px}
-.wordle-cell{flex:1;aspect-ratio:1;border:2px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#fff;text-transform:uppercase;transition:all .3s}
+.wordle-cell{flex:1;aspect-ratio:1;border:2px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;text-transform:uppercase;transition:all .3s}
 .wordle-cell.correct{background:var(--sage);border-color:var(--sage)}
 .wordle-cell.present{background:var(--gold);border-color:var(--gold)}
 .wordle-cell.absent{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)}
 .wordle-cell.filled{border-color:rgba(255,255,255,.3)}
-.wordle-kb{display:flex;flex-direction:column;gap:4px;max-width:320px;margin:16px auto 0}
+.wordle-kb{display:flex;flex-direction:column;gap:4px;max-width:100%;margin:16px auto 0;padding:0 4px}
 .wordle-kb-row{display:flex;gap:3px;justify-content:center}
-.wordle-key{padding:10px 8px;min-width:28px;border-radius:8px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.wordle-key{padding:12px 6px;min-width:30px;border-radius:8px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .wordle-key:active{transform:scale(.92)}
 .wordle-key.correct{background:var(--sage)}
 .wordle-key.present{background:var(--gold)}
@@ -577,7 +577,7 @@ section{padding:56px 20px}
 <div class="game-card" onclick="openGame('2048')"><div class="game-card-ico">💎</div><div class="game-card-name">2048 Glam</div><div class="game-card-desc">Merge tiles to sparkle</div></div>
 <div class="game-card" onclick="openGame('casino')"><div class="game-card-ico">🎰</div><div class="game-card-name">Casino</div><div class="game-card-desc">Spend your XP</div></div>
 <div class="game-card" onclick="openGame('colorrush')"><div class="game-card-ico">🎹</div><div class="game-card-name">Color Rush</div><div class="game-card-desc">Tap the lanes to the beat</div></div>
-<div class="game-card" onclick="openGame('mixer')"><div class="game-card-ico">ð§</div><div class="game-card-name">Beat Maker</div><div class="game-card-desc">Make your own beats</div></div>
+<div class="game-card" onclick="openGame('mixer')"><div class="game-card-ico">🎶</div><div class="game-card-name">Beat Maker</div><div class="game-card-desc">Make your own beats</div></div>
 <div class="game-card" onclick="openGame('thisorthat')"><div class="game-card-ico">⚡</div><div class="game-card-name">This or That</div><div class="game-card-desc">Quick-fire preferences</div></div>
 </div>
 </div>
@@ -592,14 +592,14 @@ section{padding:56px 20px}
 <div class="game-panel" id="gp-oracle"><div class="gp-header"><div class="gp-title">✨ Oracle</div><div class="gp-close" onclick="closeGame('oracle')">✕</div></div><div class="gp-body" id="oracleBody"></div></div>
 <div class="game-panel" id="gp-bingo"><div class="gp-header"><div class="gp-title">🎯 Bingo</div><div class="gp-close" onclick="closeGame('bingo')">✕</div></div><div class="gp-body" id="bingoBody"></div></div>
 <div class="game-panel" id="gp-redflag"><div class="gp-header"><div class="gp-title">🚩 Red or Green Flag</div><div class="gp-close" onclick="closeGame('redflag')">✕</div></div><div class="gp-body" id="rfBody"></div></div>
-<div class="game-panel" id="gp-quotes"><div class="gp-header"><div class="gp-title">🎬 Who Said It</div><div class="gp-close" onclick="closeGame('quotes')">✕</div></div><div class="gp-body" id="quotesBody"></div></div>
+<div class="game-panel" id="gp-quotes"><div class="gp-header"><div class="gp-title">🎬 Trivia</div><div class="gp-close" onclick="closeGame('quotes')">✕</div></div><div class="gp-body" id="quotesBody"></div></div>
 <div class="game-panel" id="gp-flappy"><div class="gp-header"><div class="gp-title">🦋 Flappy Butterfly</div><div class="gp-close" onclick="closeGame('flappy')">✕</div></div><div class="gp-body" id="flappyBody" style="padding:0;position:relative;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-glowjump"><div class="gp-header"><div class="gp-title">⬆️ Glow Jump</div><div class="gp-close" onclick="closeGame('glowjump')">✕</div></div><div class="gp-body" id="gjBody" style="padding:0;position:relative;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-2048"><div class="gp-header"><div class="gp-title">💎 2048 Glam</div><div class="gp-close" onclick="closeGame('2048')">✕</div></div><div class="gp-body" id="g2048Body"></div></div>
 <div class="game-panel" id="gp-casino"><div class="gp-header"><div class="gp-title">🎰 Casino</div><div class="gp-close" onclick="closeGame('casino')">✕</div></div><div class="gp-body" id="casinoBody"></div></div>
 <div class="game-panel" id="gp-wheel"><div class="gp-header"><div class="gp-title">🎡 What Should I Eat</div><div class="gp-close" onclick="closeGame('wheel')">✕</div></div><div class="gp-body" id="wheelBody"></div></div>
 <div class="game-panel" id="gp-compliment"><div class="gp-header"><div class="gp-title">💌 Compliment Generator</div><div class="gp-close" onclick="closeGame('compliment')">✕</div></div><div class="gp-body" id="complimentBody"></div></div>
-<div class="game-panel" id="gp-mixer"><div class="gp-header"><div class="gp-title">ð§ Beat Maker</div><div class="gp-close" onclick="closeGame('mixer')">✕</div></div><div class="gp-body" id="mixerGameBody"></div></div>
+<div class="game-panel" id="gp-mixer"><div class="gp-header"><div class="gp-title">🎶 Beat Maker</div><div class="gp-close" onclick="closeGame('mixer')">✕</div></div><div class="gp-body" id="mixerGameBody"></div></div>
 <div class="game-panel" id="gp-colorrush"><div class="gp-header"><div class="gp-title">🎹 Color Rush</div><div class="gp-close" onclick="closeGame('colorrush')">✕</div></div><div class="gp-body" id="crBody" style="padding:0;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-thisorthat"><div class="gp-header"><div class="gp-title">⚡ This or That</div><div class="gp-close" onclick="closeGame('thisorthat')">✕</div></div><div class="gp-body" id="totBody"></div></div>
 
@@ -619,8 +619,8 @@ section{padding:56px 20px}
 <div class="desk-panel" id="dp-countdown"><div class="dp-header"><div class="dp-title">⏰ Countdown</div><div class="dp-close" onclick="closePanel('countdown')">✕</div></div><div class="dp-body" id="countBody"></div></div>
 <div class="desk-panel" id="dp-skincare"><div class="dp-header"><div class="dp-title">🧴 Skincare</div><div class="dp-close" onclick="closePanel('skincare')">✕</div></div><div class="dp-body" id="skinBody"></div></div>
 <div class="desk-panel" id="dp-shop"><div class="dp-header"><div class="dp-title">🛒 Shopping</div><div class="dp-close" onclick="closePanel('shop')">✕</div></div><div class="dp-body" id="shopBody"></div></div>
-<div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">ð Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">✕</div></div><div class="dp-body" id="lbBody"></div></div>
-<div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">ð Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">✕</div></div><div class="dp-body" id="cycleBody"></div></div>
+<div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">🏆 Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">✕</div></div><div class="dp-body" id="lbBody"></div></div>
+<div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">🌙 Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">✕</div></div><div class="dp-body" id="cycleBody"></div></div>
 <div class="desk-panel" id="dp-vision"><div class="dp-header"><div class="dp-title">📋 Vision Board</div><div class="dp-close" onclick="closePanel('vision')">✕</div></div><div class="dp-body" id="visionBody"></div></div>
 <div class="desk-panel" id="dp-diary"><div class="dp-header"><div class="dp-title">📔 Diary</div><div class="dp-close" onclick="closePanel('diary')">✕</div></div><div class="dp-body" id="diaryBody"></div></div>
 <div class="desk-panel" id="dp-dreams"><div class="dp-header"><div class="dp-title">💭 Dream Journal</div><div class="dp-close" onclick="closePanel('dreams')">✕</div></div><div class="dp-body" id="dreamsBody"></div></div>
@@ -1684,7 +1684,7 @@ function stopMixer(){Object.keys(mixerNodes).forEach(function(id){try{mixerNodes
 function initColorRush(){
   trackGame('colorrush');
   var b=document.getElementById('crBody');
-  var W=window.innerWidth,H=window.innerHeight-60;
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
   b.innerHTML='<canvas id="crCv" style="width:100%;height:100%;display:block;touch-action:none" width="'+W+'" height="'+H+'"></canvas>';
   var cv=document.getElementById('crCv');var ctx=cv.getContext('2d');
   var lanes=4,lw=W/lanes,notes=[],score=0,combo=0,misses=0,speed=3,spawnRate=50,frame=0,dead=false,raf=null,started=false;
@@ -2086,6 +2086,33 @@ function initVision(){
   document.getElementById('visionBody').innerHTML=h;
 }
 function addVision(){var t=document.getElementById('visionText').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_vision')||'[]');items.push({text:t,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});LS.setItem('gw_vision',JSON.stringify(items));addXP(5,'Vision board');triggerSync();initVision()}
+
+function initCycle(){
+  var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');
+  var periods=data.periods||[];var cycleLen=data.cycleLen||28;var periodLen=data.periodLen||5;
+  var lastStart=periods.length?new Date(periods[periods.length-1]):null;
+  var td=new Date();td.setHours(0,0,0,0);
+  var daysSince=lastStart?Math.floor((td-lastStart)/864e5):null;
+  var nextP=lastStart?new Date(lastStart.getTime()+cycleLen*864e5):null;
+  var daysUntil=nextP?Math.ceil((nextP-td)/864e5):null;
+  var phase='unknown',phaseE='\u{1F319}',phaseD='Log your first period to start tracking';
+  if(daysSince!==null){if(daysSince<periodLen){phase='menstrual';phaseE='\u{1F339}';phaseD='Be gentle with yourself.'}else if(daysSince<cycleLen*.45){phase='follicular';phaseE='\u{1F331}';phaseD='Energy rising.'}else if(daysSince<cycleLen*.55){phase='ovulation';phaseE='\u{1F31F}';phaseD='Peak energy and confidence.'}else{phase='luteal';phaseE='\u{1F319}';phaseD='Time to nest and rest.'}}
+  var h='<div style="text-align:center;margin-bottom:20px"><div style="font-size:3rem;margin-bottom:8px">'+phaseE+'</div><p style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-bottom:4px">'+phase.charAt(0).toUpperCase()+phase.slice(1)+' Phase</p><p style="font-size:.75rem;color:rgba(255,255,255,.4)">'+phaseD+'</p>';
+  if(daysUntil!==null&&daysUntil>0)h+='<div style="margin-top:12px;padding:12px;background:rgba(216,71,115,.08);border:1px solid rgba(216,71,115,.12);border-radius:12px"><p style="font-size:.7rem;color:rgba(255,255,255,.35)">Next period in</p><p style="font-family:Playfair Display,serif;font-size:1.8rem;font-weight:700;color:var(--carn)">'+daysUntil+' days</p></div>';
+  h+='</div><div style="display:flex;gap:8px;margin-bottom:16px"><button class="dp-btn" onclick="logPeriodStart()">\u{1F339} Log Start</button><button class="dp-btn-outline" onclick="logSymptom()">\u{1F4DD} Symptom</button></div>';
+  h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">Settings</p>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="font-size:.75rem;color:rgba(255,255,255,.4);width:100px">Cycle</span><input type="number" class="dp-input" value="'+cycleLen+'" style="width:60px;margin:0;text-align:center" onchange="updateCycleSetting(\'cycleLen\',this.value)"><span style="font-size:.65rem;color:rgba(255,255,255,.25)">days</span></div>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px"><span style="font-size:.75rem;color:rgba(255,255,255,.4);width:100px">Period</span><input type="number" class="dp-input" value="'+periodLen+'" style="width:60px;margin:0;text-align:center" onchange="updateCycleSetting(\'periodLen\',this.value)"><span style="font-size:.65rem;color:rgba(255,255,255,.25)">days</span></div>';
+  var symptoms=JSON.parse(LS.getItem('gw_symptoms')||'[]');
+  if(symptoms.length){h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">Recent</p>';symptoms.slice(-8).reverse().forEach(function(s,ri){var i=symptoms.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+s.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_symptoms\','+i+',initCycle)">x</span></div><div class="dp-entry-text">'+s.text+'</div></div>'})}
+  if(periods.length){h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">History</p>';periods.slice().reverse().forEach(function(p,ri){var i=periods.length-1-ri;h+='<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:4px"><span style="font-size:.75rem;color:rgba(255,255,255,.5)">'+new Date(p).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span><span style="cursor:pointer;opacity:.3;font-size:.6rem" onclick="delPeriod('+i+')">x</span></div>'})}
+  document.getElementById('cycleBody').innerHTML=h;
+}
+function logPeriodStart(){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');var td=new Date();td.setHours(0,0,0,0);data.periods.push(td.toISOString());if(data.periods.length>=2){var l=new Date(data.periods[data.periods.length-1]);var p=new Date(data.periods[data.periods.length-2]);var d=Math.round((l-p)/864e5);if(d>20&&d<45)data.cycleLen=d}LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();addXP(3,'Logged period');initCycle()}
+function logSymptom(){var syms=['😖 Cramps','😢 Mood swings','😠 Irritable','😴 Fatigue','🤔 Headache','😋 Cravings','💧 Bloating','🩸 Heavy flow','✨ Light flow','😊 Good mood'];var h='<div style="text-align:center;padding:16px"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:12px">How are you feeling?</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';syms.forEach(function(s){h+='<button style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer" onclick="saveSymptom(\''+s+'\')">'+s+'</button>'});h+='</div></div>';document.getElementById('cycleBody').innerHTML=h}
+function saveSymptom(sym){var s=JSON.parse(LS.getItem('gw_symptoms')||'[]');s.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:sym});LS.setItem('gw_symptoms',JSON.stringify(s));triggerSync();initCycle()}
+function updateCycleSetting(key,val){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data[key]=parseInt(val);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync()}
+function delPeriod(i){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data.periods.splice(i,1);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();initCycle()}
 
 /* STOCK TICKER */
 (function(){
