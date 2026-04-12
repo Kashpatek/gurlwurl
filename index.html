@@ -170,7 +170,7 @@ section{padding:56px 20px}
 .gp-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06)}
 .gp-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;color:#fff}
 .gp-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);font-size:.9rem}
-.gp-body{flex:1;padding:12px;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+.gp-body{flex:1;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;position:relative}
 
 /* TTT (Tic Tac Toenails) */
 .ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:280px;margin:20px auto}
@@ -914,7 +914,7 @@ function renderWordle(){
   var rows=['QWERTYUIOP','ASDFGHJKL','⌫ZXCVBNM↵'];
   rows.forEach(function(row){h+='<div class="wordle-kb-row">';for(var i=0;i<row.length;i++){var k=row[i];var cls=k==='⌫'||k==='↵'?' wide':'';h+='<button class="wordle-key'+cls+'" onclick="wKey(\''+k+'\')">'+k+'</button>'}h+='</div>'});
   h+='</div>';
-  document.getElementById('wordleBody').innerHTML=h;
+  var wb=document.getElementById('wordleBody');wb.style.padding='12px';wb.innerHTML=h;
 }
 function wKey(k){
   if(wDone)return;
@@ -955,13 +955,13 @@ var tarotCards=[
 ];
 function initTarot(){
   var card=tarotCards[Math.floor(Math.random()*tarotCards.length)];
-  document.getElementById('tarotBody').innerHTML='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Tap the card to reveal your reading</p><div class="tarot-card" id="tarotFlip" onclick="this.classList.toggle(\'flipped\')"><div class="tarot-inner"><div class="tarot-front"><div class="tarot-front-design">✿</div><span>tap to reveal</span></div><div class="tarot-back"><div class="tarot-back-emoji">'+card.emoji+'</div><div class="tarot-back-name">'+card.name+'</div><div class="tarot-back-msg">'+card.msg+'</div></div></div></div><button class="tarot-reset" onclick="initTarot()">draw another card</button>';
+  document.getElementById('tarotBody').style.padding='16px';document.getElementById('tarotBody').innerHTML='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Tap the card to reveal your reading</p><div class="tarot-card" id="tarotFlip" onclick="this.classList.toggle(\'flipped\')"><div class="tarot-inner"><div class="tarot-front"><div class="tarot-front-design">✿</div><span>tap to reveal</span></div><div class="tarot-back"><div class="tarot-back-emoji">'+card.emoji+'</div><div class="tarot-back-name">'+card.name+'</div><div class="tarot-back-msg">'+card.msg+'</div></div></div></div><button class="tarot-reset" onclick="initTarot()">draw another card</button>';
 }
 
 /* HYPE ME UP */
 var hypeTexts=["YOU ARE LITERALLY THAT GIRL","THEY COULD NEVER BE YOU","MAIN CHARACTER ENERGY ACTIVATED","THE ROOM IS NOT READY FOR YOU","GO OFF QUEEN THE FLOOR IS YOURS","YOU WOKE UP AND CHOSE EXCELLENCE","CERTIFIED ICON. NO DEBATE.","THE AUDACITY TO BE THIS AMAZING","YOUR ENERGY JUST BROKE THE RICHTER SCALE","EVERYONE ELSE IS AN NPC IN YOUR STORYLINE","THE UNIVERSE LITERALLY MADE YOU ON PURPOSE","REMINDER: YOU ARE SOMEONE'S DREAM GIRL","YOUR POWER COULD CHARGE A CITY","NOBODY DOES IT LIKE YOU AND THEY KNOW IT","SLAY LEVEL: UNPRECEDENTED"];
 function initHype(){
-  document.getElementById('hypeBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px"><p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">For when you need it most</p><button class="hype-btn" onclick="doHype()">HYPE<br>ME<br>UP</button><div class="hype-text" id="hypeText"></div></div>';
+  document.getElementById('hypeBody').style.padding='16px';document.getElementById('hypeBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px"><p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">For when you need it most</p><button class="hype-btn" onclick="doHype()">HYPE<br>ME<br>UP</button><div class="hype-text" id="hypeText"></div></div>';
 }
 function doHype(){
   fireConfetti();
@@ -1003,7 +1003,7 @@ function initOracle(){
   var h='<div style="text-align:center;padding:20px 0"><p style="font-family:\'Cormorant Garamond\',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.4);margin-bottom:20px">The Oracle sees all</p><div style="font-size:3rem;margin-bottom:16px">🔮</div><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px">';
   topics.forEach(function(t){h+='<button class="dp-btn-outline" onclick="askOracle(\''+t+'\')" style="font-size:.6rem">'+labels[t]+'</button>'});
   h+='</div><div id="oracleResult" style="font-family:\'Playfair Display\',serif;font-size:1.1rem;font-weight:600;color:var(--carn-light);min-height:50px;padding:10px 20px;line-height:1.4;transition:opacity .6s">tap a category</div></div>';
-  document.getElementById('oracleBody').innerHTML=h;
+  document.getElementById('oracleBody').style.padding='16px';document.getElementById('oracleBody').innerHTML=h;
 }
 function askOracle(t){var bank=oracleBank[t]||oracleBank.fortune;var r=bank[Math.floor(Math.random()*bank.length)];var el=document.getElementById('oracleResult');el.style.opacity='0';setTimeout(function(){el.textContent=r;el.style.opacity='1'},200)}
 
@@ -1023,7 +1023,7 @@ function initBingo(){
   h+='</div>';
   var bCount=marked.length;
   h+='<p style="text-align:center;font-size:.7rem;color:var(--carn);margin-top:12px">'+bCount+'/25 completed</p>';
-  document.getElementById('bingoBody').innerHTML=h;
+  document.getElementById('bingoBody').style.padding='10px';document.getElementById('bingoBody').innerHTML=h;
 }
 function markBingo(i,wk){if(i===12)return;var marked=JSON.parse(LS.getItem('gw_bingo_'+wk)||'[]');if(marked.includes(i))marked=marked.filter(function(x){return x!==i});else marked.push(i);LS.setItem('gw_bingo_'+wk,JSON.stringify(marked));initBingo()}
 
@@ -1169,7 +1169,7 @@ function renderQuote(){
     h+='<button style="padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Outfit\',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s" onclick="answerQuote(this,\''+opt+'\',\''+q.movie+'\')">'+opt+'</button>';
   });
   h+='</div>';
-  document.getElementById('quotesBody').innerHTML=h;
+  document.getElementById('quotesBody').style.padding='16px';document.getElementById('quotesBody').innerHTML=h;
 }
 function answerQuote(btn,picked,correct){
   if(picked===correct){qScore++;btn.style.background='rgba(80,180,80,.2)';btn.style.borderColor='rgba(80,180,80,.4)';btn.style.color='#6bff6b'}
@@ -1188,10 +1188,10 @@ function renderTOT(){
     var h='<div style="text-align:center;padding:30px"><p style="font-family:\'Playfair Display\',serif;font-size:1.2rem;color:var(--carn-light);margin-bottom:16px">Your Vibe Profile</p>';
     totPicks.forEach(function(p){h+='<span style="display:inline-block;padding:6px 14px;border-radius:100px;background:rgba(216,71,115,.1);border:1px solid rgba(216,71,115,.15);color:var(--carn-light);font-size:.7rem;margin:3px">'+p+'</span>'});
     h+='<br><button class="dp-btn" style="margin-top:20px" onclick="initTOT()">Play Again</button></div>';
-    document.getElementById('totBody').innerHTML=h;return;
+    document.getElementById('totBody').style.padding='0';document.getElementById('totBody').innerHTML=h;return;
   }
   var q=totQs[totIdx];
-  document.getElementById('totBody').innerHTML='<div style="text-align:center;padding:20px"><p style="font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:20px">'+(totIdx+1)+'/'+totQs.length+'</p><p style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:#fff;margin-bottom:24px">This or that?</p><div style="display:flex;gap:12px;max-width:300px;margin:0 auto"><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(216,71,115,.2);background:rgba(216,71,115,.08);color:var(--carn-light);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(0)">'+q[0]+'</button><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(200,168,233,.2);background:rgba(200,168,233,.08);color:var(--lavender);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(1)">'+q[1]+'</button></div></div>';
+  document.getElementById('totBody').style.padding='0';document.getElementById('totBody').innerHTML='<div style="text-align:center;padding:20px"><p style="font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:20px">'+(totIdx+1)+'/'+totQs.length+'</p><p style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:#fff;margin-bottom:24px">This or that?</p><div style="display:flex;gap:12px;max-width:300px;margin:0 auto"><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(216,71,115,.2);background:rgba(216,71,115,.08);color:var(--carn-light);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(0)">'+q[0]+'</button><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(200,168,233,.2);background:rgba(200,168,233,.08);color:var(--lavender);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(1)">'+q[1]+'</button></div></div>';
 }
 function totPick(n){totPicks.push(totQs[totIdx][n]);totIdx++;renderTOT()}
 
@@ -1416,13 +1416,13 @@ function init2048(){
 function addTile(){var empty=[];for(var r=0;r<4;r++)for(var c=0;c<4;c++)if(!g2048grid[r][c])empty.push([r,c]);if(!empty.length)return;var p=empty[Math.floor(Math.random()*empty.length)];g2048grid[p[0]][p[1]]=Math.random()<.9?2:4}
 function render2048(){
   var h='<div style="text-align:center;margin-bottom:12px"><span style="font-family:Space Mono,monospace;font-size:.8rem;color:var(--gold)">Score: '+g2048score+'</span></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;margin:0 auto;background:rgba(255,255,255,.04);padding:8px;border-radius:14px">';
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;background:rgba(255,255,255,.04);padding:6px;border-radius:14px;box-sizing:border-box">';
   for(var r=0;r<4;r++)for(var c=0;c<4;c++){var v=g2048grid[r][c];var bg=v?'rgba(216,71,115,'+(Math.min(v/512,.8)+.05)+')':'rgba(255,255,255,.03)';
     h+='<div style="aspect-ratio:1;background:'+bg+';border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:'+(v>64?'1.6rem':'1.3rem')+'">'+(v?(GLAM_TILES[v]||v):'')+'</div>'}
   h+='</div>';
   if(g2048over)h+='<p style="text-align:center;font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-top:14px">Game Over! Score: '+g2048score+'</p>';
   h+='<button style="display:block;margin:14px auto 0;padding:8px 20px;border-radius:100px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.4);font-family:Outfit,sans-serif;font-size:.65rem;cursor:pointer" onclick="init2048()">New Game</button>';
-  document.getElementById('g2048Body').innerHTML=h;
+  document.getElementById('g2048Body').style.padding='10px';document.getElementById('g2048Body').innerHTML=h;
   // Re-attach swipe
   var body=document.getElementById('g2048Body');var sx=0,sy=0;
   body.ontouchstart=function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY};
@@ -1452,7 +1452,7 @@ function initCasino(){
   h+='<p style="font-size:.8rem;color:var(--gold)">Balance: <strong>'+xp+' XP</strong></p>';
   h+='<div class="casino-machine"><div class="casino-reels"><div class="casino-reel" id="cr1">🎀</div><div class="casino-reel" id="cr2">💎</div><div class="casino-reel" id="cr3">👑</div></div><button class="casino-pull" id="casinoPull" onclick="casinoSpin()">PULL</button><div class="casino-cost">10 XP per spin</div></div>';
   h+='<div class="casino-result" id="casinoResult"></div></div>';
-  document.getElementById('casinoBody').innerHTML=h;
+  document.getElementById('casinoBody').style.padding='16px';document.getElementById('casinoBody').innerHTML=h;
 }
 function casinoSpin(){
   if(!spendXP(10,'Casino spin')){document.getElementById('casinoResult').textContent='Not enough XP!';return}
@@ -1486,7 +1486,7 @@ function initWheel(){
   h+='</div><div class="wheel-container"><div class="wheel-pointer">▼</div><canvas id="wheelCv" class="wheel-canvas" width="260" height="260"></canvas></div>';
   h+='<button class="dp-btn" style="margin-top:16px" onclick="spinWheel()">🎡 Spin!</button>';
   h+='<div class="wheel-result" id="wheelResult"></div></div>';
-  document.getElementById('wheelBody').innerHTML=h;
+  document.getElementById('wheelBody').style.padding='12px';document.getElementById('wheelBody').innerHTML=h;
   drawWheel(items,0);
 }
 function drawWheel(items,rotation){
@@ -1596,13 +1596,13 @@ function initColorRush(){
   var audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   var freqs=[261.6,329.6,392,523.3];
   function playNote(lane){var o=audioCtx.createOscillator();var g=audioCtx.createGain();o.type='sine';o.frequency.value=freqs[lane];g.gain.value=.15;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.3);o.stop(audioCtx.currentTime+.3)}
-  function spawn(){var lane=Math.floor(Math.random()*lanes);notes.push({x:lane*lw,y:-60,w:lw-4,h:55,lane:lane,hit:false})}
+  function spawn(){var lane=Math.floor(Math.random()*lanes);notes.push({x:lane*lw,y:-80,w:lw-4,h:70,lane:lane,hit:false})}
   function draw(){
     ctx.clearRect(0,0,W,H);
     ctx.fillStyle='#0D0A0F';ctx.fillRect(0,0,W,H);
     for(var i=0;i<lanes;i++){ctx.strokeStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.moveTo(i*lw,0);ctx.lineTo(i*lw,H);ctx.stroke()}
-    var hitZoneY=H-80;ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(0,hitZoneY,W,60);
-    ctx.strokeStyle='rgba(216,71,115,.3)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(0,hitZoneY);ctx.lineTo(W,hitZoneY);ctx.stroke();ctx.setLineDash([]);
+    var hitZoneY=Math.round(H*0.7);ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(0,hitZoneY,W,H-hitZoneY);
+    ctx.strokeStyle='rgba(216,71,115,.25)';ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(0,hitZoneY);ctx.lineTo(W,hitZoneY);ctx.stroke();ctx.setLineDash([]);
     notes.forEach(function(n){if(n.hit)return;ctx.fillStyle=colors[n.lane];ctx.beginPath();var r=10;ctx.moveTo(n.x+2+r,n.y);ctx.lineTo(n.x+n.w-r,n.y);ctx.quadraticCurveTo(n.x+n.w,n.y,n.x+n.w,n.y+r);ctx.lineTo(n.x+n.w,n.y+n.h-r);ctx.quadraticCurveTo(n.x+n.w,n.y+n.h,n.x+n.w-r,n.y+n.h);ctx.lineTo(n.x+2+r,n.y+n.h);ctx.quadraticCurveTo(n.x+2,n.y+n.h,n.x+2,n.y+n.h-r);ctx.lineTo(n.x+2,n.y+r);ctx.quadraticCurveTo(n.x+2,n.y,n.x+2+r,n.y);ctx.fill()});
     ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,40);
     if(combo>2){ctx.font='14px Outfit,sans-serif';ctx.fillStyle='var(--gold)';ctx.fillText(combo+'x combo',W/2,60)}
@@ -1625,7 +1625,7 @@ function initColorRush(){
     if(!started){started=true;if(audioCtx.state==='suspended')audioCtx.resume();return}
     var lane=Math.floor(x/lw);var hitZoneY=H-80;
     var hit=false;
-    for(var i=notes.length-1;i>=0;i--){var n=notes[i];if(n.lane===lane&&!n.hit&&n.y+n.h>hitZoneY-20&&n.y<hitZoneY+60){n.hit=true;score++;combo++;playNote(lane);hit=true;break}}
+    for(var i=notes.length-1;i>=0;i--){var n=notes[i];if(n.lane===lane&&!n.hit&&n.y+n.h>hitZoneY-30&&n.y<hitZoneY+80){n.hit=true;score++;combo++;playNote(lane);hit=true;break}}
     if(!hit){misses++;combo=0;if(misses>=3){dead=true;addXP(Math.floor(score/3),'Color Rush: '+score+'pts')}}
   }
   cv.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.touches.length;i++)tap(e.touches[i].clientX)},{passive:false});
