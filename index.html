@@ -79,14 +79,14 @@ body{font-family:'Outfit',sans-serif;background:var(--cream);color:var(--soft-bl
 .bylaws-check label{font-size:.75rem;color:rgba(255,255,255,.5);cursor:pointer}
 
 /* TAB BAR */
-.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:800;display:flex;background:rgba(255,248,240,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(200,168,233,.12);padding:6px 0 env(safe-area-inset-bottom,8px)}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:800;display:flex;background:rgba(255,248,240,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(200,168,233,.12);padding:6px 0 calc(env(safe-area-inset-bottom,8px) + 12px)}
 .tab-bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .tab-bar-item span{font-size:1.2rem}
 .tab-bar-item small{font-size:.55rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(0,0,0,.3);transition:color .2s}
 .tab-bar-item.active small{color:var(--deep-rose)}
 .tab-bar-item.locked{opacity:.35}
 .tab-bar-item.locked small{color:rgba(0,0,0,.2)}
-.tab-view{display:none;padding-bottom:70px}
+.tab-view{display:none;padding-bottom:90px}
 .site-hidden .tab-view,.site-hidden .tab-bar,.site-hidden .music-btn{visibility:hidden!important}
 .tab-view.active{display:block}
 
@@ -292,19 +292,19 @@ section{padding:56px 20px}
 .news-item h4{font-size:.82rem;font-weight:600;margin-bottom:3px}
 
 /* BINGO */
-.bingo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:320px;margin:16px auto}
-.bingo-cell{aspect-ratio:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.5rem;text-align:center;padding:4px;color:rgba(255,255,255,.5);cursor:pointer;transition:all .2s;line-height:1.2}
+.bingo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;max-width:100%;margin:12px auto}
+.bingo-cell{aspect-ratio:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.58rem;text-align:center;padding:3px;color:rgba(255,255,255,.55);cursor:pointer;transition:all .2s;line-height:1.15;word-break:break-word}
 .bingo-cell.marked{background:rgba(216,71,115,.2);border-color:var(--carn);color:var(--carn-light)}
 .bingo-cell.free{background:rgba(200,168,233,.15);border-color:var(--lavender);color:var(--lavender)}
 /* REDFLAG */
-.rf-card{max-width:340px;margin:20px auto;min-height:280px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:36px 24px;text-align:center;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;touch-action:pan-y;transition:transform .15s ease,opacity .15s ease;cursor:grab}
+.rf-card{max-width:100%;margin:12px 0;min-height:50vh;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:36px 24px;text-align:center;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;touch-action:pan-y;transition:transform .15s ease,opacity .15s ease;cursor:grab}
 .rf-card.swiping{transition:none}
 .rf-card.swipe-left{transform:translateX(-120%) rotate(-15deg);opacity:0;transition:transform .4s ease,opacity .4s}
 .rf-card.swipe-right{transform:translateX(120%) rotate(15deg);opacity:0;transition:transform .4s ease,opacity .4s}
-.rf-scenario{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:600;color:#fff;line-height:1.4;margin-bottom:16px}
+.rf-scenario{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600;color:#fff;line-height:1.4;margin-bottom:16px}
 .rf-hint{display:flex;justify-content:space-between;width:100%;font-size:.7rem;margin-top:auto;padding-top:12px}
-.rf-hint-left{color:rgba(220,80,80,.5)}
-.rf-hint-right{color:rgba(80,200,80,.5)}
+.rf-hint-left{color:rgba(220,80,80,.5);font-size:.85rem}
+.rf-hint-right{color:rgba(80,200,80,.5);font-size:.85rem}
 .rf-score{font-family:'Space Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.3);text-align:center;margin-top:12px}
 
 
@@ -655,6 +655,8 @@ function cloudLoadAll(){
     if(d.water_today)LS.setItem('gw_water_'+today,''+d.water_today);
   });
 }
+// XP for time on site (5 XP every 5 minutes)
+setInterval(function(){if(currentUser&&currentUser.name!=='Neha'&&currentUser.name!=='Akash'){addXP(5,'Time on Gurlwurl')}},300000);
 // Auto-sync every 30 seconds
 setInterval(function(){if(currentUser)syncAll()},30000);
 // Sync before leaving
@@ -786,9 +788,8 @@ if(currentUser){
   updateDeskLock();
   document.getElementById('authModal').classList.remove('open');
   document.getElementById('splash').classList.remove('gone');
-}
-
-/* CITIZEN WALL */
+  cloudLoadAll();
+}/* CITIZEN WALL */
 function loadCitizenWall(){
   api({action:'citizens'}).then(function(r){
     if(!r.ok||!r.citizens)return;
@@ -1285,6 +1286,12 @@ function initHub(){
   document.getElementById('hubBody').innerHTML=h;
   var grid=document.getElementById('hubEmojis');var showing=12;
   function renderHE(){grid.innerHTML='';GIRLY_EMOJIS.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===currentUser.emoji)d.classList.add('selected');d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e;document.getElementById('hubChangeBtn').style.display='inline-block'};grid.appendChild(d)});if(showing<GIRLY_EMOJIS.length){var m=document.createElement('div');m.className='emoji-opt';m.textContent='...';m.style.color='rgba(255,255,255,.3)';m.onclick=function(){showing+=12;renderHE()};grid.appendChild(m)}}renderHE();
+}
+function signOut(){
+  syncAll();
+  LS.removeItem('gw_user');
+  currentUser=null;
+  location.reload();
 }
 function changeHubEmoji(){
   if(!selectedEmoji||selectedEmoji===currentUser.emoji)return;
