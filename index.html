@@ -99,7 +99,7 @@ body{font-family:'Outfit',sans-serif;background:var(--cream);color:var(--soft-bl
 
 
 /* TICKER */
-.ticker{background:rgba(0,0,0,.03);border-bottom:1px solid rgba(200,168,233,.08);overflow:hidden;height:28px;display:flex;align-items:center}
+.ticker{position:sticky;top:48px;z-index:99;background:rgba(255,248,240,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,168,233,.1);overflow:hidden;height:28px;display:flex;align-items:center}
 .ticker-track{display:flex;width:max-content;animation:tick 40s linear infinite}
 .ticker-item{display:flex;align-items:center;gap:5px;padding:0 16px;white-space:nowrap;font-family:'Space Mono',monospace;font-size:.55rem;font-weight:500}
 .ticker-name{color:var(--espresso);opacity:.6}
@@ -489,9 +489,14 @@ section{padding:56px 20px}
 <div class="ribbon"><div class="ribbon-track"><span>No Bad Hair Days</span><span>Mandatory Guac</span><span>Coke Zero Rain</span><span>Matcha Lawns</span><span>Immortal Flowers</span><span>Pool Robots</span><span>Lychee Showers</span><span>Cake Pops</span><span>No Bad Hair Days</span><span>Mandatory Guac</span><span>Coke Zero Rain</span><span>Matcha Lawns</span><span>Immortal Flowers</span><span>Pool Robots</span><span>Lychee Showers</span><span>Cake Pops</span></div></div>
 
 <section class="gov"><div class="stag rv">The Sovereign State</div><h2 class="stitle rv" style="color:#fff">Our <em>Government</em></h2>
-<div class="gc rv"><div class="gc-ico">👑</div><div><h3>President Barbie</h3><p>Every policy passed with a hair flip.</p></div></div>
-<div class="gc rv"><div class="gc-ico">⚖️</div><div><h3>Court of Appeals</h3><p>All drama goes here. Petty disputes Wednesdays.</p></div></div>
-<div class="gc rv"><div class="gc-ico">💸</div><div><h3>EBT</h3><p>Extra Bitch Tender. Based on need, not income.</p></div></div>
+<div class="gc rv"><div class="gc-ico">👑</div><div><h3>President Barbie</h3><p>Every policy passed with a hair flip. Cabinet meetings include mandatory snack breaks.</p></div></div>
+<div class="gc rv"><div class="gc-ico">⚖️</div><div><h3>Court of Appeals</h3><p>All drama goes here. Petty disputes on Wednesdays. Passive-aggressive texts admitted as evidence.</p></div></div>
+<div class="gc rv"><div class="gc-ico">💸</div><div><h3>Department of EBT</h3><p>Extra Bitch Tender. Distributed based on need, not income. Accepted at all Sephora locations.</p></div></div>
+<div class="gc rv"><div class="gc-ico">🛂</div><div><h3>Immigration Department</h3><p>Women receive automatic citizenship. Straight men must pass an extensive vetting process including bed frame inspection, texting speed test, and emotional availability screening.</p></div></div>
+<div class="gc rv"><div class="gc-ico">✨</div><div><h3>Department of Vibes</h3><p>Monitors the national energy. Bad vibes are a federal offense. Mandatory golden hour enforcement at 6pm daily.</p></div></div>
+<div class="gc rv"><div class="gc-ico">🤖</div><div><h3>Pool Robot Services</h3><p>A robot bartender assigned to every 4-inch pool. They bring drinks, apply sunscreen, and never judge your third margarita.</p></div></div>
+<div class="gc rv"><div class="gc-ico">💊</div><div><h3>Department of Health</h3><p>Birth control in the air. No periods, only exclamation marks. Doctor appointments abolished because nothing hurts here.</p></div></div>
+<div class="gc rv"><div class="gc-ico">🛍️</div><div><h3>Department of Commerce</h3><p>Skims is the official state partnership. TJ Maxx on every corner. Sephora and Ulta have merged into one mega-store.</p></div></div>
 </section>
 
 <section style="padding-bottom:36px;background:linear-gradient(180deg,var(--cream),#F5E6F0)">
@@ -507,14 +512,37 @@ section{padding:56px 20px}
 
 <section style="background:linear-gradient(180deg,#F8F0F0,var(--cream))"><div class="stag rv">The Law</div><h2 class="stitle rv">The <em>Constitution</em></h2>
 <div class="scroll-parchment rv">
-<div class="article"><div class="article-num">Article I</div><div class="article-text">Guacamole shall never cost extra.</div></div>
-<div class="article"><div class="article-num">Article II</div><div class="article-text">All flowers are immortal by decree.</div></div>
-<div class="article"><div class="article-num">Article III</div><div class="article-text">No citizen shall experience a bad hair day.</div></div>
-<div class="article"><div class="article-num">Article IV</div><div class="article-text">Coke Zero shall fall freely from the sky.</div></div>
-<div class="article"><div class="article-num">Article V</div><div class="article-text">Periods are reclassified as exclamation marks.</div></div>
-<div class="article"><div class="article-num">Article VI</div><div class="article-text">Pool robots shall serve all citizens promptly.</div></div>
-<div class="article"><div class="article-num">Article VII</div><div class="article-text">Traffic is abolished. Doctor appointments unnecessary.</div></div>
+<div class="article"><div class="article-num">Article I</div><div class="article-text">Guacamole shall never cost extra. This is a fundamental right.</div></div>
+<div class="article"><div class="article-num">Article II</div><div class="article-text">All flowers are immortal by decree. They reincarnate. Your bouquet lasts forever.</div></div>
+<div class="article"><div class="article-num">Article III</div><div class="article-text">No citizen shall experience a bad hair day. Hair is self-washing by law.</div></div>
+<div class="article"><div class="article-num">Article IV</div><div class="article-text">Coke Zero shall fall freely from the sky. Umbrellas optional, straws mandatory.</div></div>
+<div class="article"><div class="article-num">Article V</div><div class="article-text">Periods are hereby reclassified as exclamation marks. Cramps are abolished.</div></div>
+<div class="article"><div class="article-num">Article VI</div><div class="article-text">Pool robots shall serve all citizens promptly and without judgment.</div></div>
+<div class="article"><div class="article-num">Article VII</div><div class="article-text">Traffic is abolished. All roads are empty. You always get the parking spot.</div></div>
+<div class="article"><div class="article-num">Article VIII</div><div class="article-text">Birth control shall be administered through the atmosphere. No appointments needed.</div></div>
+<div class="article"><div class="article-num">Article IX</div><div class="article-text">All lawns shall grow matcha. Harvest your morning latte from the yard.</div></div>
+<div class="article"><div class="article-num">Article X</div><div class="article-text">Lychee showers every Thursday. Cake pops available on every block.</div></div>
+<div class="article"><div class="article-num">Article XI</div><div class="article-text">Farmers markets shall operate 24/7. Organic everything. No price gouging.</div></div>
+<div class="article"><div class="article-num">Article XII</div><div class="article-text">Every citizen is entitled to a 4-inch pool with a personal robot bartender.</div></div>
+<div class="article"><div class="article-num">Article XIII</div><div class="article-text">Bad vibes are a federal offense punishable by mandatory spa day.</div></div>
+<div class="article"><div class="article-num">Article XIV</div><div class="article-text">Golden hour is extended to 3 hours daily by executive order.</div></div>
+<div class="article"><div class="article-num">Article XV</div><div class="article-text">The national motto shall forever be: "Because we don't need the d."</div></div>
 </div></section>
+
+<section style="background:linear-gradient(180deg,#E8D5F5,#D5E8F0)"><div class="stag rv">Explore</div><h2 class="stitle rv">The <em>Counties</em></h2>
+<div class="carousel" id="countyC">
+<div class="ccard cc7"><div class="ce">💄</div><h3>Sephora Row</h3><p>The beauty capital. Every block is a store. Makeovers are a constitutional right. Population: flawless.</p></div>
+<div class="ccard cc5"><div class="ce">🍵</div><h3>Matcha Meadows</h3><p>Rolling green hills of harvestable matcha. Yoga studios on every corner. The vibes are immaculate.</p></div>
+<div class="ccard cc4"><div class="ce">🏊‍♀️</div><h3>Pool Quarter</h3><p>4-inch pools as far as the eye can see. Robot bartenders on call. SPF provided by the state.</p></div>
+<div class="ccard cc3"><div class="ce">🧺</div><h3>Farmers Market Mile</h3><p>24/7 organic markets. Everything is locally sourced. The strawberries actually taste like strawberries.</p></div>
+<div class="ccard cc2"><div class="ce">🍰</div><h3>Cake Pop Boulevard</h3><p>Dessert on every block. Calorie counting is illegal here. The air smells like vanilla and ambition.</p></div>
+</div><div class="carousel-dots" id="cDots"></div></section>
+
+<section style="background:linear-gradient(180deg,#2D1B30,var(--midnight));color:#fff"><div class="stag rv" style="color:var(--blush)">Entry Requirements</div><h2 class="stitle rv" style="color:#fff">The <em>Immigration Policy</em></h2>
+<div class="gc rv"><div class="gc-ico">👩</div><div><h3>Women</h3><p>Automatic citizenship. Walk right in. Your passport is your existence.</p></div></div>
+<div class="gc rv"><div class="gc-ico">🏳️‍🌈</div><div><h3>LGBTQ+</h3><p>Automatic citizenship. Extra welcome package includes flowers and a pool assignment.</p></div></div>
+<div class="gc rv"><div class="gc-ico">🧔</div><div><h3>Straight Men</h3><p>Extensive vetting required. Must pass: bed frame inspection, emotional availability screening, texting speed test (under 2 min), cooking assessment, and a 500-word essay on why you deserve entry. 97% rejection rate.</p></div></div>
+</section>
 
 <section style="background:linear-gradient(180deg,var(--midnight),#0D050F);color:#fff"><div class="stag rv" style="color:var(--blush)">Citizens of Gurlwurl</div><h2 class="stitle rv" style="color:#fff">The <em>Wall</em></h2>
 <div class="citizen-wall" id="citizenWall">
@@ -532,10 +560,7 @@ section{padding:56px 20px}
 <div class="game-grid">
 <div class="game-card" onclick="openGame('ttt')"><div class="game-card-ico">🦶</div><div class="game-card-name">Tic Tac Toenails</div><div class="game-card-desc">X's and O's on painted nails</div></div>
 <div class="game-card" onclick="openGame('wordle')"><div class="game-card-ico">📝</div><div class="game-card-name">Gurlwurdle</div><div class="game-card-desc">Daily girly word puzzle</div></div>
-<div class="game-card" onclick="openGame('tarot')"><div class="game-card-ico">🔮</div><div class="game-card-name">Tarot</div><div class="game-card-desc">Flip a card, read your fate</div></div>
-<div class="game-card" onclick="openGame('hype')"><div class="game-card-ico">📢</div><div class="game-card-name">Hype Me Up</div><div class="game-card-desc">Emergency confidence boost</div></div>
 <div class="game-card" onclick="openGame('wyr')"><div class="game-card-ico">🤔</div><div class="game-card-name">Would You Rather</div><div class="game-card-desc">Impossible choices</div></div>
-<div class="game-card" onclick="openGame('oracle')"><div class="game-card-ico">✨</div><div class="game-card-name">Oracle</div><div class="game-card-desc">8 categories of wisdom</div></div>
 <div class="game-card" onclick="openGame('bingo')"><div class="game-card-ico">🎯</div><div class="game-card-name">Bingo</div><div class="game-card-desc">Weekly girly challenge card</div></div>
 <div class="game-card" onclick="openGame('redflag')"><div class="game-card-ico">🚩</div><div class="game-card-name">Red or Green Flag</div><div class="game-card-desc">Swipe on dating scenarios</div></div>
 <div class="game-card" onclick="openGame('quotes')"><div class="game-card-ico">🎬</div><div class="game-card-name">Who Said It</div><div class="game-card-desc">Guess the movie quote</div></div>
@@ -543,9 +568,8 @@ section{padding:56px 20px}
 <div class="game-card" onclick="openGame('glowjump')"><div class="game-card-ico">⬆️</div><div class="game-card-name">Glow Jump</div><div class="game-card-desc">Bounce to the top</div></div>
 <div class="game-card" onclick="openGame('2048')"><div class="game-card-ico">💎</div><div class="game-card-name">2048 Glam</div><div class="game-card-desc">Merge tiles to sparkle</div></div>
 <div class="game-card" onclick="openGame('casino')"><div class="game-card-ico">🎰</div><div class="game-card-name">Casino</div><div class="game-card-desc">Spend your XP</div></div>
-<div class="game-card" onclick="openGame('wheel')"><div class="game-card-ico">🎡</div><div class="game-card-name">What Should I Eat</div><div class="game-card-desc">Spin the wheel</div></div>
 <div class="game-card" onclick="openGame('colorrush')"><div class="game-card-ico">🎹</div><div class="game-card-name">Color Rush</div><div class="game-card-desc">Tap the lanes to the beat</div></div>
-<div class="game-card" onclick="openGame('compliment')"><div class="game-card-ico">\u{1F48C}</div><div class="game-card-name">Compliments</div><div class="game-card-desc">You deserve to hear this</div></div>
+<div class="game-card" onclick="openGame('mixer')"><div class="game-card-ico">ð§</div><div class="game-card-name">Sound Mixer</div><div class="game-card-desc">Layer ambient sounds</div></div>
 <div class="game-card" onclick="openGame('thisorthat')"><div class="game-card-ico">⚡</div><div class="game-card-name">This or That</div><div class="game-card-desc">Quick-fire preferences</div></div>
 </div>
 </div>
@@ -567,6 +591,7 @@ section{padding:56px 20px}
 <div class="game-panel" id="gp-casino"><div class="gp-header"><div class="gp-title">🎰 Casino</div><div class="gp-close" onclick="closeGame('casino')">✕</div></div><div class="gp-body" id="casinoBody"></div></div>
 <div class="game-panel" id="gp-wheel"><div class="gp-header"><div class="gp-title">🎡 What Should I Eat</div><div class="gp-close" onclick="closeGame('wheel')">✕</div></div><div class="gp-body" id="wheelBody"></div></div>
 <div class="game-panel" id="gp-compliment"><div class="gp-header"><div class="gp-title">\u{1F48C} Compliment Generator</div><div class="gp-close" onclick="closeGame('compliment')">\u2715</div></div><div class="gp-body" id="complimentBody"></div></div>
+<div class="game-panel" id="gp-mixer"><div class="gp-header"><div class="gp-title">ð§ Sound Mixer</div><div class="gp-close" onclick="closeGame('mixer')">â</div></div><div class="gp-body" id="mixerGameBody"></div></div>
 <div class="game-panel" id="gp-colorrush"><div class="gp-header"><div class="gp-title">\u{1F3B9} Color Rush</div><div class="gp-close" onclick="closeGame('colorrush')">\u2715</div></div><div class="gp-body" id="crBody" style="padding:0;overflow:hidden"></div></div>
 <div class="game-panel" id="gp-thisorthat"><div class="gp-header"><div class="gp-title">⚡ This or That</div><div class="gp-close" onclick="closeGame('thisorthat')">✕</div></div><div class="gp-body" id="totBody"></div></div>
 
@@ -586,6 +611,8 @@ section{padding:56px 20px}
 <div class="desk-panel" id="dp-countdown"><div class="dp-header"><div class="dp-title">⏰ Countdown</div><div class="dp-close" onclick="closePanel('countdown')">✕</div></div><div class="dp-body" id="countBody"></div></div>
 <div class="desk-panel" id="dp-skincare"><div class="dp-header"><div class="dp-title">🧴 Skincare</div><div class="dp-close" onclick="closePanel('skincare')">✕</div></div><div class="dp-body" id="skinBody"></div></div>
 <div class="desk-panel" id="dp-shop"><div class="dp-header"><div class="dp-title">🛒 Shopping</div><div class="dp-close" onclick="closePanel('shop')">✕</div></div><div class="dp-body" id="shopBody"></div></div>
+<div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">ð Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">â</div></div><div class="dp-body" id="lbBody"></div></div>
+<div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">ð Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">â</div></div><div class="dp-body" id="cycleBody"></div></div>
 <div class="desk-panel" id="dp-diary"><div class="dp-header"><div class="dp-title">\u{1F4D4} Diary</div><div class="dp-close" onclick="closePanel('diary')">\u2715</div></div><div class="dp-body" id="diaryBody"></div></div>
 <div class="desk-panel" id="dp-dreams"><div class="dp-header"><div class="dp-title">\u{1F4AD} Dream Journal</div><div class="dp-close" onclick="closePanel('dreams')">\u2715</div></div><div class="dp-body" id="dreamsBody"></div></div>
 <div class="desk-panel" id="dp-gazette"><div class="dp-header"><div class="dp-title">\u{1F4F0} The Gurlwurl Gazette</div><div class="dp-close" onclick="closePanel('gazette')">\u2715</div></div><div class="dp-body" id="gazetteBody"></div></div>
@@ -605,13 +632,13 @@ section{padding:56px 20px}
 <div class="chill-tab" data-p="slots">Affirmations</div>
 <div class="chill-tab" data-p="bubbles">Bubbles</div>
 <div class="chill-tab" data-p="fortune">Fortune</div>
-<div class="chill-tab" data-p="mixer">Mixer</div>
+<div class="chill-tab" data-p="compliment">Compliments</div>
 </div>
 <div class="chill-panel active" id="cp-sand"><canvas id="sandCv"></canvas><p class="chill-hint" id="sandHint">touch to play in the sand</p></div>
 <div class="chill-panel" id="cp-mood"><div class="mood-wrap"><p class="mood-label">hold to read your aura</p><div class="mood-ring" id="moodRing"></div><div class="mood-result" id="moodRes"></div></div></div>
 <div class="chill-panel" id="cp-slots"><div class="slot-wrap"><div class="slot-window"><div class="slot-reel" id="r1"><div class="slot-reel-inner"></div></div><div class="slot-reel" id="r2"><div class="slot-reel-inner"></div></div><div class="slot-reel" id="r3"><div class="slot-reel-inner"></div></div></div><button class="slot-pull" id="slotPull">✿</button><div class="slot-result" id="slotRes">tap for affirmation</div></div></div>
 <div class="chill-panel" id="cp-bubbles"><div class="bubble-wrap" id="bubWrap"></div><p class="chill-hint">tap to pop</p></div>
-<div class="chill-panel" id="cp-mixer"><div style="padding:16px;overflow-y:auto" id="chillMixerBody"></div></div>
+<div class="chill-panel" id="cp-compliment"><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center" id="chillCompWrap"></div></div>
 <div class="chill-panel" id="cp-fortune"><div class="fortune-wrap"><div class="fortune-cookie" id="fc3">🥠</div><div class="fortune-text" id="ft3"></div><button class="fortune-reset" id="fr3">another cookie</button></div></div>
 </div>
 </div>
@@ -866,6 +893,7 @@ function fireConfetti(){var cols=['#F4A0B0','#C8A8E9','#FFDAB9','#B5C9A8','#A8D8
 /* CAROUSEL */
 function initDots(a,b){var c=document.getElementById(a),d=document.getElementById(b);for(var i=0;i<c.children.length;i++){var dot=document.createElement('div');dot.className='cdot';if(!i)dot.classList.add('active');d.appendChild(dot)}c.addEventListener('scroll',function(){var w=c.children[0].offsetWidth+14,idx=Math.round(c.scrollLeft/w);d.querySelectorAll('.cdot').forEach(function(dot,i){dot.classList.toggle('active',i===idx)})},{passive:true})}
 initDots('perksC','pDots');
+initDots('countyC','cDots');
 
 /* TUNE TABS */
 document.getElementById('tuneTabs').addEventListener('click',function(e){var t=e.target.closest('.tune-tab');if(!t)return;document.querySelectorAll('#tuneTabs .tune-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-tune .tune-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('tp-'+t.dataset.p).classList.add('active')});
@@ -891,6 +919,7 @@ function initGame(id){
   if(id==='wheel')initWheel();
   if(id==='colorrush')initColorRush();
   if(id==='compliment')initComplimentGen();
+  if(id==='mixer')initMixerGame();
 }
 
 /* TIC TAC TOENAILS */
@@ -1228,6 +1257,17 @@ function totPick(n){totPicks.push(totQs[totIdx][n]);totIdx++;renderTOT()}
 
 /* ========== XP SYSTEM ========== */
 var XP_LEVELS=[{name:'Tourist',xp:0},{name:'Citizen',xp:50},{name:'Resident',xp:150},{name:'Ambassador',xp:400},{name:'Council Member',xp:800},{name:'Minister',xp:1500},{name:'Supreme',xp:3000}];
+var STATUS_EMOJIS={
+  0:['👩'],
+  50:['👩','🌸','✨'],
+  150:['👩','🌸','✨','💅','🦋','💕'],
+  400:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟'],
+  800:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫'],
+  1500:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫','🌈','🦄','⭐'],
+  3000:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫','🌈','🦄','⭐','👸']
+};
+function getUnlockedEmojis(){var xp=getXP();var unlocked=[];for(var t in STATUS_EMOJIS){if(xp>=parseInt(t))unlocked=STATUS_EMOJIS[t]}return unlocked}
+
 function getXP(){return parseInt(LS.getItem('gw_xp')||'0')}
 function getLevel(){var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
 function getNextLevel(){var xp=getXP();for(var i=0;i<XP_LEVELS.length;i++){if(xp<XP_LEVELS[i].xp)return XP_LEVELS[i]}return null}
@@ -1290,7 +1330,7 @@ function initHub(){
   var xp=getXP();var lvl=getLevel();var next=getNextLevel();
   var h='<div style="text-align:center;margin-bottom:20px">';
   var selfie=LS.getItem('gw_selfie');
-  h+='<div style="width:70px;height:70px;border-radius:50%;margin:0 auto 10px;border:3px solid var(--gold);overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
+  h+='<div style="width:70px;height:70px;border-radius:50%;margin:0 auto 10px;border:3px solid var(--gold);overflow:visible;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
   if(selfie)h+='<img src="'+selfie+'" style="width:100%;height:100%;object-fit:cover">';
   else h+='<span style="font-size:2rem">'+(currentUser.status||'👩')+'</span>';
   h+='</div><h3 style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff">'+currentUser.name+'</h3>';
@@ -1322,6 +1362,7 @@ function initHub(){
   h+='<label style="display:inline-block;padding:6px 14px;border-radius:12px;border:1px dashed rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-size:.62rem;cursor:pointer;margin-top:4px"><input type="file" accept="image/*" capture="user" style="display:none" onchange="updateSelfie(this)">📸 Change Photo</label>';
   document.getElementById('hubBody').innerHTML=h;
   var grid=document.getElementById('hubEmojis');var showing=12;
+  var sGrid=document.getElementById('statusEmojis');if(sGrid&&typeof getUnlockedEmojis==='function'){var unlocked2=getUnlockedEmojis();unlocked2.forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===(currentUser.status||'\u{1F469}'))d.classList.add('selected');d.onclick=function(){sGrid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');currentUser.status=e;LS.setItem('gw_user',JSON.stringify(currentUser));var de=currentUser.status;document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+de+'</span>'+currentUser.name;showXPToast('Status emoji updated!')};sGrid.appendChild(d)})}
   function renderHE(){grid.innerHTML='';GIRLY_EMOJIS.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===currentUser.emoji)d.classList.add('selected');d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e;document.getElementById('hubChangeBtn').style.display='inline-block'};grid.appendChild(d)});if(showing<GIRLY_EMOJIS.length){var m=document.createElement('div');m.className='emoji-opt';m.textContent='...';m.style.color='rgba(255,255,255,.3)';m.onclick=function(){showing+=12;renderHE()};grid.appendChild(m)}}renderHE();
 }
 function signOut(){
@@ -1691,6 +1732,7 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'habits\')"><div class="desk-btn-ico">\u{2705}</div><div class="desk-btn-label">Habits</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'water\')"><div class="desk-btn-ico">\u{1F4A7}</div><div class="desk-btn-label">Water</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'breathe\')"><div class="desk-btn-ico">\u{1FAC1}</div><div class="desk-btn-label">Breathe</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'hype\')"><div class="desk-btn-ico">\u{1F4E2}</div><div class="desk-btn-label">Hype Me Up</div></div>';
   h+='</div></div>';
 
   // JOURNAL TAB (password locked)
@@ -1701,6 +1743,12 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'dreams\')"><div class="desk-btn-ico">\u{1F4AD}</div><div class="desk-btn-label">Dreams</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'gratitude\')"><div class="desk-btn-ico">\u{1F338}</div><div class="desk-btn-label">Gratitude</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'rate\')"><div class="desk-btn-ico">\u{2B50}</div><div class="desk-btn-label">Rate Day</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
   h+='</div></div></div>';
 
   // TOOLS TAB
@@ -1711,8 +1759,10 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'skincare\')"><div class="desk-btn-ico">\u{1F9F4}</div><div class="desk-btn-label">Skincare</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'shop\')"><div class="desk-btn-ico">\u{1F6D2}</div><div class="desk-btn-label">Shopping</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'guestbook\')"><div class="desk-btn-ico">\u{1F4D6}</div><div class="desk-btn-label">Guestbook</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'wheel\')"><div class="desk-btn-ico">\u{1F3A1}</div><div class="desk-btn-label">What to Eat</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'gazette\')"><div class="desk-btn-ico">\u{1F4F0}</div><div class="desk-btn-label">Gazette</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'hub\')"><div class="desk-btn-ico">\u{1FA2A}</div><div class="desk-btn-label">My Hub</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'leaderboard\')"><div class="desk-btn-ico">\u{1F3C6}</div><div class="desk-btn-label">Leaderboard</div></div>';
   h+='<div class="desk-btn coming-soon-badge" style="opacity:.3;pointer-events:none"><div class="desk-btn-ico">\u{1F5FA}</div><div class="desk-btn-label">Map</div></div>';
   h+='</div></div>';
 
@@ -1748,7 +1798,7 @@ function setupJournalLock(){
 
 function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
 function closePanel(id){document.getElementById('dp-'+id).classList.remove('open')}
-function initPanel(id){var fn={hub:initHub,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
+function initPanel(id){var fn={hub:initHub,leaderboard:initLeaderboard,cycle:initCycle,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
 function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);LS.setItem(key,JSON.stringify(e));triggerSync();cb()}
 
 function initGratitude(){var entries=JSON.parse(LS.getItem('gw_grat')||'[]');var h='<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:16px">';entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_grat\','+i+',initGratitude)">✕</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});h+='</div>';document.getElementById('gratBody').innerHTML=h}
@@ -1875,20 +1925,21 @@ function saveDream(){var t=document.getElementById('dreamText').value.trim();if(
 
 /* GAZETTE */
 function initGazette(){
-  var week=Math.floor(Date.now()/(7*864e5));
-  var headlines=[
-    ["Pool Robot Union Strikes for Better Tips","Sephora Row Reports Record Foot Traffic","President Barbie Signs Historic Guac Treaty","Matcha Meadows Harvest Exceeds Expectations","Coke Zero Rain Forecasted All Weekend"],
-    ["New TJ Maxx Opens in Cake Pop Boulevard","Court of Appeals Rules on Brunch Dispute","EBT Payments Increase for Q2","Immortal Flower Festival Draws Record Crowd","Pool Quarter Real Estate Prices Skyrocket"],
-    ["Breaking: New County Proposed in Eastern Gurlwurl","Farmers Market Mile Introduces Overnight Hours","President Barbie Vetoes Bad Vibes Bill","Self-Washing Hair Technology Receives Upgrade","Citizens Report Unusually Good Hair Week"],
-    ["Gurlwurl Stock Exchange Hits All-Time High","Mandatory Guac Supply Chain Strengthened","Lychee Shower Season Officially Begins","Robot Bartenders Now Accept EBT","Cake Pop Quality Control Standards Raised"]
-  ];
-  var weekHeadlines=headlines[week%headlines.length];
-  var h='<div style="text-align:center;padding:10px 0 16px"><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em">The Gurlwurl Gazette</p><p style="font-size:.55rem;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;margin-top:2px">Week of '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric'})+'</p><div style="width:60px;height:1px;background:var(--carn);margin:10px auto"></div></div>';
-  weekHeadlines.forEach(function(hl,i){
-    h+='<div style="padding:14px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+'"><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'1rem':'.85rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+hl+'</p><p style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:4px">'+(i===0?'BREAKING':'STORY')+' \u{2022} Gurlwurl Press</p></div>';
-  });
-  h+='<p style="text-align:center;font-size:.6rem;color:rgba(255,255,255,.15);margin-top:16px;font-style:italic">New edition every Monday</p>';
+  var h='<div style="text-align:center;padding:10px 0 16px"><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em">The Gurlwurl Gazette</p><p style="font-size:.55rem;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;margin-top:2px">Women Making Headlines</p><div style="width:60px;height:1px;background:var(--carn);margin:10px auto"></div></div><div id="gazetteNews"><p style="font-size:.7rem;color:rgba(255,255,255,.3);text-align:center">Loading...</p></div>';
   document.getElementById('gazetteBody').innerHTML=h;
+  fetch('/api/news').then(function(r){return r.json()}).then(function(data){
+    if(!data.ok||!data.articles||!data.articles.length){gazetteLocal();return}
+    var nh='';data.articles.slice(0,8).forEach(function(a,i){
+      nh+='<a href="'+a.url+'" target="_blank" rel="noopener" style="display:block;padding:14px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+';text-decoration:none"><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'1rem':'.85rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+a.title+'</p><p style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:4px">'+a.source+' \u{2022} '+a.date+'</p></a>'});
+    document.getElementById('gazetteNews').innerHTML=nh;
+  }).catch(gazetteLocal);
+}
+function gazetteLocal(){
+  var week=Math.floor(Date.now()/(7*864e5));
+  var headlines=[["Pool Robot Union Strikes for Better Tips","Sephora Row Reports Record Foot Traffic","President Barbie Signs Historic Guac Treaty","Matcha Meadows Harvest Exceeds Expectations","Coke Zero Rain Forecasted All Weekend"],["New TJ Maxx Opens in Cake Pop Boulevard","Court of Appeals Rules on Brunch Dispute","EBT Payments Increase for Q2","Immortal Flower Festival Draws Record Crowd","Pool Quarter Real Estate Prices Skyrocket"],["Breaking: New County Proposed in Eastern Gurlwurl","Farmers Market Mile Introduces Overnight Hours","President Barbie Vetoes Bad Vibes Bill","Self-Washing Hair Technology Receives Upgrade","Citizens Report Unusually Good Hair Week"],["Gurlwurl Stock Exchange Hits All-Time High","Mandatory Guac Supply Chain Strengthened","Lychee Shower Season Officially Begins","Robot Bartenders Now Accept EBT","Cake Pop Quality Control Standards Raised"]];
+  var wh=headlines[week%headlines.length];var nh='<p style="font-size:.5rem;color:rgba(255,255,255,.15);text-align:center;margin-bottom:8px">Gurlwurl Internal News</p>';
+  wh.forEach(function(hl,i){nh+='<div style="padding:14px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+'"><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'1rem':'.85rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+hl+'</p></div>'});
+  document.getElementById('gazetteNews').innerHTML=nh;
 }
 
 /* COMPLIMENT GENERATOR (game) */
@@ -1898,9 +1949,54 @@ function initComplimentGen(){
   document.getElementById('complimentBody').innerHTML='<div class="compliment-card"><div class="compliment-text" id="compText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" onclick="document.getElementById(\'compText\').textContent=comps[Math.floor(Math.random()*comps.length)];addXP(1,\'Compliment\')">another one \u{1F495}</button></div>';
 }
 
+function initMixerGame(){
+  document.getElementById('mixerGameBody').style.padding='16px';
+  var channels=[{id:'ocean',name:'Ocean',ico:'\u{1F30A}'},{id:'rain',name:'Rain',ico:'\u{1F327}'},{id:'fire',name:'Fire',ico:'\u{1F525}'},{id:'birds',name:'Birds',ico:'\u{1F426}'},{id:'wind',name:'Wind',ico:'\u{1F4A8}'},{id:'cafe',name:'Cafe',ico:'\u2615'}];
+  var h='<p style="text-align:center;font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:20px">Layer sounds to create your perfect vibe</p>';
+  channels.forEach(function(c){h+='<div class="mixer-channel"><span class="mixer-ico">'+c.ico+'</span><span class="mixer-name">'+c.name+'</span><input type="range" min="0" max="100" value="0" class="mixer-slider" oninput="setMixerVol(\''+c.id+'\',this.value)"></div>'});
+  h+='<button class="dp-btn-outline" style="margin:16px auto;display:block" onclick="stopMixer()">Stop All</button>';
+  document.getElementById('mixerGameBody').innerHTML=h;
+  if(!mixerCtx){mixerCtx=new(window.AudioContext||window.webkitAudioContext)()}if(mixerCtx.state==='suspended')mixerCtx.resume();
+}
+
+function initCycle(){
+  var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');
+  var periods=data.periods||[];var cycleLen=data.cycleLen||28;var periodLen=data.periodLen||5;
+  var lastStart=periods.length?new Date(periods[periods.length-1]):null;
+  var td=new Date();td.setHours(0,0,0,0);
+  var daysSince=lastStart?Math.floor((td-lastStart)/864e5):null;
+  var nextP=lastStart?new Date(lastStart.getTime()+cycleLen*864e5):null;
+  var daysUntil=nextP?Math.ceil((nextP-td)/864e5):null;
+  var phase='unknown',phaseE='\u{1F319}',phaseD='Log your first period to start tracking';
+  if(daysSince!==null){
+    if(daysSince<periodLen){phase='menstrual';phaseE='\u{1F339}';phaseD='Period phase. Be gentle with yourself.'}
+    else if(daysSince<cycleLen*.45){phase='follicular';phaseE='\u{1F331}';phaseD='Follicular phase. Energy is rising.'}
+    else if(daysSince<cycleLen*.55){phase='ovulation';phaseE='\u{1F31F}';phaseD='Ovulation. Peak energy and confidence.'}
+    else{phase='luteal';phaseE='\u{1F319}';phaseD='Luteal phase. Time to nest and rest.'}
+  }
+  var h='<div style="text-align:center;margin-bottom:20px"><div style="font-size:3rem;margin-bottom:8px">'+phaseE+'</div>';
+  h+='<p style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-bottom:4px">'+phase.charAt(0).toUpperCase()+phase.slice(1)+' Phase</p>';
+  h+='<p style="font-size:.75rem;color:rgba(255,255,255,.4)">'+phaseD+'</p>';
+  if(daysUntil!==null&&daysUntil>0){h+='<div style="margin-top:12px;padding:12px;background:rgba(216,71,115,.08);border:1px solid rgba(216,71,115,.12);border-radius:12px"><p style="font-size:.7rem;color:rgba(255,255,255,.35)">Next period in</p><p style="font-family:Playfair Display,serif;font-size:1.8rem;font-weight:700;color:var(--carn)">'+daysUntil+' days</p></div>'}
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:16px"><button class="dp-btn" onclick="logPeriodStart()">\u{1F339} Log Period Start</button><button class="dp-btn-outline" onclick="logSymptom()">\u{1F4DD} Log Symptom</button></div>';
+  h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">Settings</p>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="font-size:.75rem;color:rgba(255,255,255,.4);width:100px">Cycle length</span><input type="number" class="dp-input" value="'+cycleLen+'" style="width:60px;margin:0;text-align:center" onchange="updateCycleSetting(\'cycleLen\',this.value)"><span style="font-size:.65rem;color:rgba(255,255,255,.25)">days</span></div>';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px"><span style="font-size:.75rem;color:rgba(255,255,255,.4);width:100px">Period length</span><input type="number" class="dp-input" value="'+periodLen+'" style="width:60px;margin:0;text-align:center" onchange="updateCycleSetting(\'periodLen\',this.value)"><span style="font-size:.65rem;color:rgba(255,255,255,.25)">days</span></div>';
+  var symptoms=JSON.parse(LS.getItem('gw_symptoms')||'[]');
+  if(symptoms.length){h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">Recent Logs</p>';symptoms.slice(-8).reverse().forEach(function(s,ri){var i=symptoms.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+s.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_symptoms\','+i+',initCycle)">\u2715</span></div><div class="dp-entry-text">'+s.text+'</div></div>'})}
+  if(periods.length){h+='<p style="font-size:.48rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.2);margin:14px 0 8px">Period History</p>';periods.slice().reverse().forEach(function(p,ri){var i=periods.length-1-ri;h+='<div style="display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:4px"><span style="font-size:.75rem;color:rgba(255,255,255,.5)">'+new Date(p).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span><span style="cursor:pointer;opacity:.3;font-size:.6rem" onclick="delPeriod('+i+')">\u2715</span></div>'})}
+  document.getElementById('cycleBody').innerHTML=h;
+}
+function logPeriodStart(){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');var td=new Date();td.setHours(0,0,0,0);data.periods.push(td.toISOString());if(data.periods.length>=2){var l=new Date(data.periods[data.periods.length-1]);var p=new Date(data.periods[data.periods.length-2]);var d=Math.round((l-p)/864e5);if(d>20&&d<45)data.cycleLen=d}LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();addXP(3,'Logged period');initCycle()}
+function logSymptom(){var syms=['\u{1F616} Cramps','\u{1F622} Mood swings','\u{1F620} Irritable','\u{1F634} Fatigue','\u{1F914} Headache','\u{1F60B} Cravings','\u{1F4A7} Bloating','\u{1FA78} Heavy flow','\u{2728} Light flow','\u{1F60A} Good mood'];var h='<div style="text-align:center;padding:16px"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:12px">How are you feeling?</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';syms.forEach(function(s){h+='<button style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer" onclick="saveSymptom(\''+s+'\')">'+s+'</button>'});h+='</div></div>';document.getElementById('cycleBody').innerHTML=h}
+function saveSymptom(sym){var s=JSON.parse(LS.getItem('gw_symptoms')||'[]');s.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:sym});LS.setItem('gw_symptoms',JSON.stringify(s));triggerSync();initCycle()}
+function updateCycleSetting(key,val){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data[key]=parseInt(val);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync()}
+function delPeriod(i){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data.periods.splice(i,1);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();initCycle()}
+
 /* ========== CHILL ========== */
 document.getElementById('chillTabs').addEventListener('click',function(e){var t=e.target.closest('.chill-tab');if(!t)return;document.querySelectorAll('#tab-chill .chill-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-chill .chill-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('cp-'+t.dataset.p).classList.add('active');setTimeout(initChillPanel,60)});
-function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-mixer')initChillMixer()}
+function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-compliment'){document.getElementById('chillCompWrap').innerHTML='<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:600;color:var(--carn-light);line-height:1.3;min-height:60px" id="chillCompText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" style="margin-top:20px" onclick="document.getElementById(\'chillCompText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one \u{1F495}</button>'}}
 
 /* SAND */
 var sCv=document.getElementById('sandCv'),sCtx=sCv.getContext('2d'),sGrains=[],sRAF=null;
@@ -1947,6 +2043,23 @@ function initChillMixer(){
   h+='<button class="dp-btn-outline" style="margin:12px auto;display:block" onclick="stopMixer()">Stop All</button>';
   el.innerHTML=h;
   if(!mixerCtx){mixerCtx=new(window.AudioContext||window.webkitAudioContext)()}if(mixerCtx.state==='suspended')mixerCtx.resume();
+}
+
+/* LEADERBOARD */
+function initLeaderboard(){
+  var h='<div style="text-align:center;margin-bottom:20px"><p style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff;margin-bottom:4px">Citizen Rankings</p><p style="font-size:.7rem;color:rgba(255,255,255,.35)">Earn XP to climb the ranks</p></div>';
+  h+='<div style="background:rgba(216,71,115,.06);border:1px solid rgba(216,71,115,.1);border-radius:14px;padding:16px;margin-bottom:20px">';
+  h+='<p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin-bottom:10px">How to Earn XP</p>';
+  var rules=[['Gratitude note','+5'],['Habit completed','+3'],['Water glass','+2'],['Rate your day','+3'],['Bucket list done','+10'],['Diary entry','+5'],['Dream logged','+5'],['Log period','+3'],['Guestbook post','+5'],['Flappy per pipe','+2'],['Glow Jump platform','+1'],['2048 per move','+1'],['Color Rush per 3pts','+1'],['Wheel spin','+3'],['Achievement earned','+25'],['5 min on site','+5'],['Casino spin','-10'],['Casino match','+25'],['Casino jackpot','+100']];
+  rules.forEach(function(r){h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="font-size:.7rem;color:rgba(255,255,255,.5)">'+r[0]+'</span><span style="font-family:Space Mono,monospace;font-size:.65rem;color:'+(r[1].charAt(0)==='-'?'#ff6b6b':'var(--sage)')+'">'+r[1]+' XP</span></div>'});
+  h+='</div>';
+  h+='<div style="background:rgba(200,168,233,.06);border:1px solid rgba(200,168,233,.1);border-radius:14px;padding:16px;margin-bottom:20px">';
+  h+='<p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--lavender);margin-bottom:10px">Rank Tiers & Emoji Unlocks</p>';
+  XP_LEVELS.forEach(function(lvl,i){var emojis=STATUS_EMOJIS[lvl.xp]||[];var prev=i>0?(STATUS_EMOJIS[XP_LEVELS[i-1].xp]||[]):[];var newOnes=emojis.filter(function(e){return !prev.includes(e)});h+='<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="font-family:Space Mono,monospace;font-size:.6rem;color:var(--gold);width:50px">'+lvl.xp+'</span><span style="font-size:.75rem;color:rgba(255,255,255,.6);flex:1">'+lvl.name+'</span><span style="font-size:.85rem">'+newOnes.join('')+'</span></div>'});
+  h+='</div>';
+  var xp=getXP();var lvl=getLevel();
+  h+='<div style="background:rgba(255,255,255,.03);border-radius:14px;padding:16px;text-align:center"><p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">Your Position</p><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:700;color:var(--gold)">'+xp+' XP</p><p style="font-size:.8rem;color:var(--carn-light)">'+lvl.name+'</p></div>';
+  document.getElementById('lbBody').innerHTML=h;
 }
 
 /* STOCK TICKER */
