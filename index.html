@@ -697,6 +697,14 @@ section{padding:56px 20px}
 </div>
 
 <script>
+
+window.onerror=function(msg,url,line,col,err){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:red;color:white;padding:12px;font-size:12px;font-family:monospace;word-break:break-all';
+  d.textContent='JS ERROR line '+line+': '+msg;
+  document.body.appendChild(d);
+  return false;
+};
 var anthem=document.getElementById('anthem'),ocean=document.getElementById('ocean');
 var playing=false,LS=localStorage,today=new Date().toDateString();
 var currentUser=JSON.parse(LS.getItem('gw_user')||'null');
