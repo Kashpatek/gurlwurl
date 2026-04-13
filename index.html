@@ -173,7 +173,8 @@ section{padding:56px 20px}
 .games-wrap{background:var(--carn-dark);min-height:100vh;padding:20px 20px 80px}
 .games-wrap h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#fff;text-align:center;margin-bottom:4px}
 .games-wrap>p{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:rgba(255,255,255,.35);text-align:center;margin-bottom:20px}
-.game-xp-header{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:48px;z-index:10;background:rgba(13,10,15,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.game-xp-header{padding:14px 16px;border-bottom:none;position:sticky;top:48px;z-index:10;background:rgba(13,10,15,.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.game-xp-header::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:40px;background:linear-gradient(to bottom,rgba(13,10,15,.98),rgba(13,10,15,.6),transparent);pointer-events:none;z-index:9}
 .game-xp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .game-xp-left span{font-size:.5rem;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;display:block}
 .game-xp-nums{display:flex;align-items:baseline;gap:6px;margin-top:2px}
@@ -183,7 +184,7 @@ section{padding:56px 20px}
 .game-progress{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
 .game-progress-fill{height:100%;background:linear-gradient(90deg,var(--carn),var(--lavender));border-radius:3px}
 .game-progress-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.45rem;color:rgba(255,255,255,.15)}
-.game-grid{display:flex;flex-direction:column;gap:8px;padding:12px}
+.game-grid{display:flex;flex-direction:column;gap:8px;padding:8px 12px 100px}
 .game-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
 .game-card:active{transform:scale(.97)}
 .game-card::before{content:'';position:absolute;inset:-1px;border-radius:16px;opacity:0;transition:opacity .4s;pointer-events:none}
@@ -2358,130 +2359,193 @@ function initThemePicker(){
 }
 
 /* RECIPE BOX */
+/* RECIPE BOX - FULL */
 var RECIPES=[
-{n:'Dal Tadka',t:'indian',m:20,i:'Red lentils, onion, tomato, garlic, cumin, turmeric, ghee, cilantro'},
-{n:'Chana Masala',t:'indian',m:25,i:'Chickpeas, onion, tomato, ginger, garam masala, cumin, cilantro'},
-{n:'Aloo Gobi',t:'indian',m:25,i:'Potato, cauliflower, onion, tomato, turmeric, cumin, ginger'},
-{n:'Palak Paneer',t:'indian',m:20,i:'Spinach, paneer, onion, garlic, cream, garam masala'},
-{n:'Vegetable Biryani',t:'indian',m:35,i:'Basmati rice, mixed veggies, onion, yogurt, saffron, whole spices'},
-{n:'Paneer Tikka',t:'indian',m:25,i:'Paneer, bell peppers, yogurt, tikka masala, lemon'},
-{n:'Rajma',t:'indian',m:30,i:'Kidney beans, onion, tomato, ginger, garlic, garam masala'},
-{n:'Chole Bhature',t:'indian',m:40,i:'Chickpeas, flour, yogurt, onion, spices, oil'},
-{n:'Mushroom Matar',t:'indian',m:20,i:'Mushrooms, peas, onion, tomato, ginger, garam masala'},
-{n:'Paneer Butter Masala',t:'indian',m:25,i:'Paneer, tomato, cream, butter, cashews, fenugreek'},
-{n:'Baingan Bharta',t:'indian',m:30,i:'Eggplant, onion, tomato, garlic, green chili, cilantro'},
-{n:'Samosa (baked)',t:'indian',m:35,i:'Potato, peas, pastry sheets, cumin, coriander, chili'},
-{n:'Masoor Dal',t:'indian',m:20,i:'Red lentils, tomato, onion, turmeric, cumin, lemon'},
-{n:'Malai Kofta',t:'indian',m:40,i:'Paneer, potato, cashew cream, tomato, spices'},
-{n:'Pav Bhaji',t:'indian',m:30,i:'Mixed veggies, potato, tomato, pav bhaji masala, butter, buns'},
-{n:'Kadhi Pakora',t:'indian',m:30,i:'Yogurt, chickpea flour, onion, turmeric, cumin'},
-{n:'Vegetable Pulao',t:'indian',m:20,i:'Basmati rice, mixed veggies, whole spices, ghee'},
-{n:'Methi Thepla',t:'indian',m:20,i:'Wheat flour, fenugreek, yogurt, turmeric, chili'},
-{n:'Black Bean Tacos',t:'mexican',m:15,i:'Black beans, tortillas, avocado, salsa, lime, cilantro, onion'},
-{n:'Veggie Burrito Bowl',t:'mexican',m:20,i:'Rice, black beans, corn, avocado, salsa, lime, lettuce'},
-{n:'Cheese Quesadilla',t:'mexican',m:10,i:'Tortillas, cheese, peppers, onion, sour cream, salsa'},
-{n:'Elote (Mexican Corn)',t:'mexican',m:15,i:'Corn, mayo, cotija cheese, chili powder, lime'},
-{n:'Bean & Cheese Enchiladas',t:'mexican',m:25,i:'Tortillas, black beans, cheese, enchilada sauce, onion'},
-{n:'Guacamole & Chips',t:'mexican',m:10,i:'Avocados, lime, cilantro, onion, tomato, jalapeno, chips'},
-{n:'Veggie Fajitas',t:'mexican',m:20,i:'Bell peppers, onion, mushrooms, tortillas, lime, spices'},
-{n:'Mexican Rice',t:'mexican',m:20,i:'Rice, tomato sauce, onion, garlic, cumin, vegetable broth'},
-{n:'Churros',t:'mexican',m:25,i:'Flour, butter, sugar, cinnamon, chocolate sauce'},
-{n:'Pozole Verde (veggie)',t:'mexican',m:30,i:'Hominy, tomatillos, poblano, cilantro, cabbage, radish'},
-{n:'Chilaquiles',t:'mexican',m:15,i:'Tortilla chips, salsa verde, cheese, cream, avocado, onion'},
-{n:'Stuffed Poblano Peppers',t:'mexican',m:30,i:'Poblano peppers, rice, beans, cheese, corn, salsa'},
-{n:'Pad Thai (tofu)',t:'asian',m:20,i:'Rice noodles, tofu, bean sprouts, peanuts, lime, tamarind, chili'},
-{n:'Veggie Fried Rice',t:'asian',m:15,i:'Rice, soy sauce, veggies, garlic, ginger, sesame oil'},
-{n:'Miso Soup',t:'asian',m:10,i:'Miso paste, tofu, seaweed, scallions, dashi'},
-{n:'Vegetable Ramen',t:'asian',m:25,i:'Ramen noodles, mushrooms, corn, soy sauce, miso, scallion, nori'},
-{n:'Spring Rolls (fresh)',t:'asian',m:20,i:'Rice paper, vermicelli, cucumber, carrot, mint, peanut sauce'},
-{n:'Tofu Stir Fry',t:'asian',m:15,i:'Tofu, broccoli, bell pepper, soy sauce, garlic, ginger, rice'},
-{n:'Vegetable Dumplings',t:'asian',m:30,i:'Dumpling wrappers, cabbage, mushrooms, ginger, soy sauce'},
-{n:'Thai Green Curry',t:'asian',m:20,i:'Coconut milk, green curry paste, tofu, bamboo, basil, eggplant'},
-{n:'Korean Bibimbap',t:'asian',m:25,i:'Rice, spinach, carrot, mushroom, zucchini, gochujang, sesame'},
-{n:'Teriyaki Tofu Bowl',t:'asian',m:20,i:'Tofu, teriyaki sauce, rice, broccoli, edamame, sesame'},
-{n:'Mapo Tofu',t:'asian',m:15,i:'Tofu, chili bean paste, sichuan pepper, garlic, scallion'},
-{n:'Thai Peanut Noodles',t:'asian',m:15,i:'Rice noodles, peanut butter, soy sauce, lime, chili, cucumber'},
-{n:'Agedashi Tofu',t:'asian',m:20,i:'Tofu, dashi, soy sauce, mirin, ginger, scallion'},
-{n:'Vegetable Tempura',t:'asian',m:20,i:'Sweet potato, broccoli, mushroom, flour, cornstarch, soy sauce'},
-{n:'Dan Dan Noodles (veggie)',t:'asian',m:20,i:'Noodles, mushroom, chili oil, soy sauce, peanuts, bok choy'},
-{n:'Edamame Salad',t:'asian',m:10,i:'Edamame, cucumber, sesame, rice vinegar, soy sauce'},
-{n:'Bao Buns (mushroom)',t:'asian',m:35,i:'Flour buns, mushrooms, hoisin, cucumber, scallion'},
-{n:'Tom Yum Soup (veggie)',t:'asian',m:20,i:'Mushrooms, lemongrass, galangal, lime, chili, tofu'},
-{n:'Caprese Salad',t:'quick',m:5,i:'Tomato, fresh mozzarella, basil, olive oil, balsamic'},
-{n:'Avocado Toast',t:'quick',m:5,i:'Bread, avocado, lemon, chili flakes, everything seasoning'},
-{n:'Greek Salad',t:'quick',m:10,i:'Cucumber, tomato, feta, olive, red onion, oregano, olive oil'},
-{n:'Margherita Pizza',t:'quick',m:15,i:'Pizza dough, marinara, mozzarella, basil, olive oil'},
-{n:'Grilled Cheese & Tomato Soup',t:'quick',m:15,i:'Bread, cheese, butter, canned tomatoes, basil, cream'},
-{n:'Mac and Cheese',t:'quick',m:20,i:'Pasta, cheddar, milk, butter, flour, mustard'},
-{n:'Bruschetta',t:'quick',m:10,i:'Baguette, tomato, garlic, basil, olive oil, balsamic'},
-{n:'Veggie Wrap',t:'quick',m:10,i:'Tortilla, hummus, cucumber, carrot, lettuce, avocado'},
-{n:'Pesto Pasta',t:'quick',m:15,i:'Pasta, basil pesto, cherry tomatoes, pine nuts, parmesan'},
-{n:'Hummus Plate',t:'quick',m:5,i:'Hummus, pita, cucumber, carrot, olives, feta'},
-{n:'Caprese Panini',t:'quick',m:10,i:'Ciabatta, mozzarella, tomato, basil, pesto'},
-{n:'Loaded Nachos',t:'quick',m:10,i:'Tortilla chips, cheese, jalapenos, beans, sour cream, salsa'},
-{n:'Shakshuka (no egg)',t:'quick',m:20,i:'Tomatoes, bell pepper, onion, cumin, paprika, feta, bread'},
-{n:'Mushroom Risotto',t:'comfort',m:30,i:'Arborio rice, mushrooms, onion, parmesan, white wine, broth'},
-{n:'Minestrone Soup',t:'comfort',m:25,i:'Beans, pasta, tomato, zucchini, carrot, celery, basil'},
-{n:'Vegetable Lasagna',t:'comfort',m:45,i:'Lasagna sheets, ricotta, spinach, marinara, mozzarella'},
-{n:'Cauliflower Mac',t:'comfort',m:25,i:'Pasta, cauliflower, cheese sauce, breadcrumbs'},
-{n:'French Onion Soup',t:'comfort',m:35,i:'Onions, vegetable broth, bread, gruyere, thyme'},
-{n:'Stuffed Bell Peppers',t:'comfort',m:30,i:'Bell peppers, rice, beans, corn, cheese, tomato sauce'},
-{n:'Potato Leek Soup',t:'comfort',m:25,i:'Potatoes, leeks, cream, butter, chives'},
-{n:'Eggplant Parmesan',t:'comfort',m:35,i:'Eggplant, marinara, mozzarella, parmesan, breadcrumbs'},
-{n:'Vegetable Pot Pie',t:'comfort',m:40,i:'Puff pastry, mixed veggies, cream sauce, herbs'},
-{n:'Tomato Basil Soup',t:'comfort',m:20,i:'Tomatoes, basil, onion, garlic, cream, vegetable broth'},
-{n:'Butternut Squash Soup',t:'comfort',m:25,i:'Butternut squash, onion, garlic, cream, nutmeg'},
-{n:'Baked Ziti',t:'comfort',m:30,i:'Ziti pasta, ricotta, marinara, mozzarella, basil'},
-{n:'Lentil Soup',t:'comfort',m:25,i:'Lentils, carrot, celery, onion, cumin, lemon'},
-{n:'Spinach Artichoke Pasta',t:'comfort',m:20,i:'Pasta, spinach, artichoke, cream cheese, garlic, parmesan'},
-{n:'Smoothie Bowl',t:'healthy',m:5,i:'Frozen berries, banana, yogurt, granola, honey, seeds'},
-{n:'Buddha Bowl',t:'healthy',m:20,i:'Quinoa, roasted veggies, avocado, hummus, tahini dressing'},
-{n:'Overnight Oats',t:'healthy',m:5,i:'Oats, almond milk, chia seeds, berries, honey, vanilla'},
-{n:'Falafel Bowl',t:'healthy',m:25,i:'Chickpeas, herbs, tahini, cucumber, tomato, pickled onion'},
-{n:'Quinoa Salad',t:'healthy',m:15,i:'Quinoa, cucumber, tomato, feta, olive oil, lemon, herbs'},
-{n:'Sweet Potato Bowl',t:'healthy',m:25,i:'Sweet potato, black beans, avocado, lime, cilantro, rice'},
-{n:'Zucchini Noodles',t:'healthy',m:15,i:'Zucchini, marinara, cherry tomatoes, garlic, basil, parmesan'},
-{n:'Mediterranean Wrap',t:'healthy',m:10,i:'Wrap, hummus, falafel, cucumber, tomato, feta, olives'},
-{n:'Acai Bowl',t:'healthy',m:5,i:'Acai, banana, berries, granola, coconut, honey'},
-{n:'Chia Pudding',t:'healthy',m:5,i:'Chia seeds, coconut milk, mango, honey, vanilla'},
-{n:'Chickpea Salad',t:'healthy',m:10,i:'Chickpeas, cucumber, tomato, red onion, lemon, herbs'},
-{n:'Green Goddess Bowl',t:'healthy',m:15,i:'Rice, edamame, avocado, cucumber, seaweed, green goddess dressing'},
-{n:'Paneer Tikka Wrap',t:'fusion',m:15,i:'Tortilla, paneer tikka, onion, chutney, lettuce, yogurt sauce'},
-{n:'Korean Cheese Corn',t:'fusion',m:10,i:'Corn, mayo, mozzarella, sugar, scallion'},
-{n:'Indo-Chinese Manchurian',t:'fusion',m:25,i:'Cauliflower, soy sauce, chili sauce, garlic, ginger, cornstarch'},
-{n:'Thai Basil Paneer',t:'fusion',m:20,i:'Paneer, thai basil, chili, garlic, soy sauce, bell pepper'},
-{n:'Mexican Khichdi',t:'fusion',m:20,i:'Rice, lentils, salsa, cumin, beans, avocado'},
-{n:'Sushi Bowl',t:'fusion',m:15,i:'Sushi rice, avocado, cucumber, carrot, nori, soy, sriracha'},
-{n:'Masala Grilled Cheese',t:'fusion',m:10,i:'Bread, cheese, green chutney, onion, tomato, chaat masala'},
-{n:'Japanese Curry',t:'fusion',m:30,i:'Curry roux, potato, carrot, onion, rice'},
-{n:'Tikka Pizza',t:'fusion',m:20,i:'Pizza base, tikka sauce, paneer, onion, peppers, cilantro'},
-{n:'Kimchi Fried Rice',t:'fusion',m:15,i:'Rice, kimchi, tofu, sesame oil, gochujang, scallion'},
-{n:'Thai Peanut Tacos',t:'fusion',m:15,i:'Tortillas, tofu, peanut sauce, cabbage, cilantro, lime'},
-{n:'Mango Lassi',t:'drinks',m:5,i:'Mango, yogurt, milk, sugar, cardamom'},
-{n:'Masala Chai',t:'drinks',m:10,i:'Tea, milk, ginger, cardamom, cinnamon, sugar'},
-{n:'Matcha Latte',t:'drinks',m:5,i:'Matcha powder, oat milk, honey, hot water'},
-{n:'Rose Falooda',t:'drinks',m:10,i:'Rose syrup, vermicelli, basil seeds, milk, ice cream'},
-{n:'Gulab Jamun',t:'dessert',m:25,i:'Milk powder, flour, sugar, cardamom, rose water, ghee'},
-{n:'Mango Sticky Rice',t:'dessert',m:30,i:'Sticky rice, mango, coconut milk, sugar'},
-{n:'Chocolate Lava Cake',t:'dessert',m:20,i:'Chocolate, butter, sugar, flour, vanilla'},
-{n:'Kheer',t:'dessert',m:25,i:'Rice, milk, sugar, cardamom, nuts, saffron'}
+{n:'Dal Tadka',t:'indian',m:25,s:4,ing:['1 cup red lentils','1 onion, diced','2 tomatoes, chopped','3 cloves garlic, minced','1 tsp cumin seeds','1 tsp turmeric','1 tsp garam masala','2 tbsp ghee','1 green chili, slit','Fresh cilantro','Salt to taste','3 cups water'],steps:['Wash lentils until water runs clear. Boil with turmeric and 3 cups water until soft (15 min).','Mash lightly with a spoon. Add salt.','In a pan, heat ghee. Add cumin seeds until they splutter.','Add garlic, green chili, and onion. Cook until golden (5 min).','Add tomatoes and garam masala. Cook until soft.','Pour the tempering over the dal. Garnish with cilantro.']},
+{n:'Chana Masala',t:'indian',m:25,s:4,ing:['2 cans chickpeas, drained','1 onion, diced','2 tomatoes, pureed','1 inch ginger, grated','3 cloves garlic, minced','2 tsp chana masala powder','1 tsp cumin','1 tsp coriander','0.5 tsp turmeric','2 tbsp oil','Cilantro, lemon','Salt to taste'],steps:['Heat oil, add cumin seeds until they pop.','Add onion, cook 5 min until golden.','Add ginger and garlic, cook 1 min.','Add tomato puree and all spices. Cook 5 min until oil separates.','Add chickpeas and 0.5 cup water. Simmer 15 min.','Squeeze lemon, garnish with cilantro. Serve with rice or naan.']},
+{n:'Palak Paneer',t:'indian',m:25,s:4,ing:['250g paneer, cubed','300g spinach, blanched','1 onion, diced','2 tomatoes, chopped','1 inch ginger','3 cloves garlic','1 green chili','1 tsp cumin seeds','1 tsp garam masala','2 tbsp cream','2 tbsp oil','Salt to taste'],steps:['Blanch spinach in boiling water 2 min. Transfer to ice water. Blend into smooth puree.','Heat oil, add cumin seeds. Add onion, cook until golden.','Add ginger, garlic, green chili. Cook 1 min.','Add tomatoes, cook 5 min until soft. Add garam masala.','Add spinach puree. Simmer 5 min.','Add paneer cubes and cream. Cook 3 min. Serve with naan.']},
+{n:'Aloo Gobi',t:'indian',m:30,s:4,ing:['2 potatoes, cubed','1 cauliflower, florets','1 onion, diced','2 tomatoes, chopped','1 tsp cumin seeds','1 tsp turmeric','1 tsp coriander powder','0.5 tsp red chili powder','2 tbsp oil','Cilantro','Salt to taste'],steps:['Heat oil, add cumin seeds until they splutter.','Add onion, cook until translucent (4 min).','Add potatoes, turmeric, salt. Cover and cook 8 min on low.','Add cauliflower, coriander, chili powder. Mix gently.','Add tomatoes. Cover and cook 12 min until veggies are tender.','Garnish with cilantro. Serve with roti.']},
+{n:'Paneer Butter Masala',t:'indian',m:30,s:4,ing:['250g paneer, cubed','3 tomatoes, pureed','10 cashews, soaked','1 onion, sliced','2 tbsp butter','1 tbsp cream','1 tsp garam masala','1 tsp red chili powder','1 tsp kasuri methi','1 inch ginger','3 cloves garlic','Salt, sugar to taste'],steps:['Blend cashews with 2 tbsp water into paste.','Heat butter, add onion, ginger, garlic. Cook until soft.','Add tomato puree. Cook 10 min until thick.','Add cashew paste, garam masala, chili powder, pinch of sugar.','Simmer 5 min. Add paneer cubes.','Finish with cream and kasuri methi. Serve with naan or rice.']},
+{n:'Vegetable Biryani',t:'indian',m:40,s:4,ing:['2 cups basmati rice, soaked 30 min','1 cup mixed veggies (carrot, peas, beans)','1 onion, sliced thin','2 tbsp yogurt','1 tsp biryani masala','4 cardamom pods','4 cloves','1 bay leaf','1 cinnamon stick','Pinch saffron in 2 tbsp warm milk','2 tbsp ghee','Fried onions, mint, cilantro','Salt to taste'],steps:['Parboil rice with whole spices until 70% done. Drain.','Heat ghee, fry onion until deep golden.','Add veggies, yogurt, biryani masala. Cook 5 min.','In a heavy pot, layer: half the veggie mix, half the rice, saffron milk, mint.','Repeat layers. Top with fried onions and cilantro.','Cover tightly. Cook on lowest heat 20 min (dum).','Let rest 5 min. Gently fluff and serve.']},
+{n:'Black Bean Tacos',t:'mexican',m:15,s:4,ing:['1 can black beans, drained','8 small tortillas','2 avocados','1 cup salsa','1 lime','0.5 cup cilantro, chopped','0.5 red onion, diced','1 tsp cumin','1 tsp chili powder','Salt, pepper','Sour cream (optional)'],steps:['Heat beans in a pan with cumin, chili powder, and a splash of water. Mash slightly.','Warm tortillas in a dry pan or microwave.','Mash avocados with lime juice and salt for quick guac.','Assemble: beans, guac, salsa, onion, cilantro on each tortilla.','Top with sour cream if desired. Squeeze extra lime.']},
+{n:'Veggie Burrito Bowl',t:'mexican',m:25,s:4,ing:['2 cups cooked rice','1 can black beans','1 cup corn kernels','2 avocados','1 cup salsa','1 lime','1 cup lettuce, shredded','0.5 cup sour cream','1 tsp cumin','Hot sauce','Cilantro','Salt to taste'],steps:['Cook rice with a squeeze of lime and cilantro stirred in.','Heat black beans with cumin and salt.','Char corn in a hot pan with a little oil (3 min).','Slice avocados.','Build bowls: rice base, beans, corn, lettuce, avocado, salsa.','Top with sour cream and hot sauce.']},
+{n:'Cheese Enchiladas',t:'mexican',m:30,s:4,ing:['8 flour tortillas','2 cups shredded cheese','1 can enchilada sauce','1 can black beans','1 onion, diced','1 cup sour cream','Cilantro','1 tsp cumin'],steps:['Preheat oven to 375F (190C).','Mix beans, half the cheese, onion, cumin.','Fill each tortilla with the mixture. Roll up and place seam-down in baking dish.','Pour enchilada sauce over the rolls. Top with remaining cheese.','Bake 20 min until bubbly and golden.','Top with sour cream and cilantro.']},
+{n:'Pad Thai (Tofu)',t:'asian',m:25,s:4,ing:['200g rice noodles','200g firm tofu, cubed','2 cups bean sprouts','3 tbsp tamarind paste','2 tbsp soy sauce','1 tbsp sugar','2 tbsp peanuts, crushed','2 cloves garlic','1 lime','2 scallions, sliced','1 tbsp chili flakes','2 tbsp oil'],steps:['Soak rice noodles in hot water 8 min. Drain.','Mix tamarind paste, soy sauce, and sugar for sauce.','Heat oil, fry tofu until golden on all sides (5 min). Remove.','Add garlic, cook 30 sec. Add noodles and sauce.','Toss until noodles absorb sauce (2 min).','Add tofu, bean sprouts, scallions. Toss.','Serve with crushed peanuts, lime wedge, chili flakes.']},
+{n:'Thai Green Curry',t:'asian',m:25,s:4,ing:['1 can coconut milk','3 tbsp green curry paste','200g tofu, cubed','1 eggplant, cubed','1 cup bamboo shoots','1 cup Thai basil','2 tbsp soy sauce','1 tbsp sugar','1 kaffir lime leaf','1 tbsp oil','Jasmine rice for serving'],steps:['Heat oil, fry curry paste 1 min until fragrant.','Add thick part of coconut milk. Stir and cook 3 min.','Add tofu, eggplant, bamboo shoots.','Pour in remaining coconut milk. Add soy sauce, sugar, lime leaf.','Simmer 12 min until eggplant is tender.','Stir in Thai basil. Serve over jasmine rice.']},
+{n:'Vegetable Ramen',t:'asian',m:25,s:2,ing:['2 packs ramen noodles (discard seasoning)','4 cups vegetable broth','2 tbsp miso paste','1 tbsp soy sauce','1 tsp sesame oil','100g mushrooms, sliced','1 cup corn','2 scallions, sliced','1 sheet nori, torn','1 inch ginger, sliced','1 clove garlic','Chili oil'],steps:['Simmer broth with ginger and garlic 10 min.','Remove ginger and garlic. Whisk in miso paste and soy sauce.','Cook noodles according to package. Drain.','Saute mushrooms in sesame oil until golden.','Divide noodles into bowls. Ladle broth over.','Top with mushrooms, corn, scallions, nori, and chili oil.']},
+{n:'Korean Bibimbap',t:'asian',m:30,s:2,ing:['2 cups cooked rice','1 cup spinach','1 carrot, julienned','1 zucchini, sliced','100g mushrooms','1 cup bean sprouts','2 tbsp gochujang','1 tbsp sesame oil','1 tbsp soy sauce','Sesame seeds','1 clove garlic','Kimchi (optional)'],steps:['Saute each vegetable separately with a drop of sesame oil and pinch of salt (2 min each).','Blanch spinach, squeeze dry, season with soy sauce and garlic.','Place hot rice in bowls.','Arrange all vegetables on top of rice in sections.','Add a big spoonful of gochujang in the center.','Drizzle sesame oil, sprinkle seeds. Mix everything together before eating.']},
+{n:'Tofu Stir Fry',t:'asian',m:20,s:4,ing:['300g firm tofu, cubed','2 cups broccoli florets','1 bell pepper, sliced','2 tbsp soy sauce','1 tbsp oyster sauce (vegetarian)','1 tsp cornstarch','1 tbsp sesame oil','2 cloves garlic','1 inch ginger','Cooked rice','Sesame seeds'],steps:['Press tofu 10 min. Cut into cubes.','Mix soy sauce, oyster sauce, cornstarch, and 2 tbsp water for sauce.','Heat sesame oil. Fry tofu until crispy on all sides (6 min). Remove.','Add garlic, ginger, broccoli, pepper. Stir fry 3 min.','Return tofu. Pour sauce over. Toss until thickened.','Serve over rice with sesame seeds.']},
+{n:'Mushroom Risotto',t:'comfort',m:35,s:4,ing:['1.5 cups arborio rice','300g mixed mushrooms, sliced','4 cups vegetable broth, warm','0.5 cup white wine','1 onion, diced fine','2 cloves garlic','0.5 cup parmesan, grated','2 tbsp butter','1 tbsp olive oil','Fresh thyme','Salt, pepper'],steps:['Heat broth and keep warm on low.','Heat oil and 1 tbsp butter. Saute mushrooms until golden (5 min). Remove.','Add onion, cook until soft. Add garlic, cook 1 min.','Add rice, stir 1 min until translucent edges.','Add wine, stir until absorbed.','Add broth one ladle at a time, stirring frequently. Wait until each is absorbed before adding next (18 min).','Stir in mushrooms, parmesan, remaining butter, thyme.','Rest 2 min. Serve immediately.']},
+{n:'Margherita Pizza',t:'quick',m:20,s:2,ing:['1 pizza dough (store-bought)','0.5 cup marinara sauce','200g fresh mozzarella, sliced','Fresh basil leaves','1 tbsp olive oil','Pinch of salt'],steps:['Preheat oven to highest setting (475-500F / 250C). Place pizza stone or inverted baking sheet inside.','Stretch dough on floured surface to 12 inches.','Spread marinara, leaving 1 inch border.','Arrange mozzarella slices evenly.','Slide onto hot stone. Bake 8-10 min until crust is golden and cheese bubbles.','Top with fresh basil and drizzle of olive oil.']},
+{n:'Mac and Cheese',t:'comfort',m:20,s:4,ing:['350g elbow pasta','2 cups sharp cheddar, shredded','2 cups milk','2 tbsp butter','2 tbsp flour','1 tsp mustard powder','0.5 tsp paprika','Salt, pepper'],steps:['Cook pasta 1 min less than package says. Drain.','Melt butter in the same pot. Add flour, whisk 1 min.','Slowly pour in milk, whisking constantly. Cook until thickened (3 min).','Remove from heat. Stir in cheese until melted and smooth.','Add mustard, paprika, salt, pepper.','Fold in pasta. Serve immediately or transfer to baking dish, top with breadcrumbs, and broil 3 min.']},
+{n:'Veggie Fried Rice',t:'asian',m:15,s:4,ing:['3 cups cooked rice (day-old is best)','1 cup mixed veggies (peas, corn, carrot)','2 cloves garlic, minced','1 inch ginger, grated','3 tbsp soy sauce','1 tbsp sesame oil','2 scallions, sliced','1 tbsp oil','White pepper'],steps:['Heat oil and sesame oil in wok on high heat.','Add garlic and ginger, cook 30 sec.','Add veggies, stir fry 2 min.','Add rice, break up clumps. Stir fry 3 min on high heat.','Push rice to sides, pour soy sauce in center. Let it sizzle then mix through.','Top with scallions and white pepper.']},
+{n:'Avocado Toast',t:'quick',m:5,s:2,ing:['2 slices sourdough bread','1 ripe avocado','1 tbsp lemon juice','Red chili flakes','Everything bagel seasoning','Flaky salt','Olive oil'],steps:['Toast bread until golden and crispy.','Mash avocado with lemon juice and a pinch of salt.','Spread generously on toast.','Top with chili flakes, everything seasoning, flaky salt, and a drizzle of olive oil.']},
+{n:'Buddha Bowl',t:'healthy',m:25,s:2,ing:['1 cup quinoa','1 sweet potato, cubed','1 can chickpeas, drained','1 avocado','2 cups kale or spinach','2 tbsp tahini','1 tbsp lemon juice','1 tbsp maple syrup','1 tbsp olive oil','Salt, pepper, paprika'],steps:['Cook quinoa according to package.','Toss sweet potato and chickpeas with oil, salt, paprika. Roast at 400F (200C) for 20 min.','Make dressing: whisk tahini, lemon juice, maple syrup, and 2 tbsp water.','Build bowls: quinoa base, roasted sweet potato and chickpeas, fresh greens, sliced avocado.','Drizzle tahini dressing generously.']},
+{n:'Mango Sticky Rice',t:'dessert',m:30,s:4,ing:['1 cup sticky/glutinous rice, soaked 4 hours','1 can coconut milk','3 tbsp sugar','Pinch of salt','2 ripe mangoes, sliced','Sesame seeds'],steps:['Steam soaked rice in a steamer basket for 20 min until tender.','Warm half the coconut milk with 2 tbsp sugar and salt until dissolved.','Pour sweetened coconut milk over cooked rice. Stir and let absorb 10 min.','Make topping: warm remaining coconut milk with 1 tbsp sugar.','Mound rice on plates, arrange mango slices alongside.','Drizzle coconut topping over rice. Sprinkle sesame seeds.']},
+{n:'Rajma',t:'indian',m:30,s:4,ing:['2 cans kidney beans','1 onion, diced','2 tomatoes, pureed','1 inch ginger','3 cloves garlic','1 tsp cumin','1 tsp garam masala','1 tsp coriander','2 tbsp oil','Cilantro','Rice for serving'],steps:['Heat oil, add cumin. Saute onion until golden.','Add ginger, garlic. Cook 1 min.','Add tomato puree and spices. Cook 5 min.','Add kidney beans and 1 cup water. Simmer 15 min.','Garnish cilantro. Serve over rice.']},
+{n:'Masoor Dal',t:'indian',m:20,s:4,ing:['1 cup red lentils','1 onion, diced','2 tomatoes, chopped','1 tsp turmeric','1 tsp cumin seeds','2 cloves garlic','2 tbsp ghee','Lemon juice','Salt'],steps:['Boil lentils with turmeric in 3 cups water until soft.','In a pan, heat ghee. Add cumin seeds, garlic, onion.','Add tomatoes, cook until soft.','Combine with lentils. Add salt, lemon juice.']},
+{n:'Pav Bhaji',t:'indian',m:35,s:4,ing:['4 potatoes, boiled and mashed','1 cup cauliflower, chopped','1 cup peas','2 tomatoes, pureed','1 onion, diced','2 tbsp pav bhaji masala','3 tbsp butter','Pav buns','Lime, onion, cilantro'],steps:['Boil cauliflower and peas until soft. Mash.','Heat butter, saute onion. Add tomato puree.','Add pav bhaji masala, mashed potatoes and veggies.','Mash together, add water for consistency. Simmer 10 min.','Toast pav buns with butter. Serve with lime and onion.']},
+{n:'Chole Bhature',t:'indian',m:40,s:4,ing:['2 cans chickpeas','2 onions, diced','3 tomatoes, pureed','2 tsp chole masala','1 tsp amchur','2 cups flour','0.5 cup yogurt','Oil for frying','Ginger, garlic, cilantro'],steps:['Dough: Mix flour, yogurt, 1 tbsp oil, salt, water. Knead. Rest 30 min.','Heat oil, saute onion, ginger, garlic until golden.','Add tomato puree, chole masala, amchur. Cook 5 min.','Add chickpeas and water. Simmer 15 min.','Roll dough into circles. Deep fry until puffed and golden.','Serve bhature with chole, onion, and pickle.']},
+{n:'Mushroom Matar',t:'indian',m:20,s:4,ing:['200g mushrooms, sliced','1 cup green peas','1 onion, diced','2 tomatoes, pureed','1 tsp garam masala','1 tsp cumin','2 tbsp oil','Cilantro'],steps:['Heat oil, add cumin. Saute onion until golden.','Add tomato puree and spices. Cook 5 min.','Add mushrooms, cook 3 min.','Add peas and splash of water. Cover, cook 8 min.','Garnish with cilantro.']},
+{n:'Veggie Quesadilla',t:'mexican',m:10,s:2,ing:['4 flour tortillas','1.5 cups shredded cheese','1 bell pepper, diced','0.5 onion, diced','0.5 cup corn','Salsa, sour cream','1 tbsp oil'],steps:['Saute pepper, onion, corn in oil 3 min.','Place tortilla in pan, add cheese, veggies, more cheese, second tortilla.','Cook 2 min each side until golden and melty.','Cut into wedges. Serve with salsa and sour cream.']},
+{n:'Veggie Fajitas',t:'mexican',m:20,s:4,ing:['3 bell peppers, sliced','2 onions, sliced','200g mushrooms, sliced','8 tortillas','1 avocado','1 lime','2 tsp cumin','1 tsp chili powder','2 tbsp oil','Sour cream, salsa, cilantro'],steps:['Heat oil on high. Add peppers, onion, mushrooms.','Season with cumin, chili powder, salt.','Cook 6-8 min until charred and tender.','Warm tortillas.','Serve fajita veggies in tortillas with avocado, sour cream, salsa.']},
+{n:'Elote',t:'mexican',m:15,s:4,ing:['4 ears corn','3 tbsp mayo','0.5 cup cotija cheese, crumbled','1 tsp chili powder','2 limes','Cilantro'],steps:['Grill or char corn on all sides (8 min).','Spread mayo on each ear.','Sprinkle cotija cheese and chili powder.','Squeeze lime and top with cilantro.']},
+{n:'Chilaquiles',t:'mexican',m:15,s:4,ing:['8 cups tortilla chips','2 cups salsa verde','1 cup cheese, shredded','1 avocado, sliced','0.5 cup sour cream','0.5 red onion, sliced','Cilantro'],steps:['Heat salsa verde in a large pan.','Add tortilla chips, toss to coat. Cook 2 min until slightly softened.','Top with cheese, cover 1 min until melted.','Serve with avocado, sour cream, onion, cilantro.']},
+{n:'Miso Soup',t:'asian',m:10,s:4,ing:['4 cups water','3 tbsp miso paste','200g silken tofu, cubed','1 sheet wakame seaweed','2 scallions, sliced','1 tsp dashi granules'],steps:['Bring water to a simmer (not boiling). Add dashi.','Add wakame. Let rehydrate 2 min.','Add tofu cubes gently.','Remove from heat. Stir in miso paste (never boil miso).','Serve topped with scallions.']},
+{n:'Thai Peanut Noodles',t:'asian',m:15,s:4,ing:['200g rice noodles','3 tbsp peanut butter','2 tbsp soy sauce','1 tbsp sriracha','1 tbsp rice vinegar','1 tbsp sesame oil','1 lime','1 cucumber, julienned','Peanuts, cilantro, scallion'],steps:['Cook noodles per package. Drain, rinse cold.','Whisk peanut butter, soy sauce, sriracha, vinegar, sesame oil, lime juice.','Toss noodles with sauce.','Top with cucumber, crushed peanuts, cilantro, scallion.']},
+{n:'Vegetable Dumplings',t:'asian',m:35,s:4,ing:['30 dumpling wrappers','2 cups cabbage, finely shredded','1 cup mushrooms, minced','1 carrot, grated','2 cloves garlic, minced','1 inch ginger, grated','2 tbsp soy sauce','1 tsp sesame oil','Oil for frying'],steps:['Mix cabbage, mushrooms, carrot, garlic, ginger, soy sauce, sesame oil.','Place 1 tbsp filling on each wrapper. Wet edges, fold and pleat shut.','Heat oil in pan. Place dumplings flat side down. Cook 2 min until golden.','Add 0.25 cup water, cover. Steam 5 min until wrappers are translucent.','Serve with soy sauce and chili oil.']},
+{n:'Spring Rolls (Fresh)',t:'asian',m:20,s:4,ing:['12 rice paper wrappers','100g rice vermicelli, cooked','1 cucumber, julienned','2 carrots, julienned','1 cup lettuce','Fresh mint, basil','3 tbsp peanut butter','1 tbsp hoisin','1 tbsp sriracha','Warm water'],steps:['Prepare all fillings in strips.','Dip rice paper in warm water 10 sec until pliable.','Lay flat. Place lettuce, vermicelli, veggies, herbs in center.','Fold bottom up, sides in, then roll tight.','Mix peanut butter, hoisin, sriracha, 2 tbsp water for dipping sauce.']},
+{n:'Teriyaki Tofu Bowl',t:'asian',m:20,s:4,ing:['300g firm tofu, cubed','3 tbsp soy sauce','2 tbsp mirin','1 tbsp sugar','1 tsp cornstarch','2 cups rice','2 cups broccoli','1 cup edamame','Sesame seeds','1 tbsp oil'],steps:['Mix soy sauce, mirin, sugar, cornstarch for sauce.','Press and cube tofu. Pan fry in oil until crispy (6 min).','Pour sauce over tofu. Cook until glazed and sticky.','Steam broccoli and edamame.','Bowl: rice, broccoli, edamame, teriyaki tofu, sesame seeds.']},
+{n:'Pesto Pasta',t:'quick',m:15,s:4,ing:['350g pasta','0.5 cup basil pesto','1 cup cherry tomatoes, halved','0.25 cup pine nuts','0.5 cup parmesan, grated','2 tbsp olive oil','Salt, pepper'],steps:['Cook pasta al dente. Reserve 0.5 cup pasta water. Drain.','Toss hot pasta with pesto and splash of pasta water.','Add cherry tomatoes and most of the parmesan.','Top with pine nuts, remaining parmesan, drizzle of olive oil.']},
+{n:'Grilled Cheese & Tomato Soup',t:'comfort',m:20,s:2,ing:['4 slices bread','4 slices cheddar','2 tbsp butter','1 can crushed tomatoes','1 onion, diced','2 cloves garlic','0.5 cup cream','Fresh basil','Salt, pepper'],steps:['Soup: saute onion and garlic in butter 3 min. Add tomatoes. Simmer 10 min.','Blend until smooth. Stir in cream, basil, salt, pepper.','Sandwich: butter bread outsides. Fill with cheese.','Cook in pan 3 min each side until golden and melty.','Cut diagonally. Serve with soup for dipping.']},
+{n:'Lentil Soup',t:'comfort',m:30,s:6,ing:['1.5 cups lentils','1 onion, diced','2 carrots, diced','2 celery stalks, diced','3 cloves garlic','1 can diced tomatoes','6 cups vegetable broth','2 tsp cumin','1 tsp smoked paprika','Lemon juice','Olive oil'],steps:['Heat oil, saute onion, carrot, celery 5 min.','Add garlic, cumin, paprika. Cook 1 min.','Add lentils, tomatoes, broth. Bring to boil.','Reduce heat, simmer 25 min until lentils are tender.','Season with salt, pepper, lemon juice. Blend half if desired.']},
+{n:'Vegetable Lasagna',t:'comfort',m:50,s:6,ing:['12 lasagna sheets','2 cups ricotta','3 cups mozzarella, shredded','2 cups spinach','1 zucchini, sliced','2 cups marinara sauce','0.5 cup parmesan','1 tsp Italian seasoning','Salt, pepper'],steps:['Cook lasagna sheets al dente. Preheat oven to 375F.','Mix ricotta with Italian seasoning, salt, pepper.','Layer: sauce, pasta, ricotta, spinach, zucchini, mozzarella. Repeat 3x.','Top with remaining sauce and parmesan.','Cover with foil. Bake 30 min. Remove foil, bake 15 more.','Rest 10 min before cutting.']},
+{n:'Smoothie Bowl',t:'healthy',m:5,s:1,ing:['1 cup frozen berries','1 banana','0.5 cup yogurt','2 tbsp granola','1 tbsp honey','1 tbsp chia seeds','Sliced fruit for topping'],steps:['Blend frozen berries, banana, yogurt until thick (use less liquid than a smoothie).','Pour into bowl.','Top with granola, chia seeds, honey, and sliced fruit.','Eat with a spoon immediately.']},
+{n:'Falafel Bowl',t:'healthy',m:25,s:4,ing:['2 cans chickpeas, drained','1 onion, quartered','4 cloves garlic','1 cup parsley','1 cup cilantro','2 tsp cumin','1 tsp baking powder','3 tbsp flour','Oil for frying','Tahini, cucumber, tomato, pickled onion'],steps:['Pulse chickpeas, onion, garlic, herbs, cumin in food processor (dont puree).','Mix in flour and baking powder. Chill 30 min.','Form into small patties. Pan fry in oil 3 min each side until golden.','Build bowls: rice or pita, falafel, cucumber, tomato, pickled onion.','Drizzle tahini generously.']},
+{n:'Overnight Oats',t:'healthy',m:5,s:1,ing:['0.5 cup rolled oats','0.5 cup almond milk','0.25 cup yogurt','1 tbsp chia seeds','1 tbsp honey','0.5 tsp vanilla','Berries, nuts for topping'],steps:['Mix oats, milk, yogurt, chia seeds, honey, vanilla in a jar.','Stir well. Cover and refrigerate overnight (or at least 4 hours).','In the morning, top with berries and nuts.','Eat cold or microwave 1 min if preferred warm.']},
+{n:'Caprese Salad',t:'quick',m:5,s:2,ing:['3 ripe tomatoes, sliced','200g fresh mozzarella, sliced','Fresh basil leaves','3 tbsp extra virgin olive oil','1 tbsp balsamic glaze','Flaky salt, pepper'],steps:['Alternate slices of tomato and mozzarella on a plate.','Tuck basil leaves between slices.','Drizzle olive oil and balsamic glaze.','Season with flaky salt and pepper.']},
+{n:'Loaded Nachos',t:'quick',m:10,s:4,ing:['1 large bag tortilla chips','2 cups shredded cheese','1 can black beans, drained','1 jalapeno, sliced','1 avocado, diced','0.5 cup sour cream','0.5 cup salsa','Cilantro, lime'],steps:['Spread chips on oven-safe tray. Top with cheese, beans, jalapeno.','Broil 3 min until cheese melts and bubbles.','Top with avocado, sour cream, salsa, cilantro.','Squeeze lime over everything. Serve immediately.']},
+{n:'Gulab Jamun',t:'dessert',m:30,s:4,ing:['1 cup milk powder','0.25 cup flour','2 tbsp ghee','0.25 cup milk','1 cup sugar','2 cups water','4 cardamom pods','1 tsp rose water','Oil for frying'],steps:['Mix milk powder, flour, ghee. Add milk gradually to form soft dough.','Rest 10 min. Roll into small smooth balls.','Make syrup: boil sugar, water, cardamom 5 min. Add rose water.','Deep fry balls on low heat until deep golden brown (5 min).','Soak hot gulab jamuns in warm syrup for 30 min.','Serve warm or at room temperature.']},
+{n:'Kheer',t:'dessert',m:30,s:4,ing:['0.25 cup basmati rice','4 cups whole milk','0.5 cup sugar','4 cardamom pods','Pinch saffron','2 tbsp almonds, slivered','2 tbsp pistachios','1 tsp rose water'],steps:['Wash rice. Soak 20 min. Drain.','Bring milk to boil in heavy pot. Add rice.','Simmer on low, stirring often, 25 min until rice is very soft and milk thickens.','Add sugar, cardamom, saffron. Cook 5 more min.','Remove from heat. Add rose water and most nuts.','Serve warm or chilled, topped with remaining nuts.']},
+{n:'Chocolate Lava Cake',t:'dessert',m:20,s:2,ing:['100g dark chocolate','3 tbsp butter','0.25 cup sugar','2 tbsp flour','0.5 tsp vanilla','Pinch salt','Powdered sugar for dusting'],steps:['Preheat oven to 425F. Grease 2 ramekins.','Melt chocolate and butter together. Stir smooth.','Mix in sugar, then flour, vanilla, salt.','Divide between ramekins.','Bake exactly 12 min (edges set, center jiggles).','Wait 1 min, invert onto plates. Dust with powdered sugar.']},
+{n:'Masala Chai',t:'drinks',m:10,s:2,ing:['2 cups water','1 cup milk','2 tbsp loose black tea','3 cardamom pods, crushed','1 small cinnamon stick','3 slices fresh ginger','2 cloves','2 tbsp sugar'],steps:['Boil water with all spices 3 min.','Add tea leaves. Simmer 2 min.','Add milk and sugar. Bring to a rolling boil.','Strain into cups. Serve hot.']},
+{n:'Mango Lassi',t:'drinks',m:5,s:2,ing:['1 cup mango (fresh or frozen)','1 cup yogurt','0.5 cup milk','2 tbsp sugar','Pinch cardamom','Ice cubes'],steps:['Blend all ingredients until smooth and frothy.','Pour into glasses over ice.','Dust with cardamom on top.']},
+{n:'Matcha Latte',t:'drinks',m:5,s:1,ing:['1.5 tsp matcha powder','2 tbsp hot water','1 cup oat milk','1 tsp honey or maple syrup'],steps:['Sift matcha into a cup to remove clumps.','Add hot water. Whisk vigorously until frothy (use a bamboo whisk or fork).','Heat oat milk, froth if possible.','Pour frothed milk over matcha. Sweeten to taste.']},
+{n:'Indo-Chinese Manchurian',t:'fusion',m:30,s:4,ing:['1 cauliflower, florets','3 tbsp cornstarch','2 tbsp flour','2 tbsp soy sauce','1 tbsp chili sauce','1 tbsp vinegar','1 bell pepper, diced','4 cloves garlic, minced','1 inch ginger, minced','2 scallions','Oil for frying'],steps:['Mix cornstarch, flour, salt with water to make batter. Coat cauliflower.','Deep fry until crispy and golden. Drain.','Heat 1 tbsp oil. Saute garlic, ginger, pepper.','Add soy sauce, chili sauce, vinegar, 0.25 cup water.','Toss in fried cauliflower. Cook 1 min until glazed.','Garnish with scallions. Serve with fried rice.']},
+{n:'Sushi Bowl',t:'fusion',m:15,s:2,ing:['2 cups sushi rice, cooked','1 avocado, sliced','1 cucumber, diced','1 carrot, julienned','1 cup edamame','1 sheet nori, shredded','2 tbsp soy sauce','1 tbsp rice vinegar','1 tsp sesame oil','Sriracha mayo','Sesame seeds','Pickled ginger'],steps:['Season warm rice with rice vinegar.','Divide rice into bowls.','Arrange avocado, cucumber, carrot, edamame on top.','Drizzle soy sauce and sesame oil.','Top with nori, sesame seeds, pickled ginger.','Add sriracha mayo to taste.']},
+{n:'Kimchi Fried Rice',t:'fusion',m:15,s:2,ing:['3 cups cooked rice (day-old)','1 cup kimchi, chopped','100g firm tofu, crumbled','2 tbsp gochujang','1 tbsp soy sauce','1 tbsp sesame oil','2 scallions','Sesame seeds'],steps:['Heat sesame oil in wok on high.','Add crumbled tofu, cook until lightly browned.','Add kimchi, stir fry 2 min.','Add rice, soy sauce, gochujang. Toss vigorously 3 min.','Top with scallions and sesame seeds.']},
+{n:'Eggplant Parmesan',t:'comfort',m:35,s:4,ing:['2 eggplants, sliced 0.5 inch','1.5 cups marinara','1.5 cups mozzarella, shredded','0.5 cup parmesan','1 cup breadcrumbs','0.5 cup flour','0.5 cup milk','1 tsp Italian seasoning','Oil, salt'],steps:['Salt eggplant slices, rest 15 min. Pat dry.','Dip in flour, then milk, then breadcrumbs with Italian seasoning.','Pan fry in oil 3 min each side until golden.','Layer in baking dish: sauce, eggplant, mozzarella, repeat.','Top with parmesan.','Bake 375F for 20 min until bubbly.']},
+{n:'Butternut Squash Soup',t:'comfort',m:30,s:4,ing:['1 butternut squash, peeled and cubed','1 onion, diced','2 cloves garlic','2 tbsp butter','3 cups vegetable broth','0.5 cup cream','0.25 tsp nutmeg','Salt, pepper','Pumpkin seeds for topping'],steps:['Melt butter, saute onion and garlic 3 min.','Add squash and broth. Bring to boil.','Simmer 20 min until squash is very tender.','Blend until completely smooth.','Stir in cream, nutmeg, salt, pepper.','Serve topped with pumpkin seeds and a drizzle of cream.']},
+{n:'Quinoa Salad',t:'healthy',m:15,s:4,ing:['1 cup quinoa','1 cucumber, diced','1 cup cherry tomatoes, halved','0.5 cup feta, crumbled','0.25 cup kalamata olives','0.25 cup red onion, diced','3 tbsp olive oil','2 tbsp lemon juice','Fresh mint, parsley'],steps:['Cook quinoa per package. Fluff and cool.','Toss with all vegetables and feta.','Whisk olive oil and lemon juice for dressing.','Dress the salad. Add herbs, salt, pepper.','Serve at room temperature or chilled.']},
+{n:'Sweet Potato Buddha Bowl',t:'healthy',m:25,s:2,ing:['2 sweet potatoes, cubed','1 can chickpeas','2 cups kale','1 avocado','2 tbsp tahini','1 tbsp lemon juice','1 tbsp maple syrup','1 tbsp olive oil','Salt, paprika, cumin'],steps:['Toss sweet potato and chickpeas with oil, paprika, cumin, salt.','Roast at 400F for 22 min.','Massage kale with a drizzle of oil and pinch of salt.','Make dressing: whisk tahini, lemon, maple, 2 tbsp water.','Build bowls: kale, roasted sweet potato and chickpeas, avocado.','Drizzle tahini dressing.']},
+{n:'Mediterranean Wrap',t:'healthy',m:10,s:2,ing:['2 large wraps','0.5 cup hummus','1 cucumber, sliced','1 tomato, sliced','0.25 cup feta','0.25 cup kalamata olives','Lettuce','Red onion rings'],steps:['Spread hummus generously on each wrap.','Layer lettuce, cucumber, tomato, feta, olives, onion.','Roll tightly, tucking in sides.','Cut diagonally and serve.']},
+{n:'Japanese Curry',t:'fusion',m:35,s:4,ing:['1 box Japanese curry roux','2 potatoes, cubed','2 carrots, chunked','1 onion, diced','1 cup mushrooms','3 cups water','2 tbsp oil','Rice for serving'],steps:['Heat oil, saute onion until translucent.','Add carrots and potatoes. Cook 3 min.','Add water, bring to boil. Simmer 15 min until veggies tender.','Turn off heat. Add curry roux blocks. Stir until dissolved.','Simmer on low 5 more min until thickened.','Serve over hot rice.']}
 ];
+var customRecipes=JSON.parse(LS.getItem('gw_custom_recipes')||'[]');
+
 function initRecipes(){
-  var filter=LS.getItem('gw_recipe_filter')||'all';
-  var tags={all:'All',indian:'Indian',mexican:'Mexican',asian:'Asian',quick:'Quick',comfort:'Comfort',healthy:'Healthy',fusion:'Fusion',dessert:'Sweet',drinks:'Drinks'};
-  var h='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">';
-  for(var k in tags)h+='<span style="padding:5px 10px;border-radius:100px;border:1px solid '+(filter===k?'var(--carn)':'rgba(255,255,255,.08)')+';background:'+(filter===k?'rgba(216,71,115,.1)':'transparent')+';color:'+(filter===k?'var(--carn-light)':'rgba(255,255,255,.3)')+';font-size:.55rem;cursor:pointer" onclick="LS.setItem(\'gw_recipe_filter\',\''+k+'\');initRecipes()">'+tags[k]+'</span>';
-  h+='</div>';
-  var filtered=filter==='all'?RECIPES:RECIPES.filter(function(r){return r.t===filter});
-  filtered.forEach(function(r){
-    var typeColors={indian:'rgba(212,168,83,.1)',mexican:'rgba(181,201,168,.1)',asian:'rgba(168,216,234,.1)',quick:'rgba(255,218,185,.1)',comfort:'rgba(200,168,233,.1)',healthy:'rgba(168,216,234,.1)',fusion:'rgba(216,71,115,.08)',dessert:'rgba(255,218,185,.12)',drinks:'rgba(200,168,233,.08)'};
-    h+='<div style="padding:12px;background:'+(typeColors[r.t]||'rgba(255,255,255,.03)')+';border:1px solid rgba(255,255,255,.04);border-radius:12px;margin-bottom:6px;cursor:pointer" onclick="this.querySelector(\'.ri\').style.display=this.querySelector(\'.ri\').style.display===\'block\'?\'none\':\'block\'">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:.8rem;color:rgba(255,255,255,.6);font-weight:500">'+r.n+'</span><span style="font-size:.5rem;color:rgba(255,255,255,.2)">'+r.m+' min</span></div>';
-    h+='<div class="ri" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)"><p style="font-size:.65rem;color:rgba(255,255,255,.35);line-height:1.5">'+r.i+'</p></div></div>';
+  var h='<div style="text-align:center;padding:10px 0 20px"><p style="font-size:2rem;margin-bottom:6px">\u{1F373}</p><p style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-bottom:4px">What sounds good?</p><p style="font-size:.65rem;color:rgba(255,255,255,.3)">60+ vegetarian recipes, no eggs</p></div>';
+
+  // Mood buttons
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+  var moods=[
+    {id:'quick',ico:'\u{26A1}',name:'Quick & easy',desc:'Under 15 min'},
+    {id:'comfort',ico:'\u{1F9F8}',name:'Comfort food',desc:'Feed my soul'},
+    {id:'healthy',ico:'\u{1F96D}',name:'Something light',desc:'Healthy vibes'},
+    {id:'random',ico:'\u{1F3B2}',name:'Surprise me',desc:'Random pick'}
+  ];
+  moods.forEach(function(m){
+    h+='<div style="padding:16px 10px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="'+(m.id==='random'?'randomRecipe()':'recipeMood(\''+m.id+'\')')+'">';
+    h+='<div style="font-size:1.5rem;margin-bottom:4px">'+m.ico+'</div>';
+    h+='<div style="font-size:.75rem;color:#fff;font-weight:500">'+m.name+'</div>';
+    h+='<div style="font-size:.5rem;color:rgba(255,255,255,.25)">'+m.desc+'</div></div>';
   });
-  h+='<p style="text-align:center;font-size:.5rem;color:rgba(255,255,255,.15);margin-top:12px">'+filtered.length+' recipes</p>';
+  h+='</div>';
+
+  // Cuisine row
+  h+='<p style="font-size:.5rem;color:rgba(255,255,255,.2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">By cuisine</p>';
+  h+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;margin-bottom:16px">';
+  [{id:'indian',ico:'\u{1F1EE}\u{1F1F3}',n:'Indian'},{id:'mexican',ico:'\u{1F1F2}\u{1F1FD}',n:'Mexican'},{id:'asian',ico:'\u{1F35C}',n:'Asian'},{id:'fusion',ico:'\u{1F30D}',n:'Fusion'},{id:'dessert',ico:'\u{1F370}',n:'Sweet'},{id:'drinks',ico:'\u{1F375}',n:'Drinks'}].forEach(function(c){
+    h+='<div style="flex-shrink:0;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;cursor:pointer;min-width:70px" onclick="recipeMood(\''+c.id+'\')">';
+    h+='<div style="font-size:1.2rem;margin-bottom:2px">'+c.ico+'</div>';
+    h+='<div style="font-size:.55rem;color:rgba(255,255,255,.4)">'+c.n+'</div></div>';
+  });
+  h+='</div>';
+
+  // Bottom links
+  h+='<div style="display:flex;gap:8px"><button class="dp-btn-outline" style="flex:1;font-size:.6rem" onclick="recipeMood(\'all\')">Browse all ('+RECIPES.length+')</button><button class="dp-btn-outline" style="flex:1;font-size:.6rem" onclick="showAddRecipe()">+ Add yours</button></div>';
+
   document.getElementById('recipeBody').innerHTML=h;
 }
+
+function randomRecipe(){
+  var allR=RECIPES.concat(customRecipes);
+  var idx=Math.floor(Math.random()*allR.length);
+  viewRecipe(idx,'random');
+}
+
+function recipeMood(mood){
+  var allR=RECIPES.concat(customRecipes);
+  var map={quick:function(r){return r.m<=15},comfort:function(r){return r.t==='comfort'},healthy:function(r){return r.t==='healthy'}};
+  var filtered=mood==='all'?allR:allR.filter(function(r){return map[mood]?map[mood](r):r.t===mood});
+  if(!filtered.length){showXPToast('No recipes found');return}
+
+  var tc={indian:'rgba(212,168,83,.08)',mexican:'rgba(181,201,168,.08)',asian:'rgba(168,216,234,.08)',quick:'rgba(255,218,185,.08)',comfort:'rgba(200,168,233,.08)',healthy:'rgba(168,216,234,.06)',fusion:'rgba(216,71,115,.06)',dessert:'rgba(255,218,185,.1)',drinks:'rgba(200,168,233,.06)'};
+  var h='<div style="margin-bottom:10px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span><span style="font-size:.7rem;color:rgba(255,255,255,.4);margin-left:8px">'+filtered.length+' recipes</span></div>';
+  h+='<button class="dp-btn" style="width:100%;margin-bottom:12px;font-size:.65rem" onclick="var f=document.querySelectorAll(\'[data-ridx]\');var r=f[Math.floor(Math.random()*f.length)];if(r)r.click()">\u{1F3B2} Pick one for me</button>';
+  filtered.forEach(function(r){
+    var realIdx=allR.indexOf(r);
+    h+='<div data-ridx="'+realIdx+'" style="padding:12px;background:'+(tc[r.t]||'rgba(255,255,255,.03)')+';border:1px solid rgba(255,255,255,.04);border-radius:12px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="viewRecipe('+realIdx+')">';
+    h+='<div><div style="font-size:.8rem;color:rgba(255,255,255,.6);font-weight:500">'+r.n+'</div><div style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:2px">'+r.m+' min \u{2022} '+r.s+' servings</div></div>';
+    h+='<span style="font-size:.55rem;color:rgba(255,255,255,.1)">\u203A</span></div>';
+  });
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function viewRecipe(idx,type){
+  var allR=RECIPES.concat(customRecipes);
+  var r=allR[idx];if(!r)return;
+  var servings=parseInt(LS.getItem('gw_rsrv')||r.s);
+  var ratio=servings/r.s;
+
+  var h='<div style="margin-bottom:8px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span></div>';
+  h+='<h3 style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff;margin-bottom:4px">'+r.n+'</h3>';
+  h+='<div style="display:flex;gap:12px;font-size:.55rem;color:rgba(255,255,255,.3);margin-bottom:14px"><span>'+r.m+' min</span><span>'+r.t+'</span></div>';
+
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px;background:rgba(255,255,255,.03);border-radius:10px"><span style="font-size:.65rem;color:rgba(255,255,255,.4)">Servings</span>';
+  h+='<button style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;font-size:.8rem;cursor:pointer" onclick="adjServ(-1,'+idx+',\''+type+'\')">-</button>';
+  h+='<span style="font-size:1rem;color:var(--gold);font-weight:500;min-width:24px;text-align:center" id="srvCount">'+servings+'</span>';
+  h+='<button style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;font-size:.8rem;cursor:pointer" onclick="adjServ(1,'+idx+',\''+type+'\')">+</button></div>';
+
+  h+='<p style="font-size:.55rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin-bottom:6px">Ingredients</p>';
+  if(r.ing){r.ing.forEach(function(ing){
+    var scaled=ing.replace(/^([\d.\/]+)/,function(m){
+      var n=m.includes('/')?eval(m):parseFloat(m);
+      if(isNaN(n))return m;
+      var v=Math.round(n*ratio*10)/10;
+      return v%1===0?v.toString():v.toFixed(1);
+    });
+    h+='<div style="padding:4px 0;font-size:.7rem;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.02)">\u2022 '+scaled+'</div>';
+  })}
+
+  if(r.steps){
+    h+='<p style="font-size:.55rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin:14px 0 6px">Directions</p>';
+    r.steps.forEach(function(s,i){
+      h+='<div style="display:flex;gap:10px;margin-bottom:10px"><div style="width:22px;height:22px;border-radius:50%;background:rgba(216,71,115,.1);color:var(--carn-light);font-size:.55rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><p style="font-size:.7rem;color:rgba(255,255,255,.5);line-height:1.5;flex:1">'+s+'</p></div>';
+    });
+  }
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function adjServ(d,idx,type){
+  var cur=parseInt(document.getElementById('srvCount').textContent);
+  var nv=Math.max(1,Math.min(12,cur+d));
+  LS.setItem('gw_rsrv',nv);
+  viewRecipe(idx,type);
+}
+
+function showAddRecipe(){
+  var h='<div style="margin-bottom:8px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span></div>';
+  h+='<h3 style="font-family:Playfair Display,serif;font-size:1rem;color:#fff;margin-bottom:12px">Add a recipe</h3>';
+  h+='<input class="dp-input" id="arName" placeholder="Recipe name">';
+  h+='<div style="display:flex;gap:6px;margin-bottom:8px"><select class="dp-input" id="arType" style="margin:0;flex:1"><option value="quick">Quick</option><option value="indian">Indian</option><option value="mexican">Mexican</option><option value="asian">Asian</option><option value="comfort">Comfort</option><option value="healthy">Healthy</option><option value="dessert">Sweet</option></select>';
+  h+='<input class="dp-input" id="arTime" placeholder="Min" type="number" style="margin:0;width:60px">';
+  h+='<input class="dp-input" id="arServ" placeholder="Srv" type="number" value="4" style="margin:0;width:60px"></div>';
+  h+='<textarea class="dp-textarea" id="arIng" placeholder="Ingredients (one per line)" style="min-height:80px"></textarea>';
+  h+='<textarea class="dp-textarea" id="arSteps" placeholder="Steps (one per line)" style="min-height:80px"></textarea>';
+  h+='<button class="dp-btn" style="width:100%" onclick="saveCustomRecipe()">Save recipe</button>';
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function saveCustomRecipe(){
+  var name=document.getElementById('arName').value.trim();
+  if(!name){showXPToast('Name required');return}
+  var r={n:name,t:document.getElementById('arType').value,m:parseInt(document.getElementById('arTime').value)||15,s:parseInt(document.getElementById('arServ').value)||4,ing:document.getElementById('arIng').value.split('\n').filter(function(l){return l.trim()}),steps:document.getElementById('arSteps').value.split('\n').filter(function(l){return l.trim()}),custom:true};
+  customRecipes.push(r);
+  LS.setItem('gw_custom_recipes',JSON.stringify(customRecipes));
+  addXP(5,'Added recipe');triggerSync();initRecipes();
+}
+
 
 /* STOCK TICKER */
 (function(){
