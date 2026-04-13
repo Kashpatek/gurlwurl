@@ -171,10 +171,10 @@ section{padding:56px 20px}
 .cw-title{font-size:.55rem;color:var(--blush);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 
 /* GAMES */
-.games-wrap{background:var(--carn-dark);min-height:100vh;padding:20px 20px 80px}
+.games-wrap{background:#0D0A0F;min-height:100vh;padding:0}
 .games-wrap h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#fff;text-align:center;margin-bottom:4px}
 .games-wrap>p{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:rgba(255,255,255,.35);text-align:center;margin-bottom:20px}
-.game-xp-header{padding:20px 16px 16px;border-bottom:none;position:sticky;top:48px;z-index:10;background:#0D0A0F}
+.game-xp-header{padding:20px 16px 16px;border-bottom:none;position:sticky;top:0;z-index:10;background:#0D0A0F}
 .game-xp-header::after{content:'';position:absolute;bottom:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,#0D0A0F,rgba(13,10,15,.85) 40%,transparent);pointer-events:none;z-index:9}
 .game-grid{display:flex;flex-direction:column;gap:8px;padding:50px 14px 100px}
 .game-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;background:rgba(255,255,255,.025);border:0.5px solid rgba(255,255,255,.04);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
@@ -939,11 +939,11 @@ function SGrain(x,y){this.x=x;this.y=y;this.vx=(Math.random()-.5)*3;this.vy=(Mat
 SGrain.prototype.u=function(){this.vy+=this.g;this.vx*=.99;this.vy*=.99;this.x+=this.vx;this.y+=this.vy;this.life-=this.d};
 SGrain.prototype.dr=function(c){c.globalAlpha=this.life*.8;c.fillStyle=this.c;c.beginPath();c.arc(this.x,this.y,this.s,0,Math.PI*2);c.fill()};
 function animS(){var w=sCv.width/2,h=sCv.height/2;sCtx.clearRect(0,0,w,h);sCtx.globalAlpha=.03;sCtx.fillStyle='#D4C4A0';for(var i=0;i<5;i++){var y=h-12-i*8+Math.sin(Date.now()*.001+i)*3;sCtx.beginPath();sCtx.moveTo(0,y);for(var x=0;x<w;x+=20)sCtx.quadraticCurveTo(x+10,y-2+Math.sin(Date.now()*.0008+x*.02+i)*2,x+20,y);sCtx.lineTo(w,h);sCtx.lineTo(0,h);sCtx.fill()}sCtx.globalAlpha=1;sGrains=sGrains.filter(function(p){return p.life>0});sGrains.forEach(function(p){p.u();p.dr(sCtx)});sRAF=requestAnimationFrame(animS)}
-sCv.addEventListener('touchstart',function(e){e.preventDefault();var r=sCv.getBoundingClientRect();for(var j=0;j<e.touches.length;j++)for(var i=0;i<8;i++)sGrains.push(new SGrain(e.touches[j].clientX-r.left,e.touches[j].clientY-r.top));document.getElementById('sandHint').style.opacity='0'},{passive:false});
+if(sCv){sCv.addEventListener('touchstart',function(e){e.preventDefault();var r=sCv.getBoundingClientRect();for(var j=0;j<e.touches.length;j++)for(var i=0;i<8;i++)sGrains.push(new SGrain(e.touches[j].clientX-r.left,e.touches[j].clientY-r.top));document.getElementById('sandHint').style.opacity='0'},{passive:false});
 sCv.addEventListener('touchmove',function(e){e.preventDefault();var r=sCv.getBoundingClientRect();for(var j=0;j<e.touches.length;j++)for(var i=0;i<5;i++)sGrains.push(new SGrain(e.touches[j].clientX-r.left,e.touches[j].clientY-r.top))},{passive:false});
 sCv.addEventListener('mousedown',function(e){var r=sCv.getBoundingClientRect();for(var i=0;i<8;i++)sGrains.push(new SGrain(e.clientX-r.left,e.clientY-r.top));sCv._d=true;document.getElementById('sandHint').style.opacity='0'});
 sCv.addEventListener('mousemove',function(e){if(!sCv._d)return;var r=sCv.getBoundingClientRect();for(var i=0;i<5;i++)sGrains.push(new SGrain(e.clientX-r.left,e.clientY-r.top))});
-sCv.addEventListener('mouseup',function(){sCv._d=false});
+sCv.addEventListener('mouseup',function(){sCv._d=false});}
 
 /* MOOD RING */
 var mr=document.getElementById('moodRing'),mRes=document.getElementById('moodRes'),mTimer=null;
@@ -957,8 +957,8 @@ mr.addEventListener('touchend',stopMR);mr.addEventListener('mousedown',startMR);
 
 /* SLOTS */
 var sWords=[["You're","She's","Main","Certified","Total","Effortless"],["that","a","the","one","pure","100%"],["girl \u{2728}","queen \u{1F451}","icon \u{1F485}","slay \u{1F495}","vibe \u{1F338}","serve \u{273F}"]];
-(function(){sWords.forEach(function(w,i){var inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.innerHTML='';w.forEach(function(t){var d=document.createElement('div');d.className='slot-item';d.textContent=t;inner.appendChild(d)})})})();
-document.getElementById('slotPull').addEventListener('click',function(){var res=[];sWords.forEach(function(w,i){var idx=Math.floor(Math.random()*w.length);res.push(w[idx]);var inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.style.transition='none';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='transform '+(0.8+i*0.2)+'s cubic-bezier(.16,1,.3,1)';inner.style.transform='translateY(-'+(idx*44)+'px)'});setTimeout(function(){document.getElementById('slotRes').textContent=res.join(' ')},1400)});
+(function(){try{sWords.forEach(function(w,i){var el=document.getElementById('r'+(i+1));if(!el)return;var inner=el.querySelector('.slot-reel-inner');if(!inner)return;inner.innerHTML='';w.forEach(function(t){var d=document.createElement('div');d.className='slot-item';d.textContent=t;inner.appendChild(d)})})}catch(e){}})();
+var slotPullEl=document.getElementById('slotPull');if(slotPullEl)slotPullEl.addEventListener('click',function(){var res=[];sWords.forEach(function(w,i){var idx=Math.floor(Math.random()*w.length);res.push(w[idx]);var inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.style.transition='none';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='transform '+(0.8+i*0.2)+'s cubic-bezier(.16,1,.3,1)';inner.style.transform='translateY(-'+(idx*44)+'px)'});setTimeout(function(){document.getElementById('slotRes').textContent=res.join(' ')},1400)});
 
 /* BUBBLES */
 var bw=document.getElementById('bubWrap'),bInt=null;
@@ -968,7 +968,7 @@ function spB(){if(bw.children.length>20)return;var b=document.createElement('div
 
 /* FORTUNE */
 var fortunes=["Free guac is in your forecast","A pool robot is being dispatched","Your hair will be extra good tomorrow","A Sephora is opening near you","President Barbie approved your vibe","Your next coffee is on the state","A flower is reincarnating for you","Your EBT balance just went up","Coke Zero showers in your area","Someone's about to ask your skincare routine","Your matcha lawn is growing strong","A cake pop awaits on the next block","Extended golden hour tonight","A compliment from a stranger incoming","Your skin will be extra clear","The universe is giving you what you asked for","Surprise flower delivery soon","Your next selfie breaks records","The DJ plays your song next","Perfect foam matcha incoming","Next meal unexpectedly delicious","A legendary nap awaits","Skincare routine about to show results","A text from someone you miss","Your pillow extra cold tonight","Stars rearranging for your glow up"];
-function setupFortune(cid,tid,rid){document.getElementById(cid).addEventListener('click',function(){var self=this;this.classList.add('crack');setTimeout(function(){self.style.display='none';var t=document.getElementById(tid);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.style.opacity='1';document.getElementById(rid).style.opacity='1'},500)});document.getElementById(rid).addEventListener('click',function(){var c=document.getElementById(cid);c.classList.remove('crack');c.style.display='';document.getElementById(tid).style.opacity='0';document.getElementById(tid).textContent='';this.style.opacity='0'})}
+function setupFortune(cid,tid,rid){var fEl=document.getElementById(cid);if(!fEl)return;fEl.addEventListener('click',function(){var self=this;this.classList.add('crack');setTimeout(function(){self.style.display='none';var t=document.getElementById(tid);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.style.opacity='1';document.getElementById(rid).style.opacity='1'},500)});var rEl=document.getElementById(rid);if(rEl)rEl.addEventListener('click',function(){var c=document.getElementById(cid);c.classList.remove('crack');c.style.display='';document.getElementById(tid).style.opacity='0';document.getElementById(tid).textContent='';this.style.opacity='0'})}
 setupFortune('fc3','ft3','fr3');
 
 
@@ -1388,7 +1388,7 @@ function addXP(amount,reason){
   if(log.length>50)log=log.slice(-50);
   LS.setItem('gw_xp_log',JSON.stringify(log));
   showXPToast('+'+amount+' XP: '+reason);var xpEl=document.getElementById('topXP');if(xpEl)xpEl.textContent=(cur+amount)+' XP';
-  var oldLvl=cur;var newLvl=cur+amount;var leveledUp=false;for(var li=0;li<XP_LEVELS.length;li++){if(oldLvl<XP_LEVELS[li].xp&&newLvl>=XP_LEVELS[li].xp){leveledUp=XP_LEVELS[li];break}}
+  var oldLvl=cur;var newLvl=cur+amount;var leveledUp=false;if(typeof XP_LEVELS==='undefined')return;for(var li=0;li<XP_LEVELS.length;li++){if(oldLvl<XP_LEVELS[li].xp&&newLvl>=XP_LEVELS[li].xp){leveledUp=XP_LEVELS[li];break}}
   if(leveledUp)showNotif('\u{2B50}','Level Up!','You are now '+leveledUp.name+'!');
   triggerSync();
   checkAchievements();
