@@ -877,7 +877,7 @@ if(currentUser){
   document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+displayEmoji+'</span>'+currentUser.name;
   updateDeskLock();
   document.getElementById('authModal').classList.remove('open');
-  checkStreak();
+  setTimeout(checkStreak,2000);
   document.getElementById('splash').classList.remove('gone');
   cloudLoadAll();
 }/* CITIZEN WALL */
@@ -908,7 +908,7 @@ document.getElementById('tabBar').addEventListener('click',function(e){
   document.querySelectorAll('.tab-bar-item').forEach(function(x){x.classList.remove('active')});t.classList.add('active');
   document.querySelectorAll('.tab-view').forEach(function(x){x.classList.remove('active')});
   document.getElementById('tab-'+t.dataset.tab).classList.add('active');window.scrollTo(0,0);
-  if(t.dataset.tab==='games'){renderGameXP();setTimeout(initGlows,100)}
+  if(t.dataset.tab==='games'){setTimeout(function(){renderGameXP();initGlows()},100)}
   if(t.dataset.tab==='desk'){setTimeout(initGlows,100)}
   if(t.dataset.tab==='chill'){ocean.volume=.4;ocean.play().catch(function(){});if(playing){anthem.pause();playing=false;updBtn()}setTimeout(initChillPanel,60)}
   else{ocean.pause()}
@@ -919,7 +919,7 @@ document.getElementById('tabBar').addEventListener('click',function(e){
 var obs=new IntersectionObserver(function(e){e.forEach(function(el){if(el.isIntersecting)el.target.classList.add('vis')})},{threshold:.08});
 document.querySelectorAll('.rv').forEach(function(el){obs.observe(el)});
 
-setTimeout(function(){renderGameXP();initGlows()},500);
+setTimeout(function(){try{renderGameXP();initGlows()}catch(e){console.error('Init error:',e)}},500);
 var savedTheme=LS.getItem('gw_theme');if(savedTheme)applyTheme(savedTheme);
 /* SCROLL FLOWERS */
 var lastY=window.scrollY,flt=0;var fe=['🌸','✿','🌺','💮','🌷','🌼'];
@@ -937,6 +937,7 @@ initDots('countyC','cDots');
 document.getElementById('tuneTabs').addEventListener('click',function(e){var t=e.target.closest('.tune-tab');if(!t)return;document.querySelectorAll('#tuneTabs .tune-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-tune .tune-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('tp-'+t.dataset.p).classList.add('active')});
 
 /* ========== CHILL ========== */
+try{
 document.getElementById('chillTabs').addEventListener('click',function(e){var t=e.target.closest('.chill-tab');if(!t)return;document.querySelectorAll('#tab-chill .chill-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-chill .chill-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('cp-'+t.dataset.p).classList.add('active');setTimeout(initChillPanel,60)});
 function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(!p)return;if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-compliment'){document.getElementById('chillCompWrap').innerHTML='<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:600;color:var(--carn-light);line-height:1.3;min-height:60px" id="chillCompText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" style="margin-top:20px" onclick="document.getElementById(\'chillCompText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one \u{1F495}</button>'}}
 
@@ -976,6 +977,7 @@ function spB(){if(bw.children.length>20)return;var b=document.createElement('div
 var fortunes=["Free guac is in your forecast","A pool robot is being dispatched","Your hair will be extra good tomorrow","A Sephora is opening near you","President Barbie approved your vibe","Your next coffee is on the state","A flower is reincarnating for you","Your EBT balance just went up","Coke Zero showers in your area","Someone's about to ask your skincare routine","Your matcha lawn is growing strong","A cake pop awaits on the next block","Extended golden hour tonight","A compliment from a stranger incoming","Your skin will be extra clear","The universe is giving you what you asked for","Surprise flower delivery soon","Your next selfie breaks records","The DJ plays your song next","Perfect foam matcha incoming","Next meal unexpectedly delicious","A legendary nap awaits","Skincare routine about to show results","A text from someone you miss","Your pillow extra cold tonight","Stars rearranging for your glow up"];
 function setupFortune(cid,tid,rid){document.getElementById(cid).addEventListener('click',function(){var self=this;this.classList.add('crack');setTimeout(function(){self.style.display='none';var t=document.getElementById(tid);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.style.opacity='1';document.getElementById(rid).style.opacity='1'},500)});document.getElementById(rid).addEventListener('click',function(){var c=document.getElementById(cid);c.classList.remove('crack');c.style.display='';document.getElementById(tid).style.opacity='0';document.getElementById(tid).textContent='';this.style.opacity='0'})}
 setupFortune('fc3','ft3','fr3');
+}catch(e){console.error('Chill init error:',e)}
 
 
 /* GAME XP HEADER */
