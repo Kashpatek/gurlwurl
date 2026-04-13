@@ -216,6 +216,9 @@ section{padding:56px 20px}
 .wordle-cell.filled{border-color:rgba(255,255,255,.3)}
 .wordle-kb{display:flex;flex-direction:column;gap:8px;width:100%;margin:auto auto 20px;padding:0 2px}
 .wordle-kb-row{display:flex;gap:3px;justify-content:center}
+.wordle-key.wk-correct{background:rgba(106,170,100,.6);color:#fff;border-color:rgba(106,170,100,.4)}
+.wordle-key.wk-present{background:rgba(201,180,88,.6);color:#fff;border-color:rgba(201,180,88,.4)}
+.wordle-key.wk-absent{background:rgba(58,58,60,.6);color:rgba(255,255,255,.3);border-color:rgba(58,58,60,.4)}
 .wordle-key{padding:16px 4px;min-width:34px;border-radius:10px;border:none;background:rgba(255,255,255,.1);color:#fff;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .wordle-key:active{transform:scale(.92)}
 .wordle-key.correct{background:var(--sage)}
@@ -1063,13 +1066,13 @@ function tttAI(){
 function tttCheck(){var b=tttBoard;var lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var i=0;i<lines.length;i++){var l=lines[i];if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[1]]===b[l[2]])return b[l[0]]}return 0}
 
 /* GURLWURDLE */
-var WORDS=['brunch','matcha','lashes','glossy','queen','vibes','slay','glow','blush','serene','sparkl','divine','fierce','grace','bloom','charm','style','trend','dream','shine'];
+var WORDS=['queen','vibes','blush','bloom','charm','dream','shine','grace','peach','flirt','sweet','honey','sugar','angel','magic','fairy','heart','pearl','coral','lilac','berry','fancy','fresh','happy','lucky','sassy','curly','witty','spice','dance','brave','smile','peace','adore','glosy','latte','chill','lover','denim','plush','mocha','tulip','daisy','lotus','petal','siren','candy','crisp','bliss','mango','guava','melon','lemon','olive','salsa','pasta','pizza','bread','cream','toast','sauce','roast','basil','thyme','curry','naans','tikka','flora','saree','henna','beach','ocean','waves','palms','drift','cloud','starr','lunar','solar','earth','flame','ember','cedar','ivory','rouge','mauve','azure','amber','topaz','oasis','jewel','crown','tiara','gloss','rouge','serum','liner','toner','braid','sleek','silky','sheer','vegan','detox','fresh','treat','bravo'];
 var wWord,wGuesses,wCurrent,wDone;
 function initWordle(){
   var dayIdx=Math.floor(Date.now()/864e5)%WORDS.length;
   wWord=WORDS[dayIdx].toUpperCase().slice(0,5);
   if(wWord.length<5)wWord=(wWord+'XXXXX').slice(0,5);
-  wGuesses=[];wCurrent='';wDone=false;
+  wGuesses=[];wCurrent='';wDone=false;wKeyState={};
   renderWordle();
 }
 function renderWordle(){
@@ -1077,7 +1080,7 @@ function renderWordle(){
   for(var r=0;r<6;r++){h+='<div class="wordle-row">';for(var c=0;c<5;c++){var letter='',cls='';if(r<wGuesses.length){letter=wGuesses[r][c];cls=wGuesses[r+'c'+c]}else if(r===wGuesses.length&&c<wCurrent.length){letter=wCurrent[c];cls='filled'}h+='<div class="wordle-cell '+cls+'">'+letter+'</div>'}h+='</div>'}
   h+='</div><div class="wordle-msg" id="wMsg"></div><div class="wordle-kb">';
   var rows=['QWERTYUIOP','ASDFGHJKL','⌫ZXCVBNM↵'];
-  rows.forEach(function(row){h+='<div class="wordle-kb-row">';for(var i=0;i<row.length;i++){var k=row[i];var cls=k==='⌫'||k==='↵'?' wide':'';h+='<button class="wordle-key'+cls+'" onclick="wKey(\''+k+'\')">'+k+'</button>'}h+='</div>'});
+  rows.forEach(function(row){h+='<div class="wordle-kb-row">';for(var i=0;i<row.length;i++){var k=row[i];var cls=k==='⌫'||k==='↵'?' wide':'';var kst=wKeyState[k]||'';if(kst)cls+=' wk-'+kst;h+='<button class="wordle-key'+cls+'" onclick="wKey(\''+k+'\')">'+k+'</button>'}h+='</div>'});
   h+='</div>';
   var wb=document.getElementById('wordleBody');wb.style.padding='12px';wb.style.justifyContent='space-between';wb.innerHTML=h;
 }
@@ -1092,6 +1095,7 @@ function wKey(k){
       else g[wGuesses.length+'c'+i]='absent';
     }
     wGuesses.push(Object.assign(wCurrent.split(''),g));
+    for(var ki=0;ki<5;ki++){var kl=wCurrent[ki];if(wCurrent[ki]===wWord[ki]){wKeyState[kl]='correct'}else if(wWord.indexOf(wCurrent[ki])>=0){if(wKeyState[kl]!=='correct')wKeyState[kl]='present'}else{if(!wKeyState[kl])wKeyState[kl]='absent'}}
     if(wCurrent===wWord){wDone=true;renderWordle();document.getElementById('wMsg').textContent='Slay! You got it! 💅';fireConfetti();return}
     if(wGuesses.length>=6){wDone=true;renderWordle();document.getElementById('wMsg').textContent='The word was '+wWord;return}
     wCurrent='';renderWordle();return;
