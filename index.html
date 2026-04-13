@@ -950,8 +950,8 @@ document.getElementById('chillTabs').addEventListener('click',function(e){var t=
 function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(!p)return;if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-compliment'){document.getElementById('chillCompWrap').innerHTML='<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:600;color:var(--carn-light);line-height:1.3;min-height:60px" id="chillCompText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" style="margin-top:20px" onclick="document.getElementById(\'chillCompText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one \u{1F495}</button>'}}
 
 /* SAND */
-var sCv=document.getElementById('sandCv'),sCtx=sCv.getContext('2d'),sGrains=[],sRAF=null;
-function initSand(){var p=sCv.parentElement;var pw=p.clientWidth||window.innerWidth;var ph=p.clientHeight||(window.innerHeight-200);sCv.width=pw*2;sCv.height=ph*2;sCv.style.width=pw+'px';sCv.style.height=ph+'px';sCtx.setTransform(2,0,0,2,0,0);if(!sRAF)animS()}
+var sCv=document.getElementById('sandCv'),sCtx=sCv?sCv.getContext('2d'):null,sGrains=[],sRAF=null;
+function initSand(){if(!sCv){sCv=document.getElementById('sandCv');sCtx=sCv?sCv.getContext('2d'):null}if(!sCv)return;var p=sCv.parentElement;var pw=p.clientWidth||window.innerWidth;var ph=p.clientHeight||(window.innerHeight-200);sCv.width=pw*2;sCv.height=ph*2;sCv.style.width=pw+'px';sCv.style.height=ph+'px';sCtx.setTransform(2,0,0,2,0,0);if(!sRAF)animS()}
 function SGrain(x,y){this.x=x;this.y=y;this.vx=(Math.random()-.5)*3;this.vy=(Math.random()-.5)*3;this.life=1;this.d=.004+Math.random()*.007;this.s=1.5+Math.random()*3;this.c=['#E8D5B0','#D4C4A0','#C8B898','#F0E4CC','#BFB090'][Math.floor(Math.random()*5)];this.g=.02+Math.random()*.03}
 SGrain.prototype.u=function(){this.vy+=this.g;this.vx*=.99;this.vy*=.99;this.x+=this.vx;this.y+=this.vy;this.life-=this.d};
 SGrain.prototype.dr=function(c){c.globalAlpha=this.life*.8;c.fillStyle=this.c;c.beginPath();c.arc(this.x,this.y,this.s,0,Math.PI*2);c.fill()};
@@ -964,6 +964,8 @@ sCv.addEventListener('mouseup',function(){sCv._d=false});
 
 /* MOOD RING */
 var mr=document.getElementById('moodRing'),mRes=document.getElementById('moodRes'),mTimer=null;
+if(!mr)mr={classList:{add:function(){},remove:function(){}},addEventListener:function(){}};
+if(!mRes)mRes={classList:{add:function(){},remove:function(){}},textContent:''};
 var auras=["unhinged slay","immaculate vibes","main character unlocked","too cute to care","chaotic good glow","certified moment","soft-launch goddess","delulu is the solulu","glitter in human form","quiet luxury energy","hot mess but make it fashion"];
 function startMR(){mr.classList.add('active','spin');mRes.classList.remove('show');mTimer=setTimeout(function(){mr.classList.remove('spin');mRes.textContent="Today's aura: "+auras[Math.floor(Math.random()*auras.length)];mRes.classList.add('show')},2500)}
 function stopMR(){clearTimeout(mTimer);mr.classList.remove('active','spin')}
@@ -990,6 +992,7 @@ setupFortune('fc3','ft3','fr3');
 /* GAME XP HEADER */
 function renderGameXP(){
   var el=document.getElementById('gameXPHeader');if(!el)return;
+  if(typeof XP_LEVELS==='undefined')return;
   if(!currentUser){el.innerHTML='<div style="padding:14px 16px;text-align:center"><p style="font-size:.7rem;color:rgba(255,255,255,.3)">Login to track XP</p></div>';return;}
   var xp=getXP();var lvl=getLevel();var next=getNextLevel();
   var pct=next?Math.min(100,Math.round((xp-lvl.xp)/(next.xp-lvl.xp)*100)):100;
@@ -1001,8 +1004,9 @@ function renderGameXP(){
 }
 
 /* GLOW OBSERVER */
-var glowObs;try{glowObs=new IntersectionObserver(function(entries){entries.forEach(function(e){e.target.classList.toggle(e.target.classList.contains('game-card')?'gc-vis':'db-vis',e.isIntersecting)})},{threshold:0.2})}catch(e){glowObs={observe:function(){}}}
-function initGlows(){document.querySelectorAll('.game-card,.desk-btn').forEach(function(c){glowObs.observe(c)})}
+var glowObs={observe:function(){}};
+try{if(typeof IntersectionObserver!=='undefined'){glowObs=new IntersectionObserver(function(entries){entries.forEach(function(e){e.target.classList.toggle(e.target.classList.contains('game-card')?'gc-vis':'db-vis',e.isIntersecting)})},{threshold:0.2})}}catch(e){}
+function initGlows(){if(!glowObs||!glowObs.observe)return;try{document.querySelectorAll('.game-card,.desk-btn').forEach(function(c){glowObs.observe(c)})}catch(e){}}
 
 console.log('[GW] Core JS loaded OK');
 /* ========== GAMES ========== */
@@ -1376,8 +1380,8 @@ var STATUS_EMOJIS={
 function getUnlockedEmojis(){var xp=getXP();var unlocked=[];for(var t in STATUS_EMOJIS){if(xp>=parseInt(t))unlocked=STATUS_EMOJIS[t]}return unlocked}
 
 function getXP(){return parseInt(LS.getItem('gw_xp')||'0')}
-function getLevel(){if(currentUser&&currentUser.name==='Neha')return{name:'Supreme Visionary',xp:0};if(currentUser&&currentUser.name==='Akash')return{name:'Chief Architect',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
-function getNextLevel(){var xp=getXP();for(var i=0;i<XP_LEVELS.length;i++){if(xp<XP_LEVELS[i].xp)return XP_LEVELS[i]}return null}
+function getLevel(){if(typeof XP_LEVELS==='undefined')return{name:'Tourist',xp:0};if(currentUser&&currentUser.name==='Neha')return{name:'Supreme Visionary',xp:0};if(currentUser&&currentUser.name==='Akash')return{name:'Chief Architect',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
+function getNextLevel(){if(typeof XP_LEVELS==='undefined')return null;var xp=getXP();for(var i=0;i<XP_LEVELS.length;i++){if(xp<XP_LEVELS[i].xp)return XP_LEVELS[i]}return null}
 function addXP(amount,reason){
   var cur=getXP();LS.setItem('gw_xp',''+(cur+amount));
   var log=JSON.parse(LS.getItem('gw_xp_log')||'[]');
@@ -2354,7 +2358,7 @@ var themes={
   y2k:{bg:'#12081A',card:'rgba(200,168,233,.05)',carn:'#CC66FF',lav:'#E0CCFF',gold:'#CCCCCC',name:'Y2K'}
 };
 function applyTheme(id){
-  var t=themes[id]||themes.default;
+  if(typeof themes==='undefined')return;var t=themes[id]||themes['default']||{bg:'#0D0A0F',carn:'#D84773',lav:'#C8A8E9',gold:'#D4A853'};
   document.body.style.setProperty('--midnight',t.bg);
   document.body.style.setProperty('--carn',t.carn);
   document.body.style.setProperty('--lavender',t.lav);
