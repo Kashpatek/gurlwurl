@@ -174,31 +174,19 @@ section{padding:56px 20px}
 .games-wrap{background:var(--carn-dark);min-height:100vh;padding:20px 20px 80px}
 .games-wrap h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#fff;text-align:center;margin-bottom:4px}
 .games-wrap>p{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:rgba(255,255,255,.35);text-align:center;margin-bottom:20px}
-.game-xp-header{padding:14px 16px;border-bottom:none;position:sticky;top:48px;z-index:10;background:rgba(13,10,15,.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.game-xp-header::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:40px;background:linear-gradient(to bottom,rgba(13,10,15,.98),rgba(13,10,15,.6),transparent);pointer-events:none;z-index:9}
-.game-xp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.game-xp-left span{font-size:.5rem;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;display:block}
-.game-xp-nums{display:flex;align-items:baseline;gap:6px;margin-top:2px}
-.game-xp-nums b{font-size:1.1rem;font-weight:500;color:var(--gold)}
-.game-xp-nums em{font-size:.65rem;color:var(--carn);font-style:normal}
-.game-lb-btn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1px solid rgba(212,168,83,.15);background:rgba(212,168,83,.05);font-size:.55rem;color:var(--gold);font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.game-progress{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
-.game-progress-fill{height:100%;background:linear-gradient(90deg,var(--carn),var(--lavender));border-radius:3px}
-.game-progress-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.45rem;color:rgba(255,255,255,.15)}
-.game-grid{display:flex;flex-direction:column;gap:8px;padding:20px 12px 100px}
-.game-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.game-xp-header{padding:20px 16px 16px;border-bottom:none;position:sticky;top:48px;z-index:10;background:#0D0A0F}
+.game-xp-header::after{content:'';position:absolute;bottom:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,#0D0A0F,rgba(13,10,15,.85) 40%,transparent);pointer-events:none;z-index:9}
+.game-grid{display:flex;flex-direction:column;gap:8px;padding:50px 14px 100px}
+.game-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;background:rgba(255,255,255,.025);border:0.5px solid rgba(255,255,255,.04);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
 .game-card:active{transform:scale(.97)}
-.game-card::before{content:'';position:absolute;inset:-1px;border-radius:16px;opacity:0;transition:opacity .4s;pointer-events:none}
-.game-card.gc-vis::before{opacity:1}
-.game-card:nth-child(odd)::before{background:radial-gradient(ellipse at 15% 50%,rgba(216,71,115,.1),transparent 65%)}
-.game-card:nth-child(even)::before{background:radial-gradient(ellipse at 85% 50%,rgba(200,168,233,.1),transparent 65%)}
-.game-card:nth-child(3n)::before{background:radial-gradient(ellipse at 15% 50%,rgba(168,216,234,.1),transparent 65%)}
-.game-card:nth-child(5n)::before{background:radial-gradient(ellipse at 85% 50%,rgba(212,168,83,.08),transparent 65%)}
-.game-card:nth-child(7n)::before{background:radial-gradient(ellipse at 15% 50%,rgba(181,201,168,.1),transparent 65%)}
-.game-card-ico{font-size:1.5rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(255,255,255,.04);flex-shrink:0}
-.game-card-name{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:600;color:#fff;margin-bottom:1px}
-.game-card-desc{font-size:.55rem;color:rgba(255,255,255,.3)}
-.game-card-arrow{font-size:.6rem;color:rgba(255,255,255,.1);flex-shrink:0;margin-left:auto}
+.game-card .gc-glow{position:absolute;left:0;top:0;bottom:0;width:80px;pointer-events:none}
+.game-card-ico{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;position:relative;z-index:1}
+.game-card-name{font-size:16px;font-weight:600;color:#fff;margin-bottom:2px;letter-spacing:-.2px}
+.game-card-desc{font-size:11px;color:rgba(255,255,255,.3)}
+.game-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;z-index:1}
+.game-card-tag{font-size:8px;padding:3px 8px;border-radius:100px;font-weight:600;letter-spacing:.05em}
+.game-card-xp{font-size:9px;color:rgba(212,168,83,.45);font-weight:600}
+.game-card-arrow{font-size:11px;color:rgba(255,255,255,.08)}
 
 .game-panel{position:fixed;inset:0;z-index:7000;background:var(--carn-dark);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s,visibility .4s;display:flex;flex-direction:column;overflow-y:auto}
 .game-panel.open{opacity:1;visibility:visible;pointer-events:auto}
@@ -586,19 +574,19 @@ section{padding:56px 20px}
 <div class="games-wrap">
 <div class="game-xp-header" id="gameXPHeader"></div>
 <div class="game-grid" id="gameGrid">
-<div class="game-card" onclick="openGame('ttt')"><div class="game-card-ico">🦶</div><div style="flex:1;min-width:0"><div class="game-card-name">Tic Tac Toenails</div><div class="game-card-desc">X's and O's on painted nails</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('wordle')"><div class="game-card-ico">📝</div><div style="flex:1;min-width:0"><div class="game-card-name">Gurlwurdle</div><div class="game-card-desc">Daily girly word puzzle</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('wyr')"><div class="game-card-ico">🤔</div><div style="flex:1;min-width:0"><div class="game-card-name">Would You Rather</div><div class="game-card-desc">Impossible choices</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('bingo')"><div class="game-card-ico">🎯</div><div style="flex:1;min-width:0"><div class="game-card-name">Bingo</div><div class="game-card-desc">Weekly girly challenge card</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('redflag')"><div class="game-card-ico">🚩</div><div style="flex:1;min-width:0"><div class="game-card-name">Red or Green Flag</div><div class="game-card-desc">Swipe on dating scenarios</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('quotes')"><div class="game-card-ico">🎬</div><div style="flex:1;min-width:0"><div class="game-card-name">Trivia</div><div class="game-card-desc">Movies, culture, girlie stuff</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('flappy')"><div class="game-card-ico">🦋</div><div style="flex:1;min-width:0"><div class="game-card-name">Flappy Butterfly</div><div class="game-card-desc">Tap to fly through cake pops</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('glowjump')"><div class="game-card-ico">⬆️</div><div style="flex:1;min-width:0"><div class="game-card-name">Glow Jump</div><div class="game-card-desc">Bounce to the top</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('2048')"><div class="game-card-ico">💎</div><div style="flex:1;min-width:0"><div class="game-card-name">2048 Glam</div><div class="game-card-desc">Merge tiles to sparkle</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('casino')"><div class="game-card-ico">🎰</div><div style="flex:1;min-width:0"><div class="game-card-name">Casino</div><div class="game-card-desc">Spend your XP</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('colorrush')"><div class="game-card-ico">🎹</div><div style="flex:1;min-width:0"><div class="game-card-name">Color Rush</div><div class="game-card-desc">Tap the lanes to the beat</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('mixer')"><div class="game-card-ico">🎶</div><div style="flex:1;min-width:0"><div class="game-card-name">Beat Maker</div><div class="game-card-desc">Make your own beats</div></div><div class="game-card-arrow">›</div></div>
-<div class="game-card" onclick="openGame('thisorthat')"><div class="game-card-ico">⚡</div><div style="flex:1;min-width:0"><div class="game-card-name">This or That</div><div class="game-card-desc">Quick-fire preferences</div></div><div class="game-card-arrow">›</div></div>
+<div class="game-card" style="border-left:3px solid #D84773" onclick="openGame('wordle')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(216,71,115,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(216,71,115,.1)">📝</div><div style="flex:1;z-index:1"><div class="game-card-name">Gurlwurdle</div><div class="game-card-desc">Daily girly word puzzle</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(216,71,115,.1);color:#E8637A">DAILY</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #C8A8E9" onclick="openGame('redflag')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(200,168,233,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(200,168,233,.1)">🚩</div><div style="flex:1;z-index:1"><div class="game-card-name">Red or Green Flag</div><div class="game-card-desc">Swipe on dating scenarios</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(200,168,233,.1);color:#C8A8E9">SOCIAL</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #A8D8EA" onclick="openGame('wyr')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(168,216,234,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(168,216,234,.1)">🤔</div><div style="flex:1;z-index:1"><div class="game-card-name">Would You Rather</div><div class="game-card-desc">Impossible choices</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(168,216,234,.1);color:#A8D8EA">SOCIAL</span><span class="game-card-xp">+3 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #A8D8EA" onclick="openGame('flappy')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(168,216,234,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(168,216,234,.1)">🦋</div><div style="flex:1;z-index:1"><div class="game-card-name">Flappy Butterfly</div><div class="game-card-desc">Tap to fly through cake pops</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(168,216,234,.1);color:#A8D8EA">ARCADE</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #D84773" onclick="openGame('2048')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(216,71,115,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(216,71,115,.1)">💎</div><div style="flex:1;z-index:1"><div class="game-card-name">2048 Glam</div><div class="game-card-desc">Merge tiles to sparkle</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(216,71,115,.1);color:#E8637A">PUZZLE</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #C8A8E9" onclick="openGame('glowjump')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(200,168,233,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(200,168,233,.1)">⬆️</div><div style="flex:1;z-index:1"><div class="game-card-name">Glow Jump</div><div class="game-card-desc">Bounce on neon platforms</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(200,168,233,.1);color:#C8A8E9">ARCADE</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #B5C9A8" onclick="openGame('bingo')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(181,201,168,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(181,201,168,.1)">🎯</div><div style="flex:1;z-index:1"><div class="game-card-name">Bingo</div><div class="game-card-desc">Weekly girly challenge card</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(181,201,168,.1);color:#B5C9A8">WEEKLY</span><span class="game-card-xp">+5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #D4A853" onclick="openGame('casino')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(212,168,83,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(212,168,83,.1)">🎰</div><div style="flex:1;z-index:1"><div class="game-card-name">Casino</div><div class="game-card-desc">Spend your XP on slots</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(212,168,83,.1);color:#D4A853">CASINO</span><span class="game-card-xp">-10 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #A8D8EA" onclick="openGame('quotes')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(168,216,234,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(168,216,234,.1)">🎬</div><div style="flex:1;z-index:1"><div class="game-card-name">Trivia</div><div class="game-card-desc">Movies, culture, girlie stuff</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(168,216,234,.1);color:#A8D8EA">QUIZ</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #D84773" onclick="openGame('colorrush')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(216,71,115,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(216,71,115,.1)">🎹</div><div style="flex:1;z-index:1"><div class="game-card-name">Color Rush</div><div class="game-card-desc">Tap the lanes to the beat</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(216,71,115,.1);color:#E8637A">RHYTHM</span><span class="game-card-xp">+1-5 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #C8A8E9" onclick="openGame('thisorthat')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(200,168,233,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(200,168,233,.1)">⚡</div><div style="flex:1;z-index:1"><div class="game-card-name">This or That</div><div class="game-card-desc">Quick-fire preferences</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(200,168,233,.1);color:#C8A8E9">QUICK</span><span class="game-card-xp">+3 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #A8D8EA" onclick="openGame('ttt')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(168,216,234,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(168,216,234,.1)">🦶</div><div style="flex:1;z-index:1"><div class="game-card-name">Tic Tac Toenails</div><div class="game-card-desc">X's and O's on painted nails</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(168,216,234,.1);color:#A8D8EA">2-PLAYER</span><span class="game-card-xp">+3 XP</span></div></div>
+<div class="game-card" style="border-left:3px solid #D84773" onclick="openGame('mixer')"><div class="gc-glow" style="background:radial-gradient(ellipse at 0% 50%,rgba(216,71,115,.08),transparent)"></div><div class="game-card-ico" style="background:rgba(216,71,115,.1)">🎶</div><div style="flex:1;z-index:1"><div class="game-card-name">Beat Maker</div><div class="game-card-desc">Make your own beats</div></div><div class="game-card-right"><span class="game-card-tag" style="background:rgba(216,71,115,.1);color:#E8637A">CREATE</span><span class="game-card-xp">+0 XP</span></div></div>
 </div>
 </div>
 </div>
@@ -988,15 +976,26 @@ setupFortune('fc3','ft3','fr3');
 function renderGameXP(){
   var el=document.getElementById('gameXPHeader');if(!el)return;
   if(typeof XP_LEVELS==='undefined')return;
-  if(!currentUser){el.innerHTML='<div style="padding:14px 16px;text-align:center"><p style="font-size:.7rem;color:rgba(255,255,255,.3)">Login to track XP</p></div>';return;}
-  var xp=getXP();var lvl=getLevel();var next=getNextLevel();
-  var pct=next?Math.min(100,Math.round((xp-lvl.xp)/(next.xp-lvl.xp)*100)):100;
-  var h='<div class="game-xp-row"><div class="game-xp-left"><span>Your rank</span><div class="game-xp-nums"><b>'+xp+' XP</b><em>'+lvl.name+'</em></div></div>';
-  h+='<div class="game-lb-btn" onclick="openPanel(\'leaderboard\')">\u{1F3C6} Leaderboard</div></div>';
-  h+='<div class="game-progress"><div class="game-progress-fill" style="width:'+pct+'%"></div></div>';
-  h+='<div class="game-progress-labels"><span>'+(lvl.xp||0)+'</span><span>'+(next?next.name+' at '+next.xp:'Max rank!')+'</span></div>';
-  var el=document.getElementById('gameXPHeader');if(el)el.innerHTML=h;
+  if(!currentUser){el.innerHTML='<div style="padding:14px;text-align:center"><p style="font-size:.7rem;color:rgba(255,255,255,.3)">Login to track XP</p></div>';return;}
+  var xp=getXP();var lvl=getLevel();var next=getNextLevel();var title=getTitle();
+  var lvlIdx=0;for(var li=0;li<XP_LEVELS.length;li++){if(xp>=XP_LEVELS[li].xp)lvlIdx=li}
+  var pct=next?Math.min(100,Math.round((xp-(lvl.xp||0))/(next.xp-(lvl.xp||0))*100)):100;
+  var xpNeeded=next?(next.xp-xp):0;
+  var h='<div style="background:rgba(255,255,255,.03);border:1px solid rgba(216,71,115,.12);border-radius:20px;padding:22px;position:relative;overflow:hidden">';
+  h+='<div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(216,71,115,.1),transparent 70%);pointer-events:none"></div>';
+  h+='<div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(200,168,233,.08),transparent 70%);pointer-events:none"></div>';
+  h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">';
+  h+='<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--carn),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff">'+(lvlIdx+1)+'</div>';
+  h+='<div style="flex:1"><div style="font-size:22px;font-weight:700;color:#fff;line-height:1">'+lvl.name+'</div>';
+  if(title)h+='<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">'+title+'</div>';
+  h+='</div><div style="text-align:right"><div style="font-size:28px;font-weight:700;color:var(--gold);line-height:1">'+xp+'</div><div style="font-size:11px;color:rgba(255,255,255,.2)">XP</div></div></div>';
+  h+='<div style="height:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:hidden;margin-bottom:6px"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,var(--carn),#E8637A,var(--lavender));border-radius:4px"></div></div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:rgba(255,255,255,.2)">Level '+(lvlIdx+1)+'</span><span style="color:rgba(255,255,255,.2)">'+(next?xpNeeded+' XP to <span style=color:#E8637A>'+next.name+'</span>':'Max rank!')+'</span></div></div>';
+  h+='<div style="margin-top:12px;display:flex;align-items:center;justify-content:center;padding:13px;border-radius:14px;background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.12);cursor:pointer;gap:8px" onclick="openPanel(\'leaderboard\')">';
+  h+='<span style="font-size:16px">\u{1F3C6}</span><span style="font-size:14px;color:var(--gold);font-weight:600">View leaderboard</span><span style="font-size:12px;color:rgba(212,168,83,.3);margin-left:auto">\u{203A}</span></div>';
+  el.innerHTML=h;
 }
+
 
 /* GLOW OBSERVER */
 var glowObs={observe:function(){}};
