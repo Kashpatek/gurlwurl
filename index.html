@@ -635,6 +635,7 @@ section{padding:56px 20px}
 <div class="desk-panel" id="dp-sleep"><div class="dp-header"><div class="dp-title">😴 Sleep Log</div><div class="dp-close" onclick="closePanel('sleep')">✕</div></div><div class="dp-body" id="sleepBody"></div></div>
 <div class="desk-panel" id="dp-theme"><div class="dp-header"><div class="dp-title">🎨 Theme</div><div class="dp-close" onclick="closePanel('theme')">✕</div></div><div class="dp-body" id="themeBody"></div></div>
 <div class="desk-panel" id="dp-recipe"><div class="dp-header"><div class="dp-title">🍳 Recipe Box</div><div class="dp-close" onclick="closePanel('recipe')">✕</div></div><div class="dp-body" id="recipeBody"></div></div>
+<div class="desk-panel" id="dp-admin"><div class="dp-header"><div class="dp-title">📊 Admin Dashboard</div><div class="dp-close" onclick="closePanel('admin')">✕</div></div><div class="dp-body" id="adminBody"></div></div>
 <div class="desk-panel" id="dp-leaderboard"><div class="dp-header"><div class="dp-title">🏆 Leaderboard</div><div class="dp-close" onclick="closePanel('leaderboard')">✕</div></div><div class="dp-body" id="lbBody"></div></div>
 <div class="desk-panel" id="dp-cycle"><div class="dp-header"><div class="dp-title">🌙 Moon Cycle</div><div class="dp-close" onclick="closePanel('cycle')">✕</div></div><div class="dp-body" id="cycleBody"></div></div>
 <div class="desk-panel" id="dp-vision"><div class="dp-header"><div class="dp-title">📋 Vision Board</div><div class="dp-close" onclick="closePanel('vision')">✕</div></div><div class="dp-body" id="visionBody"></div></div>
@@ -740,7 +741,7 @@ function cloudLoadAll(){
   });
 }
 // XP for time on site (5 XP every 5 minutes)
-setInterval(function(){if(currentUser&&currentUser.name!=='Neha'&&currentUser.name!=='Akash'){addXP(5,'Time on Gurlwurl')}},300000);
+setInterval(function(){if(currentUser&&currentUser.name.toLowerCase()!=='neha'&&currentUser.name.toLowerCase()!=='akash'){addXP(5,'Time on Gurlwurl')}},300000);
 // Auto-sync every 30 seconds
 setInterval(function(){if(currentUser)syncAll()},30000);
 // Sync before leaving
@@ -882,7 +883,7 @@ function loadCitizenWall(){
     var existing=wall.querySelectorAll('.cw-card:not(.founder)');
     existing.forEach(function(e){e.remove()});
     r.citizens.forEach(function(c){
-      if(c.name==='Neha'||c.name==='Akash')return;
+      if(c.name.toLowerCase()==='neha'||c.name.toLowerCase()==='akash')return;
       var d=document.createElement('div');d.className='cw-card';
       d.innerHTML='<div class="cw-emoji">'+(c.status||'\u{1F469}')+'</div><div class="cw-name">'+c.name+'</div><div class="cw-rank">Citizen</div><div class="cw-num">CITIZEN #'+String(c.number).padStart(3,'0')+'</div>';
       wall.appendChild(d);
@@ -1379,8 +1380,8 @@ function getUnlockedEmojis(){var xp=getXP();var unlocked=[];for(var t in STATUS_
 
 function getXP(){return parseInt(LS.getItem('gw_xp')||'0')}
 function getTitle(){
-  if(currentUser&&currentUser.name==='Neha')return'Supreme Visionary';
-  if(currentUser&&currentUser.name==='Akash')return'Chief Architect';
+  if(currentUser&&currentUser.name.toLowerCase()==='neha')return'Supreme Visionary';
+  if(currentUser&&currentUser.name.toLowerCase()==='akash')return'Chief Architect';
   return null;
 }
 function getLevel(){if(typeof XP_LEVELS==='undefined')return{name:'Tourist',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
@@ -1876,6 +1877,7 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'vision\')"><div class="desk-btn-ico">\u{1F4CB}</div><div class="desk-btn-label">Vision Board</div></div>';
+  if(currentUser&&currentUser.name.toLowerCase()==='akash')h+='<div class="desk-btn" onclick="openPanel(\'admin\')"><div class="desk-btn-ico">\u{1F4CA}</div><div class="desk-btn-label">Admin</div></div>';
 
   h+='</div></div></div>';
 
@@ -1893,7 +1895,7 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'leaderboard\')"><div class="desk-btn-ico">\u{1F3C6}</div><div class="desk-btn-label">Leaderboard</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'recipe\')"><div class="desk-btn-ico">\u{1F373}</div><div class="desk-btn-label">Recipes</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'theme\')"><div class="desk-btn-ico">\u{1F3A8}</div><div class="desk-btn-label">Theme</div></div>';
-  h+='<div class="desk-btn coming-soon-badge" style="opacity:.3;pointer-events:none"><div class="desk-btn-ico">\u{1F5FA}</div><div class="desk-btn-label">Map</div></div>';
+  
   h+='</div></div>';
 
   document.getElementById('deskContent').innerHTML=h;
@@ -1928,7 +1930,7 @@ function setupJournalLock(){
 
 function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
 function closePanel(id){document.getElementById('dp-'+id).classList.remove('open')}
-function initPanel(id){var fn={hub:initHub,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
+function initPanel(id){var fn={hub:initHub,admin:initAdmin,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
 function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);LS.setItem(key,JSON.stringify(e));triggerSync();cb()}
 
 function initGratitude(){var entries=JSON.parse(LS.getItem('gw_grat')||'[]');var h='<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:16px">';entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_grat\','+i+',initGratitude)">✕</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});h+='</div>';document.getElementById('gratBody').innerHTML=h}
@@ -2563,6 +2565,88 @@ function saveCustomRecipe(){
   LS.setItem('gw_custom_recipes',JSON.stringify(customRecipes));
   addXP(5,'Added recipe');triggerSync();initRecipes();
 }
+
+
+
+/* ADMIN DASHBOARD */
+function initAdmin(){
+  if(!currentUser||currentUser.name.toLowerCase()!=='akash'){document.getElementById('adminBody').innerHTML='<p style="text-align:center;color:rgba(255,255,255,.3);padding:40px">Access denied</p>';return}
+  document.getElementById('adminBody').innerHTML='<div style="text-align:center;padding:40px"><p style="font-size:.75rem;color:rgba(255,255,255,.3)">Loading analytics...</p></div>';
+  fetch('/api/admin').then(function(r){return r.json()}).then(function(d){
+    if(!d.ok){document.getElementById('adminBody').innerHTML='<p style="color:rgba(255,255,255,.3);padding:20px">Failed: '+(d.error||'')+'</p>';return}
+    var h='';
+
+    // ANNOUNCEMENT BANNER
+    if(d.announcement)h+='<div style="background:rgba(216,71,115,.08);border:1px solid rgba(216,71,115,.15);border-radius:12px;padding:10px 14px;margin-bottom:12px"><p style="font-size:.55rem;color:rgba(255,255,255,.25)">Active announcement</p><p style="font-size:.75rem;color:var(--carn-light)">'+d.announcement.text+'</p></div>';
+
+    // OVERVIEW CARDS
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">';
+    h+='<div style="background:rgba(216,71,115,.06);border:1px solid rgba(216,71,115,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--carn)">'+d.totalCitizens+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">Citizens</div></div>';
+    h+='<div style="background:rgba(106,170,100,.06);border:1px solid rgba(106,170,100,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#6AAA64">'+d.activeToday+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">Active today</div></div>';
+    h+='<div style="background:rgba(168,216,234,.06);border:1px solid rgba(168,216,234,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#A8D8EA">'+d.activeWeek+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">This week</div></div>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">';
+    h+='<div style="background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--gold)">'+d.totals.xp+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase">Total XP</div></div>';
+    h+='<div style="background:rgba(200,168,233,.06);border:1px solid rgba(200,168,233,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--lavender)">'+d.totals.diary+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase">Diary entries</div></div>';
+    h+='</div>';
+
+    // CHURN RISK
+    if(d.churned&&d.churned.length){h+='<div style="background:rgba(255,80,80,.06);border:1px solid rgba(255,80,80,.1);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:#ff6b6b;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Churn risk (7+ days inactive)</p><p style="font-size:.7rem;color:rgba(255,255,255,.4)">'+d.churned.join(', ')+'</p></div>'}
+
+    // PEAK HOURS
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Peak usage hours</p>';
+    var maxH=Math.max.apply(null,d.peakHours)||1;
+    h+='<div style="display:flex;align-items:flex-end;gap:2px;height:50px">';
+    d.peakHours.forEach(function(v,i){var pct=Math.max(2,(v/maxH)*100);h+='<div style="flex:1;height:'+pct+'%;background:'+(v===maxH&&v>0?'var(--carn)':'rgba(255,255,255,.08)')+';border-radius:2px" title="'+i+':00 - '+v+' actions"></div>'});
+    h+='</div><div style="display:flex;justify-content:space-between;font-size:.4rem;color:rgba(255,255,255,.1);margin-top:2px"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div></div>';
+
+    // TOP FEATURES
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Top features (by XP actions)</p>';
+    var fEntries=Object.entries(d.topFeatures);var fMax=fEntries.length?fEntries[0][1]:1;
+    fEntries.forEach(function(f){var pct=Math.round(f[1]/fMax*100);h+='<div style="margin-bottom:4px"><div style="display:flex;justify-content:space-between;font-size:.6rem;margin-bottom:2px"><span style="color:rgba(255,255,255,.4)">'+f[0]+'</span><span style="color:rgba(255,255,255,.2)">'+f[1]+'</span></div><div style="height:4px;background:rgba(255,255,255,.04);border-radius:2px"><div style="width:'+pct+'%;height:100%;background:var(--carn);border-radius:2px"></div></div></div>'});
+    h+='</div>';
+
+    // MOST PLAYED GAMES
+    var gEntries=Object.entries(d.gameStats);
+    if(gEntries.length){h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Most played games</p>';gEntries.forEach(function(g){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.65rem"><span style="color:rgba(255,255,255,.4)">'+g[0]+'</span><span style="color:var(--gold)">'+g[1]+' plays</span></div>'});h+='</div>'}
+
+    // THEME POPULARITY
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Theme choices</p>';
+    Object.entries(d.themeStats).forEach(function(t){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.65rem"><span style="color:rgba(255,255,255,.4)">'+t[0]+'</span><span style="color:var(--lavender)">'+t[1]+' citizen'+(t[1]>1?'s':'')+'</span></div>'});
+    h+='</div>';
+
+    // PLATFORM TOTALS
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Content totals</p>';
+    [['Diary entries',d.totals.diary],['Dreams',d.totals.dreams],['Gratitudes',d.totals.grat],['Vision items',d.totals.vision],['Sleep logs',d.totals.sleep],['Highlights',d.totals.highlights],['Symptoms',d.totals.symptoms],['Periods',d.totals.periods],['Bucket items',d.totals.bucket],['Custom recipes',d.totals.recipes]].forEach(function(t){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:.6rem"><span style="color:rgba(255,255,255,.35)">'+t[0]+'</span><span style="color:var(--gold)">'+t[1]+'</span></div>'});
+    h+='</div>';
+
+    // CITIZEN MANAGEMENT
+    h+='<div style="background:rgba(212,168,83,.04);border:1px solid rgba(212,168,83,.1);border-radius:12px;padding:14px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Citizen management</p>';
+    h+='<div style="margin-bottom:8px"><input class="dp-input" id="adminAnnounce" placeholder="Broadcast announcement to all citizens" style="margin:0;font-size:.7rem"><button class="dp-btn" style="width:100%;margin-top:4px;font-size:.6rem" onclick="adminAction(\'announce\',{message:document.getElementById(\'adminAnnounce\').value})">Send announcement</button></div>';
+    h+='<div style="display:flex;gap:4px;margin-bottom:8px"><input class="dp-input" id="adminXPTarget" placeholder="Name" style="margin:0;flex:1;font-size:.7rem"><input class="dp-input" id="adminXPAmt" placeholder="XP" type="number" style="margin:0;width:60px;font-size:.7rem"><button class="dp-btn-outline" style="font-size:.55rem;white-space:nowrap" onclick="adminAction(\'award_xp\',{target:document.getElementById(\'adminXPTarget\').value,amount:parseInt(document.getElementById(\'adminXPAmt\').value)})">Award XP</button></div>';
+    h+='<div style="display:flex;gap:4px"><input class="dp-input" id="adminResetTarget" placeholder="Name" style="margin:0;flex:1;font-size:.7rem"><button class="dp-btn-outline" style="font-size:.55rem;white-space:nowrap" onclick="var e=prompt(\'New emoji passcode:\');if(e)adminAction(\'reset_password\',{target:document.getElementById(\'adminResetTarget\').value,newEmoji:e})">Reset password</button></div>';
+    h+='</div>';
+
+    // PER CITIZEN
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 8px">Citizens (by XP)</p>';
+    d.citizens.forEach(function(c){
+      h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:14px;margin-bottom:8px">';
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:1.4rem">'+c.status+'</span><div style="flex:1"><div style="font-size:.85rem;font-weight:600;color:#fff">'+c.name+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2)">#'+String(c.number).padStart(3,'0')+' | Theme: '+c.theme+' | Joined: '+c.created+'</div></div><div style="text-align:right"><div style="font-size:1.1rem;font-weight:700;color:var(--gold)">'+c.xp+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.15)">XP</div></div></div>';
+      h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:6px">';
+      [['S',c.streak],['B',c.achievements],['D',c.diary],['Dr',c.dreams],['G',c.gratitude],['V',c.vision],['Sl',c.sleep],['H',c.highlights],['P',c.periods],['Sy',c.symptoms],['Bu',c.bucket],['R',c.customRecipes]].forEach(function(m){h+='<div style="text-align:center;padding:4px;background:rgba(255,255,255,.02);border-radius:6px"><div style="font-size:.7rem;font-weight:600;color:rgba(255,255,255,.45)">'+m[1]+'</div><div style="font-size:.35rem;color:rgba(255,255,255,.12)">'+m[0]+'</div></div>'});
+      h+='</div>';
+      if(c.recentXP&&c.recentXP.length){h+='<details style="margin-top:4px"><summary style="font-size:.5rem;color:rgba(255,255,255,.15);cursor:pointer">Recent activity</summary><div style="padding:4px 0">';c.recentXP.forEach(function(x){h+='<div style="font-size:.5rem;color:rgba(255,255,255,.2);padding:1px 0">+'+x.amount+' '+x.reason+'</div>'});h+='</div></details>'}
+      h+='<div style="font-size:.4rem;color:rgba(255,255,255,.08);margin-top:4px">Last: '+c.lastActivity+' | Actions: '+(c.totalActions||0)+'</div></div>';
+    });
+
+    h+='<button class="dp-btn-outline" style="width:100%;margin-top:12px;font-size:.65rem" onclick="initAdmin()">Refresh</button>';
+    document.getElementById('adminBody').innerHTML=h;
+  }).catch(function(e){document.getElementById('adminBody').innerHTML='<p style="color:rgba(255,255,255,.3);padding:20px">Error: '+e.message+'</p>'});
+}
+function adminAction(act,data){fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:act},data))}).then(function(r){return r.json()}).then(function(d){showXPToast(d.message||'Done');setTimeout(initAdmin,500)}).catch(function(e){showXPToast('Error')})}
 
 
 /* STOCK TICKER */
