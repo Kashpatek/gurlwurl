@@ -1,0 +1,1991 @@
+var anthem=document.getElementById('anthem'),ocean=document.getElementById('ocean');
+var playing=false,LS=localStorage,today=new Date().toDateString();
+var currentUser=JSON.parse(LS.getItem('gw_user')||'null');
+var API='/api/citizens';
+var GIRLY_EMOJIS=['💅','👑','🌸','💕','🦋','🌺','💖','✨','🧸','🌷','💋','🎀','🌙','💐','🫧','💗','🪷','🌈','💌','🍰','🧁','☕','🫶','💎','🪩','🩷','🫀','🧚','🪻','🌻','🍓','🍒','🧋','🎭','🦄','🐚','🌊','🫣','💫','🪄','🎪','🌹','🍫','🧿','🫶','🎵'];
+
+/* API HELPER */
+function api(data){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(r){return r.json()}).catch(function(){return{ok:false}})}
+
+/* CLOUD SYNC */
+function cloudSave(key,value){
+  LS.setItem('gw_'+key,typeof value==='string'?value:JSON.stringify(value));
+  if(currentUser){api({action:'save',name:currentUser.name,key:key,data:value})}
+}
+function syncAll(){
+  if(!currentUser)return;
+  var data={};
+  var keys=['grat','ratings','bucket','shop','skincare','countdown','xp','xp_log','spend_log','achievements','games_played','flappy_best','wheel','stamps'];
+  keys.forEach(function(k){var v=LS.getItem('gw_'+k);if(v){try{data[k]=JSON.parse(v)}catch(e){data[k]=v}}});
+  // Today's habits and water
+  var hk='habits_'+today;var wk='water_'+today;
+  var hv=LS.getItem('gw_habits_'+today);if(hv)data[hk]=JSON.parse(hv);
+  var wv=LS.getItem('gw_water_'+today);if(wv)data[wk]=parseInt(wv);
+  api({action:'syncall',name:currentUser.name,data:data});
+}
+function cloudLoadAll(){
+  if(!currentUser)return;
+  api({action:'loadall',name:currentUser.name}).then(function(r){
+    if(!r.ok||!r.data)return;
+    var d=r.data;
+    if(d.grat)LS.setItem('gw_grat',JSON.stringify(d.grat));
+    if(d.ratings)LS.setItem('gw_ratings',JSON.stringify(d.ratings));
+    if(d.bucket)LS.setItem('gw_bucket',JSON.stringify(d.bucket));
+    if(d.shop)LS.setItem('gw_shop',JSON.stringify(d.shop));
+    if(d.skincare)LS.setItem('gw_skincare',JSON.stringify(d.skincare));
+    if(d.countdown)LS.setItem('gw_countdown',typeof d.countdown==='string'?d.countdown:JSON.stringify(d.countdown));
+    if(d.xp)LS.setItem('gw_xp',''+d.xp);
+    if(d.xp_log)LS.setItem('gw_xp_log',JSON.stringify(d.xp_log));
+    if(d.spend_log)LS.setItem('gw_spend_log',JSON.stringify(d.spend_log));
+    if(d.achievements)LS.setItem('gw_achievements',JSON.stringify(d.achievements));
+    if(d.games_played)LS.setItem('gw_games_played',JSON.stringify(d.games_played));
+    if(d.flappy_best)LS.setItem('gw_flappy_best',''+d.flappy_best);
+    if(d.wheel)LS.setItem('gw_wheel',JSON.stringify(d.wheel));
+    if(d.stamps)LS.setItem('gw_stamps',JSON.stringify(d.stamps));
+    if(d.habits_today)LS.setItem('gw_habits_'+today,JSON.stringify(d.habits_today));
+    if(d.water_today)LS.setItem('gw_water_'+today,''+d.water_today);
+  });
+}
+// XP for time on site (5 XP every 5 minutes)
+setInterval(function(){if(currentUser&&currentUser.name.toLowerCase()!=='neha'&&currentUser.name.toLowerCase()!=='akash'){addXP(5,'Time on Gurlwurl')}},300000);
+// Auto-sync every 30 seconds
+setInterval(function(){if(currentUser)syncAll()},30000);
+// Sync before leaving
+window.addEventListener('beforeunload',function(){if(currentUser)syncAll()});
+// Sync after key actions (debounced)
+var syncTimer=null;
+function triggerSync(){if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(syncAll,3000)}
+/* SPLASH */
+document.getElementById('kissBtn').addEventListener('click',function(e){
+  var r=e.currentTarget.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  var em=['💋','💕','✨','🌸','💗','💖','✿','🌺'];
+  for(var i=0;i<14;i++){var p=document.createElement('div');p.className='kiss-particle';p.textContent=em[i%em.length];var a=(Math.PI*2/14)*i,d=90+Math.random()*120;p.style.left=cx+'px';p.style.top=cy+'px';p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',Math.sin(a)*d+'px');p.style.setProperty('--rot',(Math.random()*360-180)+'deg');p.style.fontSize=(1+Math.random()*1.2)+'rem';document.body.appendChild(p);setTimeout(function(el){return function(){el.remove()}}(p),1600)}
+  anthem.volume=.55;anthem.currentTime=7;anthem.play().then(function(){playing=true;document.getElementById('musicBtn').classList.add('show');updBtn()}).catch(function(){});
+  setTimeout(function(){document.getElementById('splash').classList.add('gone');document.body.classList.remove('site-hidden')},400);
+  setTimeout(function(){document.getElementById('iosNotif').classList.add('show');setTimeout(function(){document.getElementById('iosNotif').classList.remove('show')},4000)},1500);
+  
+  loadCitizenWall();
+});
+
+/* MUSIC */
+var mb=document.getElementById('musicBtn');
+mb.addEventListener('click',function(){if(playing){anthem.pause();playing=false}else{anthem.play();playing=true}updBtn()});
+function updBtn(){mb.querySelector('.pico').style.display=playing?'none':'block';mb.querySelector('.paico').style.display=playing?'block':'none'}
+
+/* AUTH */
+var selectedEmoji='';
+function goBackAuth(){document.getElementById('authStep1').style.display='block';document.getElementById('authStep2').style.display='none';document.getElementById('authErr').textContent='';selectedEmoji=''}
+function showAuthMode(mode){
+  var s=document.getElementById('authStep1');s.style.display='none';
+  var s2=document.getElementById('authStep2');s2.style.display='block';
+  document.getElementById('authErr').textContent='';selectedEmoji='';
+  if(mode==='returning'){
+    s2.innerHTML='<div class="auth-back" onclick="goBackAuth()">← back</div><h2>Welcome back</h2><p>Enter your name first</p><input class="auth-input" id="authName" placeholder="Your name"><button class="auth-btn" onclick="loadLoginEmojis()" style="margin-bottom:16px">Next</button><div id="loginEmojiWrap" style="display:none"><p style="font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:8px">Now tap your passcode emoji</p><div class="emoji-grid" id="loginEmojis"></div><button class="auth-btn" onclick="doLogin()">Enter Gurlwurl</button></div>';
+  }else{
+    s2.innerHTML='<div class="auth-back" onclick="goBackAuth()">← back</div><h2>Become a Citizen</h2><p>Join the sovereign state</p><input class="auth-input" id="regName" placeholder="Your name"><p style="font-size:.7rem;color:rgba(255,255,255,.35);margin:8px 0 4px">Choose your passcode emoji</p><div class="emoji-grid" id="regEmojis"></div><p style="font-size:.65rem;color:rgba(255,255,255,.25);margin:12px 0 4px">Add a selfie (optional)</p><label style="display:inline-block;padding:10px 20px;border-radius:12px;border:1px dashed rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-size:.72rem;cursor:pointer"><input type="file" accept="image/*" capture="user" id="selfieInput" style="display:none" onchange="previewSelfie(this)">📸 Take or Upload Photo</label><div id="selfiePreview" style="margin-top:8px"></div><div class="bylaws-box"><strong>The Bylaws of Gurlwurl</strong><br><br>I. Guacamole shall never cost extra.<br>II. All flowers are immortal by decree.<br>III. No citizen shall experience a bad hair day.<br>IV. Coke Zero shall fall freely from the sky.<br>V. Equal rights, equal fights.<br>VI. Vibes are mandatory. Drama goes to Court of Appeals.<br>VII. Pool robots serve all citizens promptly.</div><div class="bylaws-check"><input type="checkbox" id="bylawsAgree"><label for="bylawsAgree">I solemnly agree to the bylaws</label></div><button class="auth-btn" onclick="doRegister()">Claim Citizenship</button>';
+    renderRegEmojis();
+  }
+}
+function loadLoginEmojis(){
+  var name=document.getElementById('authName').value.trim();
+  if(!name){document.getElementById('authErr').textContent='Enter your name first';return}
+  document.getElementById('authErr').textContent='';
+  var grid=document.getElementById('loginEmojis');grid.innerHTML='';
+  var shuffled=GIRLY_EMOJIS.slice().sort(function(){return Math.random()-.5});
+  var showing=12;
+  function render(){grid.innerHTML='';shuffled.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';if(e===selectedEmoji)d.classList.add('selected');d.textContent=e;d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e};grid.appendChild(d)});if(showing<shuffled.length){var more=document.createElement('div');more.className='emoji-opt';more.textContent='...';more.style.color='rgba(255,255,255,.3)';more.style.fontSize='.8rem';more.onclick=function(){showing=Math.min(showing+12,shuffled.length);render()};grid.appendChild(more)}}
+  render();
+  document.getElementById('loginEmojiWrap').style.display='block';
+}
+function renderRegEmojis(){
+  var grid=document.getElementById('regEmojis');grid.innerHTML='';
+  var all=GIRLY_EMOJIS.slice().sort(function(){return Math.random()-.5});
+  var showing=12;
+  function render(){grid.innerHTML='';all.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';if(e===selectedEmoji)d.classList.add('selected');d.textContent=e;d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e};grid.appendChild(d)});if(showing<all.length){var more=document.createElement('div');more.className='emoji-opt';more.textContent='...';more.style.color='rgba(255,255,255,.3)';more.style.fontSize='.8rem';more.onclick=function(){showing=Math.min(showing+12,all.length);render()};grid.appendChild(more)}}
+  render();
+}
+function previewSelfie(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('selfiePreview').innerHTML='<img src="'+e.target.result+'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--carn);margin-top:4px">';
+    LS.setItem('gw_selfie',e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+/* FOUNDER FALLBACKS (work even without API) */
+var FOUNDERS={
+  neha:{name:'Neha',emoji:'🦋',number:1,status:'👸',title:'Supreme Visionary'},
+  akash:{name:'Akash',emoji:'🪩',number:2,status:'🫡',title:'Chief Architect'}
+};
+
+function doLogin(){
+  var name=document.getElementById('authName').value.trim();
+  if(!name||!selectedEmoji){document.getElementById('authErr').textContent='Enter name and tap emoji';return}
+  var id=name.toLowerCase().trim();
+  // Try API first (has latest password if changed)
+  api({action:'login',name:name,emoji:selectedEmoji}).then(function(r){
+    if(r.ok){currentUser=r.citizen;currentUser.emoji=selectedEmoji;LS.setItem('gw_user',JSON.stringify(currentUser));completeAuth();return}
+    // API said wrong password or not found - check if API was reachable
+    if(r.error==='Wrong passcode'||r.error==='Citizen not found'){
+      // API is working, credentials are wrong. But check localStorage in case they changed pw locally
+      var saved=JSON.parse(LS.getItem('gw_user')||'null');
+      if(saved&&saved.name&&saved.name.toLowerCase()===id&&saved.emoji===selectedEmoji){
+        currentUser=saved;completeAuth();return}
+      // Last resort: check FOUNDERS (only if API had no record)
+      if(r.error==='Citizen not found'&&FOUNDERS[id]&&FOUNDERS[id].emoji===selectedEmoji){
+        currentUser=FOUNDERS[id];currentUser.emoji=selectedEmoji;LS.setItem('gw_user',JSON.stringify(currentUser));completeAuth();return}
+      document.getElementById('authErr').textContent='Wrong name or emoji';return;
+    }
+    // API unreachable - check localStorage then FOUNDERS
+    var saved=JSON.parse(LS.getItem('gw_user')||'null');
+    if(saved&&saved.name&&saved.name.toLowerCase()===id&&saved.emoji===selectedEmoji){
+      currentUser=saved;completeAuth();return}
+    if(FOUNDERS[id]&&FOUNDERS[id].emoji===selectedEmoji){
+      currentUser=FOUNDERS[id];currentUser.emoji=selectedEmoji;LS.setItem('gw_user',JSON.stringify(currentUser));completeAuth();return}
+    document.getElementById('authErr').textContent='Wrong name or emoji';
+  });
+}
+function doRegister(){
+  var name=document.getElementById('regName').value.trim();
+  var agree=document.getElementById('bylawsAgree').checked;
+  if(!name||!selectedEmoji){document.getElementById('authErr').textContent='Enter name and choose emoji';return}
+  if(!agree){document.getElementById('authErr').textContent='You must agree to the bylaws';return}
+  var id=name.toLowerCase().trim();
+  if(FOUNDERS[id]){document.getElementById('authErr').textContent='That name is reserved for a founder';return}
+  api({action:'register',name:name,emoji:selectedEmoji}).then(function(r){
+    if(r.ok){currentUser=r.citizen;LS.setItem('gw_user',JSON.stringify(currentUser));fireConfetti();completeAuth();loadCitizenWall()}
+    else{document.getElementById('authErr').textContent=r.error||'Registration failed. Try a different name.'}
+  });
+}
+function skipAuth(){document.getElementById('authModal').classList.remove('open');document.getElementById('splash').classList.remove('gone');updateDeskLock()}
+function completeAuth(){
+  document.getElementById('authModal').classList.remove('open');
+  document.getElementById('splash').classList.remove('gone');
+  var displayEmoji=currentUser.status||'👩';
+  document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+displayEmoji+'</span>'+currentUser.name;
+  document.getElementById('deskTab').classList.remove('locked');
+  updateDeskLock();
+  cloudLoadAll();
+}
+function updateDeskLock(){
+  if(!currentUser){document.getElementById('deskTab').classList.add('locked')}
+  else{document.getElementById('deskTab').classList.remove('locked')}
+}
+// Auto-login on load
+if(currentUser){
+  var displayEmoji=currentUser.status||'👩';
+  document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+displayEmoji+'</span>'+currentUser.name;
+  updateDeskLock();
+  document.getElementById('authModal').classList.remove('open');
+  setTimeout(checkStreak,2000);
+  document.getElementById('splash').classList.remove('gone');
+  cloudLoadAll();
+}/* CITIZEN WALL */
+function loadCitizenWall(){
+  api({action:'citizens'}).then(function(r){
+    if(!r.ok||!r.citizens)return;
+    var wall=document.getElementById('citizenWall');
+    var existing=wall.querySelectorAll('.cw-card:not(.founder)');
+    existing.forEach(function(e){e.remove()});
+    r.citizens.forEach(function(c){
+      if(c.name.toLowerCase()==='neha'||c.name.toLowerCase()==='akash')return;
+      var d=document.createElement('div');d.className='cw-card';
+      d.innerHTML='<div class="cw-emoji">'+(c.status||'\u{1F469}')+'</div><div class="cw-name">'+c.name+'</div><div class="cw-rank">Citizen</div><div class="cw-num">CITIZEN #'+String(c.number).padStart(3,'0')+'</div>';
+      wall.appendChild(d);
+    });
+  }).catch(function(){});
+}
+
+/* TABS */
+document.getElementById('tabBar').addEventListener('click',function(e){
+  var t=e.target.closest('.tab-bar-item');if(!t)return;
+  if(t.dataset.tab==='desk'&&!currentUser){
+    document.getElementById('authModal').classList.add('open');
+    document.getElementById('authStep1').style.display='block';
+    document.getElementById('authStep2').style.display='none';
+    return;
+  }
+  document.querySelectorAll('.tab-bar-item').forEach(function(x){x.classList.remove('active')});t.classList.add('active');
+  document.querySelectorAll('.tab-view').forEach(function(x){x.classList.remove('active')});
+  document.getElementById('tab-'+t.dataset.tab).classList.add('active');window.scrollTo(0,0);
+  if(t.dataset.tab==='games'){setTimeout(function(){renderGameXP();initGlows()},100)}
+  if(t.dataset.tab==='desk'){setTimeout(initGlows,100)}
+  if(t.dataset.tab==='chill'){ocean.volume=.4;ocean.play().catch(function(){});if(playing){anthem.pause();playing=false;updBtn()}setTimeout(initChillPanel,60)}
+  else{ocean.pause()}
+  if(t.dataset.tab==='desk')initDesk();
+});
+
+/* SCROLL REVEAL */
+var obs=new IntersectionObserver(function(e){e.forEach(function(el){if(el.isIntersecting)el.target.classList.add('vis')})},{threshold:.08});
+document.querySelectorAll('.rv').forEach(function(el){obs.observe(el)});
+
+setTimeout(function(){try{renderGameXP();initGlows()}catch(e){console.error('Init error:',e)}},500);
+var savedTheme=LS.getItem('gw_theme');if(savedTheme)applyTheme(savedTheme);
+/* SCROLL FLOWERS */
+var lastY=window.scrollY,flt=0;var fe=['🌸','✿','🌺','💮','🌷','🌼'];
+window.addEventListener('scroll',function(){var n=Date.now();if(n-flt<250)return;flt=n;var cur=window.scrollY,dir=cur>lastY?1:-1;lastY=cur;for(var i=0;i<2;i++){var f=document.createElement('div');f.className='flower-particle';f.textContent=fe[Math.floor(Math.random()*fe.length)];f.style.left=Math.random()*100+'vw';f.style.fontSize=(.8+Math.random())+'rem';if(dir>0){f.style.bottom='-20px';f.style.setProperty('--drift','-'+(80+Math.random()*80)+'px')}else{f.style.top='-20px';f.style.setProperty('--drift',(80+Math.random()*80)+'px')}f.style.setProperty('--spin',(Math.random()*360-180)+'deg');document.body.appendChild(f);setTimeout(function(el){return function(){el.remove()}}(f),2200)}},{passive:true});
+
+/* CONFETTI */
+function fireConfetti(){var cols=['#F4A0B0','#C8A8E9','#FFDAB9','#B5C9A8','#A8D8EA','#E8637A','#FFD700'];for(var i=0;i<50;i++){var c=document.createElement('div');c.className='confetti-piece';c.style.left=Math.random()*100+'vw';c.style.top='-10px';c.style.background=cols[Math.floor(Math.random()*cols.length)];c.style.setProperty('--crot',(Math.random()*720)+'deg');c.style.animationDelay=(Math.random()*.5)+'s';document.body.appendChild(c);setTimeout(function(el){return function(){el.remove()}}(c),3500)}}
+
+/* CAROUSEL */
+function initDots(a,b){var c=document.getElementById(a),d=document.getElementById(b);for(var i=0;i<c.children.length;i++){var dot=document.createElement('div');dot.className='cdot';if(!i)dot.classList.add('active');d.appendChild(dot)}c.addEventListener('scroll',function(){var w=c.children[0].offsetWidth+14,idx=Math.round(c.scrollLeft/w);d.querySelectorAll('.cdot').forEach(function(dot,i){dot.classList.toggle('active',i===idx)})},{passive:true})}
+initDots('perksC','pDots');
+initDots('countyC','cDots');
+
+/* TUNE TABS */
+document.getElementById('tuneTabs').addEventListener('click',function(e){var t=e.target.closest('.tune-tab');if(!t)return;document.querySelectorAll('#tuneTabs .tune-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-tune .tune-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('tp-'+t.dataset.p).classList.add('active')});
+
+console.log('[GW] Chill JS loaded OK');
+/* ========== CHILL ========== */
+document.getElementById('chillTabs').addEventListener('click',function(e){var t=e.target.closest('.chill-tab');if(!t)return;document.querySelectorAll('#tab-chill .chill-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-chill .chill-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('cp-'+t.dataset.p).classList.add('active');setTimeout(initChillPanel,60)});
+function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(!p)return;if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-compliment'){document.getElementById('chillCompWrap').innerHTML='<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:600;color:var(--carn-light);line-height:1.3;min-height:60px" id="chillCompText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" style="margin-top:20px" onclick="document.getElementById(\'chillCompText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one \u{1F495}</button>'}}
+
+/* SAND */
+var sCv=document.getElementById('sandCv'),sCtx=sCv?sCv.getContext('2d'):null,sGrains=[],sRAF=null;
+function initSand(){if(!sCv){sCv=document.getElementById('sandCv');sCtx=sCv?sCv.getContext('2d'):null}if(!sCv)return;var p=sCv.parentElement;var pw=p.clientWidth||window.innerWidth;var ph=p.clientHeight||(window.innerHeight-200);sCv.width=pw*2;sCv.height=ph*2;sCv.style.width=pw+'px';sCv.style.height=ph+'px';sCtx.setTransform(2,0,0,2,0,0);if(!sRAF)animS()}
+function SGrain(x,y){this.x=x;this.y=y;this.vx=(Math.random()-.5)*3;this.vy=(Math.random()-.5)*3;this.life=1;this.d=.004+Math.random()*.007;this.s=1.5+Math.random()*3;this.c=['#E8D5B0','#D4C4A0','#C8B898','#F0E4CC','#BFB090'][Math.floor(Math.random()*5)];this.g=.02+Math.random()*.03}
+SGrain.prototype.u=function(){this.vy+=this.g;this.vx*=.99;this.vy*=.99;this.x+=this.vx;this.y+=this.vy;this.life-=this.d};
+SGrain.prototype.dr=function(c){c.globalAlpha=this.life*.8;c.fillStyle=this.c;c.beginPath();c.arc(this.x,this.y,this.s,0,Math.PI*2);c.fill()};
+function animS(){var w=sCv.width/2,h=sCv.height/2;sCtx.clearRect(0,0,w,h);sCtx.globalAlpha=.03;sCtx.fillStyle='#D4C4A0';for(var i=0;i<5;i++){var y=h-12-i*8+Math.sin(Date.now()*.001+i)*3;sCtx.beginPath();sCtx.moveTo(0,y);for(var x=0;x<w;x+=20)sCtx.quadraticCurveTo(x+10,y-2+Math.sin(Date.now()*.0008+x*.02+i)*2,x+20,y);sCtx.lineTo(w,h);sCtx.lineTo(0,h);sCtx.fill()}sCtx.globalAlpha=1;sGrains=sGrains.filter(function(p){return p.life>0});sGrains.forEach(function(p){p.u();p.dr(sCtx)});sRAF=requestAnimationFrame(animS)}
+if(sCv){sCv.addEventListener('touchstart',function(e){e.preventDefault();var r=sCv.getBoundingClientRect();for(var j=0;j<e.touches.length;j++)for(var i=0;i<8;i++)sGrains.push(new SGrain(e.touches[j].clientX-r.left,e.touches[j].clientY-r.top));document.getElementById('sandHint').style.opacity='0'},{passive:false});
+sCv.addEventListener('touchmove',function(e){e.preventDefault();var r=sCv.getBoundingClientRect();for(var j=0;j<e.touches.length;j++)for(var i=0;i<5;i++)sGrains.push(new SGrain(e.touches[j].clientX-r.left,e.touches[j].clientY-r.top))},{passive:false});
+sCv.addEventListener('mousedown',function(e){var r=sCv.getBoundingClientRect();for(var i=0;i<8;i++)sGrains.push(new SGrain(e.clientX-r.left,e.clientY-r.top));sCv._d=true;document.getElementById('sandHint').style.opacity='0'});
+sCv.addEventListener('mousemove',function(e){if(!sCv._d)return;var r=sCv.getBoundingClientRect();for(var i=0;i<5;i++)sGrains.push(new SGrain(e.clientX-r.left,e.clientY-r.top))});
+sCv.addEventListener('mouseup',function(){sCv._d=false});}
+
+/* MOOD RING */
+var mr=document.getElementById('moodRing'),mRes=document.getElementById('moodRes'),mTimer=null;
+if(!mr)mr={classList:{add:function(){},remove:function(){}},addEventListener:function(){}};
+if(!mRes)mRes={classList:{add:function(){},remove:function(){}},textContent:''};
+var auras=["unhinged slay","immaculate vibes","main character unlocked","too cute to care","chaotic good glow","certified moment","soft-launch goddess","delulu is the solulu","glitter in human form","quiet luxury energy","hot mess but make it fashion"];
+function startMR(){mr.classList.add('active','spin');mRes.classList.remove('show');mTimer=setTimeout(function(){mr.classList.remove('spin');mRes.textContent="Today's aura: "+auras[Math.floor(Math.random()*auras.length)];mRes.classList.add('show')},2500)}
+function stopMR(){clearTimeout(mTimer);mr.classList.remove('active','spin')}
+mr.addEventListener('touchstart',function(e){e.preventDefault();startMR()},{passive:false});
+mr.addEventListener('touchend',stopMR);mr.addEventListener('mousedown',startMR);mr.addEventListener('mouseup',stopMR);
+
+/* SLOTS */
+var sWords=[["You're","She's","Main","Certified","Total","Effortless"],["that","a","the","one","pure","100%"],["girl \u{2728}","queen \u{1F451}","icon \u{1F485}","slay \u{1F495}","vibe \u{1F338}","serve \u{273F}"]];
+(function(){try{sWords.forEach(function(w,i){var el=document.getElementById('r'+(i+1));if(!el)return;var inner=el.querySelector('.slot-reel-inner');if(!inner)return;inner.innerHTML='';w.forEach(function(t){var d=document.createElement('div');d.className='slot-item';d.textContent=t;inner.appendChild(d)})})}catch(e){}})();
+var slotPullEl=document.getElementById('slotPull');if(slotPullEl)slotPullEl.addEventListener('click',function(){var res=[];sWords.forEach(function(w,i){var idx=Math.floor(Math.random()*w.length);res.push(w[idx]);var inner=document.getElementById('r'+(i+1)).querySelector('.slot-reel-inner');inner.style.transition='none';inner.style.transform='translateY(0)';void inner.offsetHeight;inner.style.transition='transform '+(0.8+i*0.2)+'s cubic-bezier(.16,1,.3,1)';inner.style.transform='translateY(-'+(idx*44)+'px)'});setTimeout(function(){document.getElementById('slotRes').textContent=res.join(' ')},1400)});
+
+/* BUBBLES */
+var bw=document.getElementById('bubWrap'),bInt=null;
+var bCols=['rgba(244,160,176,.35)','rgba(200,168,233,.35)','rgba(168,216,234,.35)','rgba(255,218,185,.35)','rgba(181,201,168,.35)'];
+function startBubbles(){if(bInt)return;spB();bInt=setInterval(spB,700)}
+function spB(){if(bw.children.length>20)return;var b=document.createElement('div');b.className='bubble';var sz=30+Math.random()*45;b.style.width=sz+'px';b.style.height=sz+'px';b.style.left=Math.random()*88+'%';b.style.bottom='-50px';b.style.background=bCols[Math.floor(Math.random()*bCols.length)];b.style.border='1px solid rgba(255,255,255,.15)';b.style.setProperty('--dur',(4+Math.random()*4)+'s');b.addEventListener('click',function(){var fx=document.createElement('div');fx.className='bubble-pop-fx';fx.textContent='\u{1F338}';fx.style.left=b.offsetLeft+sz/2+'px';fx.style.top=b.offsetTop+'px';bw.appendChild(fx);setTimeout(function(){fx.remove()},600);b.remove()});bw.appendChild(b);setTimeout(function(){if(b.parentNode)b.remove()},8000)}
+
+/* FORTUNE */
+var fortunes=["Free guac is in your forecast","A pool robot is being dispatched","Your hair will be extra good tomorrow","A Sephora is opening near you","President Barbie approved your vibe","Your next coffee is on the state","A flower is reincarnating for you","Your EBT balance just went up","Coke Zero showers in your area","Someone's about to ask your skincare routine","Your matcha lawn is growing strong","A cake pop awaits on the next block","Extended golden hour tonight","A compliment from a stranger incoming","Your skin will be extra clear","The universe is giving you what you asked for","Surprise flower delivery soon","Your next selfie breaks records","The DJ plays your song next","Perfect foam matcha incoming","Next meal unexpectedly delicious","A legendary nap awaits","Skincare routine about to show results","A text from someone you miss","Your pillow extra cold tonight","Stars rearranging for your glow up"];
+function setupFortune(cid,tid,rid){var fEl=document.getElementById(cid);if(!fEl)return;fEl.addEventListener('click',function(){var self=this;this.classList.add('crack');setTimeout(function(){self.style.display='none';var t=document.getElementById(tid);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.style.opacity='1';document.getElementById(rid).style.opacity='1'},500)});var rEl=document.getElementById(rid);if(rEl)rEl.addEventListener('click',function(){var c=document.getElementById(cid);c.classList.remove('crack');c.style.display='';document.getElementById(tid).style.opacity='0';document.getElementById(tid).textContent='';this.style.opacity='0'})}
+setupFortune('fc3','ft3','fr3');
+
+
+/* GAME XP HEADER */
+function renderGameXP(){
+  var el=document.getElementById('gameXPHeader');if(!el)return;
+  if(typeof XP_LEVELS==='undefined')return;
+  if(!currentUser){el.innerHTML='<div style="padding:14px;text-align:center"><p style="font-size:.7rem;color:rgba(255,255,255,.3)">Login to track XP</p></div>';return;}
+  var xp=getXP();var lvl=getLevel();var next=getNextLevel();var title=getTitle();
+  var lvlIdx=0;for(var li=0;li<XP_LEVELS.length;li++){if(xp>=XP_LEVELS[li].xp)lvlIdx=li}
+  var pct=next?Math.min(100,Math.round((xp-(lvl.xp||0))/(next.xp-(lvl.xp||0))*100)):100;
+  var xpNeeded=next?(next.xp-xp):0;
+  var h='<div style="background:rgba(255,255,255,.03);border:1px solid rgba(216,71,115,.12);border-radius:20px;padding:22px;position:relative;overflow:hidden">';
+  h+='<div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(216,71,115,.1),transparent 70%);pointer-events:none"></div>';
+  h+='<div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(200,168,233,.08),transparent 70%);pointer-events:none"></div>';
+  h+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">';
+  h+='<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--carn),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff">'+(lvlIdx+1)+'</div>';
+  h+='<div style="flex:1"><div style="font-size:22px;font-weight:700;color:#fff;line-height:1">'+lvl.name+'</div>';
+  if(title)h+='<div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">'+title+'</div>';
+  h+='</div><div style="text-align:right"><div style="font-size:28px;font-weight:700;color:var(--gold);line-height:1">'+xp+'</div><div style="font-size:11px;color:rgba(255,255,255,.2)">XP</div></div></div>';
+  h+='<div style="height:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:hidden;margin-bottom:6px"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,var(--carn),#E8637A,var(--lavender));border-radius:4px"></div></div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:rgba(255,255,255,.2)">Level '+(lvlIdx+1)+'</span><span style="color:rgba(255,255,255,.2)">'+(next?xpNeeded+' XP to <span style=color:#E8637A>'+next.name+'</span>':'Max rank!')+'</span></div></div>';
+  h+='<div style="margin-top:12px;display:flex;align-items:center;justify-content:center;padding:13px;border-radius:14px;background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.12);cursor:pointer;gap:8px" onclick="openPanel(\'leaderboard\')">';
+  h+='<span style="font-size:16px">\u{1F3C6}</span><span style="font-size:14px;color:var(--gold);font-weight:600">View leaderboard</span><span style="font-size:12px;color:rgba(212,168,83,.3);margin-left:auto">\u{203A}</span></div>';
+  el.innerHTML=h;
+}
+
+
+/* GLOW OBSERVER */
+var glowObs={observe:function(){}};
+try{if(typeof IntersectionObserver!=='undefined'){glowObs=new IntersectionObserver(function(entries){entries.forEach(function(e){e.target.classList.toggle(e.target.classList.contains('game-card')?'gc-vis':'db-vis',e.isIntersecting)})},{threshold:0.2})}}catch(e){}
+function initGlows(){if(!glowObs||!glowObs.observe)return;try{document.querySelectorAll('.game-card,.desk-btn').forEach(function(c){glowObs.observe(c)})}catch(e){}}
+
+console.log('[GW] Core JS loaded OK');
+/* ========== GAMES ========== */
+function openGame(id){document.getElementById('gp-'+id).classList.add('open');initGame(id)}
+function closeGame(id){document.getElementById('gp-'+id).classList.remove('open')}
+function initGame(id){
+  if(id==='ttt')initTTT();
+  if(id==='wordle')initWordle();
+  if(id==='tarot')initTarot();
+  if(id==='hype')initHype();
+  if(id==='wyr')initWYR();
+  if(id==='oracle')initOracle();
+  if(id==='bingo')initBingo();
+  if(id==='redflag')initRedFlag();
+  if(id==='quotes')initQuotes();
+  if(id==='thisorthat')initTOT();
+  if(id==='flappy')initFlappy();
+  if(id==='glowjump')initGlowJump();
+  if(id==='2048')init2048();
+  if(id==='casino')initCasino();
+  if(id==='wheel')initWheel();
+  if(id==='colorrush')initColorRush();
+  if(id==='compliment')initComplimentGen();
+  if(id==='mixer')initMixerGame();
+}
+
+/* TIC TAC TOENAILS */
+var tttBoard,tttTurn,tttDone,tttVsAI=false;
+function initTTT(){
+  trackGame('ttt');
+  document.getElementById('tttBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px"><p style="font-family:Playfair Display,serif;font-size:1.3rem;color:#fff">Choose mode</p><button class="dp-btn" style="width:200px;padding:16px" onclick="startTTT(false)">\u{1F46F} 2 Players</button><button class="dp-btn" style="width:200px;padding:16px;background:var(--lavender);color:var(--midnight)" onclick="startTTT(true)">\u{1F916} vs Computer</button></div>';
+}
+function startTTT(ai){
+  tttVsAI=ai;tttBoard=[0,0,0,0,0,0,0,0,0];tttTurn=1;tttDone=false;
+  var h='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center"><p style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:8px">X = pink | O = purple'+(ai?' (you vs AI)':'')+'</p><div class="ttt-board" style="max-width:300px;width:90%">';
+  for(var i=0;i<9;i++)h+='<div class="ttt-cell" onclick="tttPlay('+i+')" id="tc'+i+'"></div>';
+  h+='</div><div class="ttt-status" id="tttStatus">Your turn (X)</div><button class="ttt-reset" onclick="initTTT()">New Game</button></div>';
+  document.getElementById('tttBody').innerHTML=h;
+}
+function tttPlay(i){
+  if(tttDone||tttBoard[i])return;
+  tttBoard[i]=tttTurn;
+  var cell=document.getElementById('tc'+i);
+  if(tttTurn===1)cell.innerHTML='<div class="toenail x-nail"><span>✕</span></div>';
+  else cell.innerHTML='<div class="toenail o-nail"><span>○</span></div>';
+  var w=tttCheck();
+  if(w){tttDone=true;document.getElementById('tttStatus').textContent=w===1?'X wins! 💅':'O wins! 💜';return}
+  if(tttBoard.indexOf(0)===-1){tttDone=true;document.getElementById('tttStatus').textContent='Tie game! 🤝';return}
+  tttTurn=tttTurn===1?2:1;
+  document.getElementById('tttStatus').textContent='Turn: '+(tttTurn===1?'X (pink)':'O (purple)');
+  if(tttVsAI&&tttTurn===2&&!tttDone)setTimeout(tttAI,400);
+}
+function tttAI(){
+  var empty=[];for(var i=0;i<9;i++)if(!tttBoard[i])empty.push(i);if(!empty.length)return;
+  for(var i=0;i<empty.length;i++){tttBoard[empty[i]]=2;if(tttCheck()===2){tttBoard[empty[i]]=0;tttPlay(empty[i]);return}tttBoard[empty[i]]=0}
+  for(var i=0;i<empty.length;i++){tttBoard[empty[i]]=1;if(tttCheck()===1){tttBoard[empty[i]]=0;tttPlay(empty[i]);return}tttBoard[empty[i]]=0}
+  if(!tttBoard[4]){tttPlay(4);return}
+  tttPlay(empty[Math.floor(Math.random()*empty.length)]);
+}
+function tttCheck(){var b=tttBoard;var lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var i=0;i<lines.length;i++){var l=lines[i];if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[1]]===b[l[2]])return b[l[0]]}return 0}
+
+/* GURLWURDLE */
+var WORDS=['queen','vibes','blush','bloom','charm','dream','shine','grace','peach','flirt','sweet','honey','sugar','angel','magic','fairy','heart','pearl','coral','lilac','berry','fancy','fresh','happy','lucky','sassy','curly','witty','spice','dance','brave','smile','peace','adore','glosy','latte','chill','lover','denim','plush','mocha','tulip','daisy','lotus','petal','siren','candy','crisp','bliss','mango','guava','melon','lemon','olive','salsa','pasta','pizza','bread','cream','toast','sauce','roast','basil','thyme','curry','naans','tikka','flora','saree','henna','beach','ocean','waves','palms','drift','cloud','starr','lunar','solar','earth','flame','ember','cedar','ivory','rouge','mauve','azure','amber','topaz','oasis','jewel','crown','tiara','gloss','rouge','serum','liner','toner','braid','sleek','silky','sheer','vegan','detox','fresh','treat','bravo'];
+var wWord,wGuesses,wCurrent,wDone;
+function initWordle(){
+  var dayIdx=Math.floor(Date.now()/864e5)%WORDS.length;
+  wWord=WORDS[dayIdx].toUpperCase().slice(0,5);
+  if(wWord.length<5)wWord=(wWord+'XXXXX').slice(0,5);
+  wGuesses=[];wCurrent='';wDone=false;wKeyState={};
+  renderWordle();
+}
+function renderWordle(){
+  var h='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px">Guess the 5-letter girly word</p><div class="wordle-grid">';
+  for(var r=0;r<6;r++){h+='<div class="wordle-row">';for(var c=0;c<5;c++){var letter='',cls='';if(r<wGuesses.length){letter=wGuesses[r][c];cls=wGuesses[r+'c'+c]}else if(r===wGuesses.length&&c<wCurrent.length){letter=wCurrent[c];cls='filled'}h+='<div class="wordle-cell '+cls+'">'+letter+'</div>'}h+='</div>'}
+  h+='</div><div class="wordle-msg" id="wMsg"></div><div class="wordle-kb">';
+  var rows=['QWERTYUIOP','ASDFGHJKL','⌫ZXCVBNM↵'];
+  rows.forEach(function(row){h+='<div class="wordle-kb-row">';for(var i=0;i<row.length;i++){var k=row[i];var cls=k==='⌫'||k==='↵'?' wide':'';var kst=wKeyState[k]||'';if(kst)cls+=' wk-'+kst;h+='<button class="wordle-key'+cls+'" onclick="wKey(\''+k+'\')">'+k+'</button>'}h+='</div>'});
+  h+='</div>';
+  var wb=document.getElementById('wordleBody');wb.style.padding='12px';wb.style.justifyContent='space-between';wb.innerHTML=h;
+}
+function wKey(k){
+  if(wDone)return;
+  if(k==='⌫'){wCurrent=wCurrent.slice(0,-1);renderWordle();return}
+  if(k==='↵'){
+    if(wCurrent.length<5)return;
+    var g={};for(var i=0;i<5;i++){
+      if(wCurrent[i]===wWord[i])g[wGuesses.length+'c'+i]='correct';
+      else if(wWord.indexOf(wCurrent[i])>=0)g[wGuesses.length+'c'+i]='present';
+      else g[wGuesses.length+'c'+i]='absent';
+    }
+    wGuesses.push(Object.assign(wCurrent.split(''),g));
+    for(var ki=0;ki<5;ki++){var kl=wCurrent[ki];if(wCurrent[ki]===wWord[ki]){wKeyState[kl]='correct'}else if(wWord.indexOf(wCurrent[ki])>=0){if(wKeyState[kl]!=='correct')wKeyState[kl]='present'}else{if(!wKeyState[kl])wKeyState[kl]='absent'}}
+    if(wCurrent===wWord){wDone=true;renderWordle();document.getElementById('wMsg').textContent='Slay! You got it! 💅';fireConfetti();return}
+    if(wGuesses.length>=6){wDone=true;renderWordle();document.getElementById('wMsg').textContent='The word was '+wWord;return}
+    wCurrent='';renderWordle();return;
+  }
+  if(wCurrent.length<5)wCurrent+=k;
+  renderWordle();
+}
+
+/* TAROT */
+var tarotCards=[
+{emoji:'🌙',name:'The Moon',msg:'Trust your intuition tonight. Something beautiful is hiding in the shadows.'},
+{emoji:'☀️',name:'The Sun',msg:'Radiance incoming. Main character energy is your birthright today.'},
+{emoji:'⭐',name:'The Star',msg:'Make a wish. The universe is literally taking notes right now.'},
+{emoji:'🌊',name:'The Wave',msg:'Go with the flow. Stop swimming upstream when the current is on your side.'},
+{emoji:'🔥',name:'The Flame',msg:'You are about to set something on fire (metaphorically). Channel it.'},
+{emoji:'🌸',name:'The Blossom',msg:'Growth is happening even when you can not see it. Trust the process.'},
+{emoji:'💎',name:'The Diamond',msg:'Pressure made you brilliant. Do not forget what you survived to sparkle.'},
+{emoji:'🦋',name:'The Butterfly',msg:'A transformation is completing. The old version of you is proud.'},
+{emoji:'🍵',name:'The Matcha Latte',msg:'A period of nourishment and calm is coming. Sip slowly.'},
+{emoji:'🤖',name:'The Pool Robot',msg:'Let someone else carry the weight for once. Delegate with grace.'},
+{emoji:'👑',name:'The Crown',msg:'Stop asking permission to be powerful. It was always yours.'},
+{emoji:'🪞',name:'The Mirror',msg:'What you see in others is what lives in you. Choose to see beauty.'},
+{emoji:'🌈',name:'The Rainbow',msg:'After everything you weathered, color is returning to your world.'},
+{emoji:'🕯️',name:'The Candle',msg:'Set an intention tonight. The flame carries prayers upward.'},
+{emoji:'💌',name:'The Letter',msg:'Someone is thinking about reaching out to you. Let them.'}
+];
+function initTarot(){
+  var card=tarotCards[Math.floor(Math.random()*tarotCards.length)];
+  document.getElementById('tarotBody').style.padding='16px';document.getElementById('tarotBody').innerHTML='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Tap the card to reveal your reading</p><div class="tarot-card" id="tarotFlip" onclick="this.classList.toggle(\'flipped\')"><div class="tarot-inner"><div class="tarot-front"><div class="tarot-front-design">✿</div><span>tap to reveal</span></div><div class="tarot-back"><div class="tarot-back-emoji">'+card.emoji+'</div><div class="tarot-back-name">'+card.name+'</div><div class="tarot-back-msg">'+card.msg+'</div></div></div></div><button class="tarot-reset" onclick="initTarot()">draw another card</button>';
+}
+
+/* HYPE ME UP */
+var hypeTexts=["YOU ARE LITERALLY THAT GIRL","THEY COULD NEVER BE YOU","MAIN CHARACTER ENERGY ACTIVATED","THE ROOM IS NOT READY FOR YOU","GO OFF QUEEN THE FLOOR IS YOURS","YOU WOKE UP AND CHOSE EXCELLENCE","CERTIFIED ICON. NO DEBATE.","THE AUDACITY TO BE THIS AMAZING","YOUR ENERGY JUST BROKE THE RICHTER SCALE","EVERYONE ELSE IS AN NPC IN YOUR STORYLINE","THE UNIVERSE LITERALLY MADE YOU ON PURPOSE","REMINDER: YOU ARE SOMEONE'S DREAM GIRL","YOUR POWER COULD CHARGE A CITY","NOBODY DOES IT LIKE YOU AND THEY KNOW IT","SLAY LEVEL: UNPRECEDENTED"];
+function initHype(){
+  document.getElementById('hypeBody').style.padding='16px';document.getElementById('hypeBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px"><p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">For when you need it most</p><button class="hype-btn" onclick="doHype()">HYPE<br>ME<br>UP</button><div class="hype-text" id="hypeText"></div></div>';
+}
+function doHype(){
+  fireConfetti();
+  document.getElementById('hypeText').textContent=hypeTexts[Math.floor(Math.random()*hypeTexts.length)];
+}
+
+/* WOULD YOU RATHER */
+var wyrQs=[
+["Unlimited Sephora credit","Never have a bad hair day again"],
+["Matcha grows in your yard","Coke Zero falls as rain"],
+["Be best friends with Barbie","Be president of Gurlwurl"],
+["Always have perfect nails","Always have perfect skin"],
+["Free coffee forever","Free brunch every weekend"],
+["Your flowers never die","Your plants water themselves"],
+["Have a pool robot butler","Have a personal chef"],
+["Read minds for a day","Be invisible for a day"],
+["Always find parking","Never hit a red light"],
+["Skip all lines everywhere","Everything you order arrives early"],
+["Live in Sephora Row","Live in Matcha Meadows"],
+["Pool Quarter penthouse","Cake Pop Boulevard cottage"]
+];
+var wyrIdx=0;
+function initWYR(){
+  wyrIdx=0;shuffleWYR();renderWYR();
+}
+function shuffleWYR(){wyrQs.sort(function(){return Math.random()-.5})}
+function renderWYR(){
+  if(wyrIdx>=wyrQs.length){document.getElementById('wyrBody').innerHTML='<div style="text-align:center;padding:40px"><p style="font-family:\'Playfair Display\',serif;font-size:1.2rem;color:var(--carn-light);margin-bottom:16px">All done! You have great taste ✿</p><button class="dp-btn" onclick="initWYR()">Play Again</button></div>';return}
+  var q=wyrQs[wyrIdx];
+  document.getElementById('wyrBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column"><button style="flex:1;border:none;background:linear-gradient(180deg,rgba(216,71,115,.15),rgba(216,71,115,.05));color:var(--carn-light);font-family:Playfair Display,serif;font-size:1.15rem;font-weight:600;cursor:pointer;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3" onclick="wyrPick(0)">'+q[0]+'</button><div style="text-align:center;padding:8px 0;background:rgba(255,255,255,.03);font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.1em;text-transform:uppercase">'+(wyrIdx+1)+'/'+wyrQs.length+' \u2022 would you rather</div><button style="flex:1;border:none;background:linear-gradient(180deg,rgba(200,168,233,.05),rgba(200,168,233,.15));color:var(--lavender);font-family:Playfair Display,serif;font-size:1.15rem;font-weight:600;cursor:pointer;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3" onclick="wyrPick(1)">'+q[1]+'</button></div>';
+}
+function wyrPick(n){wyrIdx++;renderWYR()}
+
+/* ORACLE */
+var oracleBank={fortune:["A spontaneous dance party is in your forecast","Your plants are conspiring for a good week","An unexpected refund heading your way","A really good parking spot has your name on it","Your next impulse buy will be worth it","Someone's about to ask your skincare routine","A legendary movie night awaits","The stars say this is your week","A new friendship loading at 87%","Your next outfit gets a standing ovation","Unexpected peace heading your way","The Gurlwurl council extended your golden hour","Your aura just leveled up","A smile-causing notification is loading","A warm cookie in your near future","Your next nap will be legendary","The avocado will be perfectly ripe"],compliment:["You are the human version of a sunset","Your brain and face are equally beautiful","If confidence was currency you'd be a billionaire","You could charge admission for your presence","Your laugh cures seasonal depression","You're the entire buffet","Your existence is a public service","You walk in and the energy shifts","You're the plot twist everyone needed","Your style could fund a fashion house"],affirmation:["You are exactly where you need to be","Your feelings are valid","You don't have to earn rest","Your softness is revolution","You're allowed to take up space","Growth isn't linear and you're beautiful","Your worth isn't measured by output","You are more than enough","It's okay to outgrow things","You're writing the most interesting story"],advice:["Drink water right now","Do 5 minutes of that thing you're avoiding","Touch grass. Literally go outside","Set one boundary today","Stretch. Your back is begging","Go to bed 30 min earlier","Delete that draft you keep reading","Unfollow one account that drains you"],motivation:["You didn't come this far to only come this far","The girl who said she would? That's you","Nothing iconic happens in comfort zones","One decision away from a different life","Consistency is the hardest flex","Your future self is cheering","The only obstacle is your own drama","Every queen once decided to try again"],roast:["You took 20 min to tap this button","Your screen time report filed a complaint","47 open tabs and none are relevant","That shopping cart's been saved for months","It's been 17 Mondays since starting Monday","Your plant survives on spite alone","Last episode was four episodes ago","You screenshot quotes then do nothing"],poem:["Roses are red, vibes immaculate / You walked in and the universe clapped","There once was a girl with a glow / who stole the show / they asked her secret / she said I just be it","Dear you: you are the poem other poems wish they were about"],peptalk:["Whatever you're stressed about? You've survived worse. 100% of your worst days. Built different.","That thing you doubt? Stop. You are MORE than qualified. Imposter syndrome can shut up.","Nobody has it figured out. Everyone's pretending. You're doing better than you think.","You're not behind. Not late. Not failing. Your timeline is exactly right.","You're here trying growing existing? That's the flex. Keep going."]};
+function initOracle(){
+  var topics=['fortune','compliment','affirmation','advice','motivation','roast','poem','peptalk'];
+  var labels={fortune:'🔮 Fortune',compliment:'💕 Compliment',affirmation:'✨ Affirmation',advice:'💡 Advice',motivation:'🔥 Motivation',roast:'😏 Roast',poem:'📝 Poem',peptalk:'💪 Pep Talk'};
+  var h='<div style="text-align:center;padding:20px 0"><p style="font-family:\'Cormorant Garamond\',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.4);margin-bottom:20px">The Oracle sees all</p><div style="font-size:3rem;margin-bottom:16px">🔮</div><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px">';
+  topics.forEach(function(t){h+='<button class="dp-btn-outline" onclick="askOracle(\''+t+'\')" style="font-size:.6rem">'+labels[t]+'</button>'});
+  h+='</div><div id="oracleResult" style="font-family:\'Playfair Display\',serif;font-size:1.1rem;font-weight:600;color:var(--carn-light);min-height:50px;padding:10px 20px;line-height:1.4;transition:opacity .6s">tap a category</div></div>';
+  document.getElementById('oracleBody').style.padding='16px';document.getElementById('oracleBody').innerHTML=h;
+}
+function askOracle(t){var bank=oracleBank[t]||oracleBank.fortune;var r=bank[Math.floor(Math.random()*bank.length)];var el=document.getElementById('oracleResult');el.style.opacity='0';setTimeout(function(){el.textContent=r;el.style.opacity='1'},200)}
+
+/* BINGO */
+var bingoTasks=['Complimented a stranger','Drank matcha','Took a hot girl walk','Did a face mask','Journaled something','Cooked a real meal','Said no without explaining','Wore an outfit that slaps','Went to bed before 11','Listened to a full album','Texted someone you miss','Bought yourself flowers','Drank 8 glasses of water','Took a selfie you love','Read 10 pages of a book','Tried a new coffee shop','Organized one drawer','Did a 10 min stretch','Gave someone a genuine compliment','Watched a sunset','Made a playlist','Deleted a toxic app','Took a bath not a shower','Called instead of texted','Wore no makeup and loved it'];
+function initBingo(){
+  var weekNum=Math.floor(Date.now()/(7*864e5));
+  var shuffled=bingoTasks.slice().sort(function(a,b){return(a+weekNum).charCodeAt(0)-(b+weekNum).charCodeAt(0)}).slice(0,25);
+  shuffled[12]='FREE ✿';
+  var marked=JSON.parse(LS.getItem('gw_bingo_'+weekNum)||'[]');
+  var h='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px">Tap to mark off. Resets weekly!</p><div class="bingo-grid">';
+  shuffled.forEach(function(task,i){
+    var isMarked=marked.includes(i)||i===12;
+    var cls=i===12?'free':(isMarked?'marked':'');
+    h+='<div class="bingo-cell '+cls+'" onclick="markBingo('+i+','+weekNum+')">'+task+'</div>';
+  });
+  h+='</div>';
+  var bCount=marked.length;
+  h+='<p style="text-align:center;font-size:.7rem;color:var(--carn);margin-top:12px">'+bCount+'/25 completed</p>';
+  document.getElementById('bingoBody').style.padding='10px';document.getElementById('bingoBody').innerHTML=h;
+}
+function markBingo(i,wk){if(i===12)return;var marked=JSON.parse(LS.getItem('gw_bingo_'+wk)||'[]');if(marked.includes(i))marked=marked.filter(function(x){return x!==i});else marked.push(i);LS.setItem('gw_bingo_'+wk,JSON.stringify(marked));initBingo()}
+
+/* RED FLAG / GREEN FLAG */
+var rfScenarios=[
+{text:"He texts you back within 5 minutes",vibe:"green"},
+{text:"He doesn't have a bed frame",vibe:"red"},
+{text:"He remembers your coffee order",vibe:"green"},
+{text:"He says 'I'm not like other guys'",vibe:"red"},
+{text:"He asks how your day was first",vibe:"green"},
+{text:"He follows 2000 people on Instagram",vibe:"red"},
+{text:"He plans the date without you asking",vibe:"green"},
+{text:"He still talks to his ex 'as friends'",vibe:"red"},
+{text:"He introduces you to his mom early",vibe:"green"},
+{text:"He doesn't tip at restaurants",vibe:"red"},
+{text:"He brings you food without asking",vibe:"green"},
+{text:"He says 'you're overreacting'",vibe:"red"},
+{text:"He lets you pick the movie",vibe:"green"},
+{text:"He leaves you on read for hours",vibe:"red"},
+{text:"He knows your best friend's name",vibe:"green"},
+{text:"He only texts after midnight",vibe:"red"},
+{text:"He carries your bags without being asked",vibe:"green"},
+{text:"He compares you to his ex",vibe:"red"},
+{text:"He has a skincare routine",vibe:"green"},
+{text:"He says 'calm down'",vibe:"red"},
+{text:"He asks about your boundaries",vibe:"green"},
+{text:"His apartment smells weird",vibe:"red"},
+{text:"He gives you his jacket when it's cold",vibe:"green"},
+{text:"He flirts with the waitress",vibe:"red"},
+{text:"He walks on the street side of the sidewalk",vibe:"green"},
+{text:"He checks his phone the whole dinner",vibe:"red"},
+{text:"He asks about your love language",vibe:"green"},
+{text:"He says 'my ex was crazy'",vibe:"red"},
+{text:"He makes you a playlist",vibe:"green"},
+{text:"He gets along with your friends",vibe:"green"},
+{text:"He never initiates plans",vibe:"red"},
+{text:"He opens the car door for you",vibe:"green"},
+{text:"He follows your sister on Instagram",vibe:"red"},
+{text:"He cooks breakfast for you",vibe:"green"},
+{text:"He goes silent after an argument",vibe:"red"},
+{text:"He keeps his promises",vibe:"green"},
+{text:"He still has dating apps",vibe:"red"},
+{text:"He sends good morning texts",vibe:"green"},
+{text:"He talks about the future with you in it",vibe:"green"},
+{text:"He only wants to hang out late at night",vibe:"red"},
+{text:"He gets jealous when you hang with friends",vibe:"red"},
+{text:"He takes photos of you unprompted",vibe:"green"},
+{text:"He double texts when you don't reply",vibe:"red"}
+];
+var rfIdx=0,rfAgree=0,rfTotal=0;
+function initRedFlag(){rfIdx=0;rfAgree=0;rfTotal=0;rfScenarios.sort(function(){return Math.random()-.5});renderRF()}
+function renderRF(){
+  if(rfIdx>=rfScenarios.length){document.getElementById('rfBody').innerHTML='<div style="text-align:center;padding:40px"><p style="font-family:Playfair Display,serif;font-size:1.2rem;color:var(--carn-light);margin-bottom:12px">All done!</p><p style="font-size:.85rem;color:rgba(255,255,255,.5)">You matched the vibe '+rfAgree+'/'+rfTotal+' times</p><button class="dp-btn" style="margin-top:16px" onclick="initRedFlag()">Play Again</button></div>';return}
+  var s=rfScenarios[rfIdx];
+  document.getElementById('rfBody').innerHTML='<p style="text-align:center;font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:4px">'+(rfIdx+1)+'/'+rfScenarios.length+'</p><div class="rf-card" id="rfCard"><div class="rf-scenario">'+s.text+'</div><div class="rf-hint"><span class="rf-hint-left">← 🚩 Red</span><span class="rf-hint-right">💚 Green →</span></div></div><div class="rf-score">Vibe match: '+rfAgree+'/'+rfTotal+'</div>';
+  setupSwipe();
+}
+function setupSwipe(){
+  var card=document.getElementById('rfCard');if(!card)return;
+  var body=document.getElementById('rfBody');
+  var startX=0,currentX=0,dragging=false;
+  function onStart(x){startX=x;currentX=x;dragging=true;card.classList.add('swiping')}
+  function onMove(x){if(!dragging)return;currentX=x;var dx=currentX-startX;card.style.transform='translateX('+dx+'px) rotate('+(dx*.06)+'deg)';card.style.opacity=Math.max(0.3,1-Math.abs(dx)/300);
+    if(dx<-40)card.style.borderColor='rgba(220,80,80,.5)';
+    else if(dx>40)card.style.borderColor='rgba(80,200,80,.5)';
+    else card.style.borderColor='rgba(255,255,255,.08)'}
+  function onEnd(){
+    if(!dragging)return;dragging=false;card.classList.remove('swiping');
+    var dx=currentX-startX;
+    if(dx<-60){card.classList.add('swipe-left');rfPick('red')}
+    else if(dx>60){card.classList.add('swipe-right');rfPick('green')}
+    else{card.style.transform='';card.style.opacity='';card.style.borderColor=''}}
+  body.addEventListener('touchstart',function(e){onStart(e.touches[0].clientX)},{passive:true});
+  body.addEventListener('touchmove',function(e){e.preventDefault();onMove(e.touches[0].clientX)},{passive:false});
+  body.addEventListener('touchend',onEnd);
+  body.addEventListener('mousedown',function(e){onStart(e.clientX)});
+  document.addEventListener('mousemove',function(e){if(dragging)onMove(e.clientX)});
+  document.addEventListener('mouseup',function(){if(dragging)onEnd()});
+}
+function rfPick(choice){rfTotal++;if(choice===rfScenarios[rfIdx].vibe)rfAgree++;rfIdx++;setTimeout(renderRF,450)}
+
+/* WHO SAID IT */
+var movieQuotes=[
+{quote:"On Wednesdays we wear pink",movie:"Mean Girls",options:["Mean Girls","Legally Blonde","Clueless","The Devil Wears Prada"]},
+{quote:"I'm just one stomach flu away from my goal weight",movie:"The Devil Wears Prada",options:["Mean Girls","The Devil Wears Prada","Bridget Jones","Sex and the City"]},
+{quote:"As if!",movie:"Clueless",options:["Legally Blonde","10 Things I Hate About You","Clueless","She's All That"]},
+{quote:"What, like it's hard?",movie:"Legally Blonde",options:["Legally Blonde","Clueless","Miss Congeniality","The House Bunny"]},
+{quote:"I'm also just a girl, standing in front of a boy, asking him to love her",movie:"Notting Hill",options:["The Notebook","Notting Hill","Love Actually","When Harry Met Sally"]},
+{quote:"You have bewitched me body and soul",movie:"Pride and Prejudice",options:["Jane Eyre","Sense and Sensibility","Pride and Prejudice","Wuthering Heights"]},
+{quote:"I feel the need... the need for speed",movie:"Top Gun",options:["Fast and Furious","Top Gun","Days of Thunder","Need for Speed"]},
+{quote:"Nobody puts Baby in a corner",movie:"Dirty Dancing",options:["Grease","Dirty Dancing","Footloose","Flashdance"]},
+{quote:"I'll have what she's having",movie:"When Harry Met Sally",options:["When Harry Met Sally","Sleepless in Seattle","You've Got Mail","Something's Gotta Give"]},
+{quote:"You is kind. You is smart. You is important",movie:"The Help",options:["Hidden Figures","The Help","The Color Purple","Precious"]},
+{quote:"I am a fashion god",movie:"Barbie",options:["Confessions of a Shopaholic","Barbie","Zoolander","The Devil Wears Prada"]},
+{quote:"You have to be smart. The smartest. And tough. And strategic",movie:"Barbie",options:["Legally Blonde","Miss Congeniality","Barbie","Little Women"]}
+];
+var qIdx=0,qScore=0;
+function initQuotes(){
+  document.getElementById('quotesBody').innerHTML='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px"><p style="font-family:Playfair Display,serif;font-size:1.3rem;color:#fff">Pick a category</p><button class="dp-btn" style="width:220px;padding:14px" onclick="startTrivia(\'movies\')">\u{1F3AC} Movies & TV</button><button class="dp-btn" style="width:220px;padding:14px;background:var(--lavender);color:var(--midnight)" onclick="startTrivia(\'culture\')">\u{1F30D} Culture & History</button><button class="dp-btn" style="width:220px;padding:14px;background:var(--sage);color:var(--midnight)" onclick="startTrivia(\'girlie\')">\u{1F485} Girlie Stuff</button></div>';
+}
+var triviaBank={movies:[
+{q:"On Wednesdays we wear pink",a:"Mean Girls",o:["Mean Girls","Legally Blonde","Clueless","Devil Wears Prada"]},
+{q:"What, like it's hard?",a:"Legally Blonde",o:["Legally Blonde","Clueless","Miss Congeniality","Barbie"]},
+{q:"As if!",a:"Clueless",o:["Legally Blonde","10 Things","Clueless","She's All That"]},
+{q:"Nobody puts Baby in a corner",a:"Dirty Dancing",o:["Grease","Dirty Dancing","Footloose","Flashdance"]},
+{q:"You is kind. You is smart. You is important.",a:"The Help",o:["Hidden Figures","The Help","Color Purple","Precious"]},
+{q:"I am a fashion god",a:"Barbie",o:["Shopaholic","Barbie","Zoolander","Devil Wears Prada"]},
+{q:"I'll have what she's having",a:"When Harry Met Sally",o:["When Harry Met Sally","Sleepless in Seattle","You've Got Mail","Something's Gotta Give"]},
+{q:"You have bewitched me body and soul",a:"Pride and Prejudice",o:["Jane Eyre","Sense and Sensibility","Pride and Prejudice","Wuthering Heights"]},
+{q:"Bend and snap. Works every time.",a:"Legally Blonde",o:["Legally Blonde","Mean Girls","Clueless","Bring It On"]},
+{q:"Get in loser, we're going shopping",a:"Mean Girls",o:["Mean Girls","Legally Blonde","Clueless","White Chicks"]}
+],culture:[
+{q:"Who painted the Mona Lisa?",a:"Leonardo da Vinci",o:["Michelangelo","Leonardo da Vinci","Raphael","Picasso"]},
+{q:"Which country gifted the Statue of Liberty?",a:"France",o:["England","France","Spain","Italy"]},
+{q:"What year did US women get the right to vote?",a:"1920",o:["1900","1920","1945","1960"]},
+{q:"Who wrote Pride and Prejudice?",a:"Jane Austen",o:["Jane Austen","Charlotte Bronte","Emily Bronte","Mary Shelley"]},
+{q:"Who was the first woman in space?",a:"Valentina Tereshkova",o:["Sally Ride","Valentina Tereshkova","Mae Jemison","Peggy Whitson"]},
+{q:"Which queen ruled England for 63 years?",a:"Queen Victoria",o:["Elizabeth I","Victoria","Elizabeth II","Anne"]},
+{q:"Where did the Olympics originate?",a:"Greece",o:["Rome","Greece","Egypt","China"]},
+{q:"Who discovered radium?",a:"Marie Curie",o:["Marie Curie","Rosalind Franklin","Ada Lovelace","Florence Nightingale"]},
+{q:"What is the largest ocean?",a:"Pacific",o:["Atlantic","Pacific","Indian","Arctic"]},
+{q:"What language has the most native speakers?",a:"Mandarin Chinese",o:["English","Mandarin Chinese","Spanish","Hindi"]}
+],girlie:[
+{q:"What does SPF stand for?",a:"Sun Protection Factor",o:["Sun Protection Factor","Skin Protection Formula","Sun Power Filter","Safe Protection Film"]},
+{q:"Which vitamin is the 'skin vitamin'?",a:"Vitamin E",o:["Vitamin A","Vitamin C","Vitamin D","Vitamin E"]},
+{q:"Which brand makes Boy Brow?",a:"Glossier",o:["Glossier","Fenty","Rare Beauty","Charlotte Tilbury"]},
+{q:"What is dermaplaning?",a:"Shaving peach fuzz off face",o:["A type of facial","Shaving peach fuzz off face","A hair treatment","A nail technique"]},
+{q:"Which Kardashian founded SKIMS?",a:"Kim",o:["Kourtney","Kim","Khloe","Kylie"]},
+{q:"What is slugging in skincare?",a:"Petroleum jelly to seal moisture",o:["Double cleansing","Snail mucin","Petroleum jelly to seal moisture","Ice rolling"]},
+{q:"Hot girl walk originated on which platform?",a:"TikTok",o:["Instagram","TikTok","Twitter","YouTube"]},
+{q:"What is a French manicure?",a:"Pink base with white tips",o:["All red","Pink base with white tips","Clear coat","Alternating colors"]},
+{q:"What does 'clean girl aesthetic' emphasize?",a:"Minimal natural makeup",o:["Bold color","Minimal natural makeup","Gothic tones","Glitter"]},
+{q:"What is a lash lift?",a:"Perming natural lashes upward",o:["Applying false lashes","Perming natural lashes upward","Tinting lashes","Curling with a wand"]}
+]};
+function startTrivia(cat){movieQuotes=triviaBank[cat].map(function(q){return{quote:q.q,movie:q.a,options:q.o}});qIdx=0;qScore=0;movieQuotes.sort(function(){return Math.random()-.5});renderQuote()}
+function renderQuote(){
+  if(qIdx>=movieQuotes.length){document.getElementById('quotesBody').innerHTML='<div style="text-align:center;padding:40px"><p style="font-family:\'Playfair Display\',serif;font-size:1.3rem;color:var(--carn-light);margin-bottom:8px">Score: '+qScore+'/'+movieQuotes.length+'</p><p style="font-size:.85rem;color:rgba(255,255,255,.5)">'+(qScore>8?'Film expert!':qScore>5?'Pretty good!':'Keep watching!')+'</p><button class="dp-btn" style="margin-top:16px" onclick="initQuotes()">Play Again</button></div>';return}
+  var q=movieQuotes[qIdx];
+  var h='<p style="text-align:center;font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:16px">'+(qIdx+1)+'/'+movieQuotes.length+' | Score: '+qScore+'</p>';
+  h+='<p style="font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;font-style:italic;color:var(--carn-light);text-align:center;margin-bottom:24px;padding:0 10px">"'+q.quote+'"</p>';
+  h+='<div style="display:flex;flex-direction:column;gap:8px;max-width:300px;margin:0 auto">';
+  q.options.sort(function(){return Math.random()-.5}).forEach(function(opt){
+    h+='<button style="padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-family:\'Outfit\',sans-serif;font-size:.85rem;cursor:pointer;transition:all .2s" onclick="answerQuote(this,\''+opt+'\',\''+q.movie+'\')">'+opt+'</button>';
+  });
+  h+='</div>';
+  document.getElementById('quotesBody').style.padding='16px';document.getElementById('quotesBody').innerHTML=h;
+}
+function answerQuote(btn,picked,correct){
+  if(picked===correct){qScore++;btn.style.background='rgba(80,180,80,.2)';btn.style.borderColor='rgba(80,180,80,.4)';btn.style.color='#6bff6b'}
+  else{btn.style.background='rgba(220,50,50,.2)';btn.style.borderColor='rgba(220,50,50,.4)';btn.style.color='#ff6b6b'}
+  setTimeout(function(){qIdx++;renderQuote()},800);
+}
+
+/* THIS OR THAT */
+var totQs=[
+["Sunset","Sunrise"],["Latte","Matcha"],["Beach","Mountains"],["Texts","Calls"],["Sweet","Savory"],["Early bird","Night owl"],["Books","Podcasts"],["Bath","Shower"],["Gold","Silver"],["Dogs","Cats"],["Summer","Winter"],["Heels","Sneakers"],["Candles","Incense"],["Cozy night in","Girls night out"],["Iced coffee","Hot coffee"],["Window seat","Aisle seat"],["City","Countryside"],["Brunch","Dinner"],["Spontaneous","Planned"],["Lip gloss","Lipstick"]
+];
+var totIdx=0,totPicks=[];
+function initTOT(){totIdx=0;totPicks=[];totQs.sort(function(){return Math.random()-.5});renderTOT()}
+function renderTOT(){
+  if(totIdx>=totQs.length){
+    var h='<div style="text-align:center;padding:30px"><p style="font-family:\'Playfair Display\',serif;font-size:1.2rem;color:var(--carn-light);margin-bottom:16px">Your Vibe Profile</p>';
+    totPicks.forEach(function(p){h+='<span style="display:inline-block;padding:6px 14px;border-radius:100px;background:rgba(216,71,115,.1);border:1px solid rgba(216,71,115,.15);color:var(--carn-light);font-size:.7rem;margin:3px">'+p+'</span>'});
+    h+='<br><button class="dp-btn" style="margin-top:20px" onclick="initTOT()">Play Again</button></div>';
+    document.getElementById('totBody').style.padding='0';document.getElementById('totBody').innerHTML=h;return;
+  }
+  var q=totQs[totIdx];
+  document.getElementById('totBody').style.padding='0';document.getElementById('totBody').innerHTML='<div style="text-align:center;padding:20px"><p style="font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:20px">'+(totIdx+1)+'/'+totQs.length+'</p><p style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:#fff;margin-bottom:24px">This or that?</p><div style="display:flex;gap:12px;max-width:300px;margin:0 auto"><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(216,71,115,.2);background:rgba(216,71,115,.08);color:var(--carn-light);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(0)">'+q[0]+'</button><button style="flex:1;padding:24px 12px;border-radius:16px;border:1px solid rgba(200,168,233,.2);background:rgba(200,168,233,.08);color:var(--lavender);font-family:\'Outfit\',sans-serif;font-size:.9rem;cursor:pointer" onclick="totPick(1)">'+q[1]+'</button></div></div>';
+}
+function totPick(n){totPicks.push(totQs[totIdx][n]);totIdx++;renderTOT()}
+
+/* ========== XP SYSTEM ========== */
+var XP_LEVELS=[{name:'Tourist',xp:0},{name:'Citizen',xp:50},{name:'Resident',xp:150},{name:'Ambassador',xp:400},{name:'Council Member',xp:800},{name:'Minister',xp:1500},{name:'Supreme',xp:3000}];
+var STATUS_EMOJIS={
+  0:['👩'],
+  50:['👩','🌸','✨'],
+  150:['👩','🌸','✨','💅','🦋','💕'],
+  400:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟'],
+  800:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫'],
+  1500:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫','🌈','🦄','⭐'],
+  3000:['👩','🌸','✨','💅','🦋','💕','👑','💎','🌟','🔮','🫅','💫','🌈','🦄','⭐','👸']
+};
+function getUnlockedEmojis(){var xp=getXP();var unlocked=[];for(var t in STATUS_EMOJIS){if(xp>=parseInt(t))unlocked=STATUS_EMOJIS[t]}return unlocked}
+
+function getXP(){return parseInt(LS.getItem('gw_xp')||'0')}
+function getTitle(){
+  if(currentUser&&currentUser.name.toLowerCase()==='neha')return'Supreme Visionary';
+  if(currentUser&&currentUser.name.toLowerCase()==='akash')return'Chief Architect';
+  return null;
+}
+function getLevel(){if(typeof XP_LEVELS==='undefined')return{name:'Tourist',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
+function getNextLevel(){if(typeof XP_LEVELS==='undefined')return null;var xp=getXP();for(var i=0;i<XP_LEVELS.length;i++){if(xp<XP_LEVELS[i].xp)return XP_LEVELS[i]}return null}
+function addXP(amount,reason){
+  var cur=getXP();LS.setItem('gw_xp',''+(cur+amount));
+  var log=JSON.parse(LS.getItem('gw_xp_log')||'[]');
+  log.push({amount:amount,reason:reason,date:new Date().toLocaleString()});
+  if(log.length>50)log=log.slice(-50);
+  LS.setItem('gw_xp_log',JSON.stringify(log));
+  showXPToast('+'+amount+' XP: '+reason);var xpEl=document.getElementById('topXP');if(xpEl)xpEl.textContent=(cur+amount)+' XP';
+  var oldLvl=cur;var newLvl=cur+amount;var leveledUp=false;if(typeof XP_LEVELS==='undefined')return;for(var li=0;li<XP_LEVELS.length;li++){if(oldLvl<XP_LEVELS[li].xp&&newLvl>=XP_LEVELS[li].xp){leveledUp=XP_LEVELS[li];break}}
+  if(leveledUp)showNotif('\u{2B50}','Level Up!','You are now '+leveledUp.name+'!');
+  triggerSync();
+  checkAchievements();
+}
+function spendXP(amount,reason){
+  var cur=getXP();if(cur<amount)return false;
+  LS.setItem('gw_xp',''+(cur-amount));
+  var log=JSON.parse(LS.getItem('gw_spend_log')||'[]');
+  log.push({amount:amount,reason:reason,date:new Date().toLocaleString()});
+  LS.setItem('gw_spend_log',JSON.stringify(log));triggerSync();return true;
+}
+function showNotif(ico,title,desc){
+  var n=document.createElement('div');n.className='gw-notif';
+  n.innerHTML='<div class="gw-notif-ico">'+ico+'</div><div class="gw-notif-text"><h4>'+title+'</h4><p>'+desc+'</p></div>';
+  document.body.appendChild(n);
+  setTimeout(function(){n.classList.add('show')},50);
+  setTimeout(function(){n.classList.remove('show');setTimeout(function(){n.remove()},600)},4000);
+}
+function showXPToast(msg){var t=document.createElement('div');t.className='xp-toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.classList.add('show')},10);setTimeout(function(){t.classList.remove('show');setTimeout(function(){t.remove()},300)},2000)}
+
+/* ========== ACHIEVEMENTS ========== */
+var ACHIEVEMENTS=[
+{id:'first_login',name:'Welcome Home',desc:'Log in for the first time',ico:'🏠',check:function(){return LS.getItem('gw_user')}},
+{id:'grat_5',name:'Grateful Heart',desc:'Write 5 gratitude notes',ico:'🌸',check:function(){return(JSON.parse(LS.getItem('gw_grat')||'[]')).length>=5}},
+{id:'streak_7',name:'7 Day Streak',desc:'Visit 7 days in a row',ico:'🔥',check:function(){return(JSON.parse(LS.getItem('gw_stamps')||'[]')).length>=7}},
+{id:'water_8',name:'Hydrated Queen',desc:'Drink 8 glasses in one day',ico:'💧',check:function(){return parseInt(LS.getItem('gw_water_'+today)||'0')>=8}},
+{id:'all_habits',name:'Perfect Day',desc:'Complete all 8 habits',ico:'✅',check:function(){return(JSON.parse(LS.getItem('gw_habits_'+today)||'[]')).length>=8}},
+{id:'bucket_3',name:'Dream Chaser',desc:'Complete 3 bucket list items',ico:'🎯',check:function(){return(JSON.parse(LS.getItem('gw_bucket')||'[]')).filter(function(b){return b.done}).length>=3}},
+{id:'xp_100',name:'Rising Star',desc:'Earn 100 XP',ico:'⭐',check:function(){return getXP()>=100}},
+{id:'xp_500',name:'Power Player',desc:'Earn 500 XP',ico:'💫',check:function(){return getXP()>=500}},
+{id:'games_3',name:'Gamer Girl',desc:'Play 3 different games',ico:'🎮',check:function(){return(JSON.parse(LS.getItem('gw_games_played')||'[]')).length>=3}},
+{id:'casino_win',name:'Lucky Girl',desc:'Win at the casino',ico:'🎰',check:function(){return LS.getItem('gw_casino_won')}},
+{id:'rate_5',name:'Self Aware',desc:'Rate 5 days',ico:'⭐',check:function(){return(JSON.parse(LS.getItem('gw_ratings')||'[]')).length>=5}},
+{id:'flappy_10',name:'Sky High',desc:'Score 10+ in Flappy Butterfly',ico:'🦋',check:function(){return parseInt(LS.getItem('gw_flappy_best')||'0')>=10}}
+];
+function checkAchievements(){
+  var earned=JSON.parse(LS.getItem('gw_achievements')||'[]');
+  ACHIEVEMENTS.forEach(function(a){
+    if(!earned.includes(a.id)&&a.check()){
+      earned.push(a.id);LS.setItem('gw_achievements',JSON.stringify(earned));
+      showNotif(a.ico,'Achievement Unlocked!',a.name+' (+25 XP)');
+      addXP(25,'Achievement: '+a.name);
+    }
+  });
+}
+function initAchievements(){
+  var earned=JSON.parse(LS.getItem('gw_achievements')||'[]');
+  var h='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:16px">'+earned.length+'/'+ACHIEVEMENTS.length+' earned</p><div class="ach-grid">';
+  ACHIEVEMENTS.forEach(function(a){
+    var e=earned.includes(a.id);
+    h+='<div class="ach-card'+(e?' earned':'')+'"><div class="ach-ico">'+a.ico+'</div><div class="ach-name">'+a.name+'</div><div class="ach-desc">'+a.desc+'</div></div>';
+  });
+  h+='</div>';document.getElementById('achBody').innerHTML=h;
+}
+function trackGame(id){var g=JSON.parse(LS.getItem('gw_games_played')||'[]');if(!g.includes(id)){g.push(id);LS.setItem('gw_games_played',JSON.stringify(g))}checkAchievements()}
+
+/* ========== HUB ========== */
+function initHub(){
+  var xp=getXP();var lvl=getLevel();var next=getNextLevel();
+  var h='<div style="text-align:center;margin-bottom:20px">';
+  var selfie=LS.getItem('gw_selfie');
+  h+='<div style="width:70px;height:70px;border-radius:50%;margin:0 auto 10px;border:3px solid var(--gold);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
+  if(selfie)h+='<img src="'+selfie+'" style="width:100%;height:100%;object-fit:cover">';
+  else h+='<span style="font-size:2rem">'+(currentUser.status||'👩')+'</span>';
+  h+='</div><h3 style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff">'+currentUser.name+'</h3>';
+  h+='<p style="font-size:.7rem;color:var(--gold);margin:4px 0">'+lvl.name+'</p>';
+  if(next){h+='<div class="xp-bar"><div class="xp-bar-track"><div class="xp-bar-fill" style="width:'+Math.round((xp-lvl.xp)/(next.xp-lvl.xp)*100)+'%"></div></div><div class="xp-bar-label"><span>'+xp+' XP</span><span>'+next.xp+' XP</span></div></div>'}
+  else{h+='<p style="font-size:.6rem;color:var(--gold);opacity:.5">MAX LEVEL</p>'}
+  h+='</div>';
+  h+='<div class="hub-stat"><span class="hub-stat-label">Total XP</span><span class="hub-stat-val">'+xp+'</span></div>';
+  h+='<div class="hub-stat"><span class="hub-stat-label">Level</span><span class="hub-stat-val">'+lvl.name+'</span></div>';
+  h+='<div class="hub-stat"><span class="hub-stat-label">Citizen #</span><span class="hub-stat-val">'+String(currentUser.number||3).padStart(3,'0')+'</span></div>';
+  h+='<h4 style="font-size:.65rem;color:var(--carn);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px">Achievements</h4>';
+  var earned=JSON.parse(LS.getItem('gw_achievements')||'[]');
+  h+='<p style="font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:8px">'+earned.length+'/'+ACHIEVEMENTS.length+' earned</p><div class="ach-grid" style="margin-bottom:16px">';
+  ACHIEVEMENTS.forEach(function(a){var e=earned.includes(a.id);h+='<div class="ach-card'+(e?' earned':'')+'"><div class="ach-ico">'+a.ico+'</div><div class="ach-name">'+a.name+'</div></div>'});
+  h+='</div>';
+  h+='<h4 style="font-size:.65rem;color:var(--carn);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px">XP Earn Log</h4><div class="hub-log">';
+  var xpLog=JSON.parse(LS.getItem('gw_xp_log')||'[]').slice(-15).reverse();
+  xpLog.forEach(function(l){h+='<div class="hub-log-item"><span>'+l.reason+'</span><span style="color:var(--sage)">+'+l.amount+'</span></div>'});
+  if(!xpLog.length)h+='<p style="font-size:.7rem;color:rgba(255,255,255,.25)">No XP earned yet</p>';
+  h+='</div><h4 style="font-size:.65rem;color:var(--carn);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px">Spend Log</h4><div class="hub-log">';
+  var spLog=JSON.parse(LS.getItem('gw_spend_log')||'[]').slice(-15).reverse();
+  spLog.forEach(function(l){h+='<div class="hub-log-item"><span>'+l.reason+'</span><span style="color:#ff6b6b">-'+l.amount+'</span></div>'});
+  if(!spLog.length)h+='<p style="font-size:.7rem;color:rgba(255,255,255,.25)">Nothing spent yet</p>';
+  h+='</div>';
+  h+='<h4 style="font-size:.65rem;color:var(--carn);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 8px">Change Passcode</h4>';
+  h+='<div class="emoji-grid" id="hubEmojis" style="margin-bottom:8px"></div>';
+  h+='<button class="dp-btn" id="hubChangeBtn" style="display:none" onclick="changeHubEmoji()">Update Passcode</button>';
+  h+='<p style="font-size:.6rem;color:rgba(255,255,255,.2);margin-top:6px">Update photo</p>';
+  h+='<label style="display:inline-block;padding:6px 14px;border-radius:12px;border:1px dashed rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-size:.62rem;cursor:pointer;margin-top:4px"><input type="file" accept="image/*" capture="user" style="display:none" onchange="updateSelfie(this)">📸 Change Photo</label>';
+  document.getElementById('hubBody').innerHTML=h;
+  var grid=document.getElementById('hubEmojis');var showing=12;
+  var sGrid=document.getElementById('statusEmojis');if(sGrid&&typeof getUnlockedEmojis==='function'){var unlocked2=getUnlockedEmojis();unlocked2.forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===(currentUser.status||'\u{1F469}'))d.classList.add('selected');d.onclick=function(){sGrid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');currentUser.status=e;LS.setItem('gw_user',JSON.stringify(currentUser));var de=currentUser.status;document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+de+'</span>'+currentUser.name;showXPToast('Status emoji updated!')};sGrid.appendChild(d)})}
+  function renderHE(){grid.innerHTML='';GIRLY_EMOJIS.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===currentUser.emoji)d.classList.add('selected');d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e;document.getElementById('hubChangeBtn').style.display='inline-block'};grid.appendChild(d)});if(showing<GIRLY_EMOJIS.length){var m=document.createElement('div');m.className='emoji-opt';m.textContent='...';m.style.color='rgba(255,255,255,.3)';m.onclick=function(){showing+=12;renderHE()};grid.appendChild(m)}}renderHE();
+}
+function signOut(){
+  syncAll();
+  LS.removeItem('gw_user');
+  currentUser=null;
+  location.reload();
+}
+function changeHubEmoji(){
+  if(!selectedEmoji||selectedEmoji===currentUser.emoji)return;
+  var oldE=currentUser.emoji;
+  api({action:'changepassword',name:currentUser.name,oldEmoji:oldE,newEmoji:selectedEmoji}).then(function(r){
+    currentUser.emoji=selectedEmoji;LS.setItem('gw_user',JSON.stringify(currentUser));
+    if(FOUNDERS[currentUser.name.toLowerCase()])FOUNDERS[currentUser.name.toLowerCase()].emoji=selectedEmoji;
+    showXPToast('Passcode updated!');initHub();
+  });
+}
+
+/* ========== FLAPPY BUTTERFLY ========== */
+function initFlappy(){
+  trackGame('flappy');
+  if(window._fRaf)cancelAnimationFrame(window._fRaf);
+  var b=document.getElementById('flappyBody');
+  var best=parseInt(LS.getItem('gw_flappy_best')||'0');
+  var emoji=LS.getItem('gw_flappy_char')||'\u{1F98B}';
+  var fchars=['\u{1F98B}','\u{1F426}','\u{1F338}','\u{1F478}','\u{1F9DA}','\u{1F41D}','\u{1F54A}','\u{1F4AB}'];
+  b.style.padding='0';
+  b.innerHTML='<div style="position:absolute;top:4px;left:0;right:0;z-index:3;text-align:center"><p style="font-size:.65rem;color:rgba(255,255,255,.5)">Best: '+best+'</p><div style="display:flex;gap:3px;justify-content:center;margin-top:2px" id="fCharSel"></div></div><canvas id="fCv" style="display:block;width:100%;height:100%"></canvas>';
+  var fSel=document.getElementById('fCharSel');fchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.1rem;cursor:pointer;padding:3px 5px;border-radius:6px;'+(c===emoji?'background:rgba(216,71,115,.3);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.1)');s.onclick=function(){LS.setItem('gw_flappy_char',c);initFlappy()};fSel.appendChild(s)});
+  var cv=document.getElementById('fCv');
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext('2d');
+  var bird={x:Math.round(W*.22),y:Math.round(H*.45),vy:0,r:18},pipes=[],gap=Math.round(H*.24),score=0,frame=0,started=false,dead=false;
+  function reset(){bird.y=Math.round(H*.45);bird.vy=0;pipes=[];score=0;frame=0;started=false;dead=false}
+  function addPipe(){var top=Math.round(H*.1)+Math.random()*(H-gap-Math.round(H*.2));pipes.push({x:W,top:top,bottom:top+gap,passed:false})}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#A8D8EA');bg.addColorStop(.4,'#D5E8F0');bg.addColorStop(.7,'#E8F0E5');bg.addColorStop(1,'#B5C9A8');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    pipes.forEach(function(p){ctx.fillStyle='#F4A0B0';ctx.fillRect(p.x,0,48,p.top);ctx.fillRect(p.x,p.bottom,48,H-p.bottom);ctx.fillStyle='#C7405A';ctx.fillRect(p.x-3,p.top-8,54,8);ctx.fillRect(p.x-3,p.bottom,54,8)});
+    ctx.font='44px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(emoji,bird.x,bird.y);
+    ctx.fillStyle='#fff';ctx.font='bold 36px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,Math.round(H*.1));
+    if(!started){ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='20px Outfit,sans-serif';ctx.fillText('Tap to start',W/2,H/2)}
+    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='16px Outfit,sans-serif';ctx.fillText('Tap to retry',W/2,H/2+24)}
+  }
+  function update(){
+    if(!started||dead){draw();window._fRaf=requestAnimationFrame(update);return}
+    bird.vy+=.42;bird.y+=bird.vy;frame++;
+    if(frame%85===0)addPipe();
+    pipes.forEach(function(p){p.x-=2.8;if(!p.passed&&p.x+48<bird.x){p.passed=true;score++}});
+    pipes=pipes.filter(function(p){return p.x>-54});
+    var hit=bird.y<0||bird.y>H;
+    pipes.forEach(function(p){if(bird.x+bird.r>p.x&&bird.x-bird.r<p.x+48){if(bird.y-bird.r<p.top||bird.y+bird.r>p.bottom)hit=true}});
+    if(hit){dead=true;if(score>best){best=score;LS.setItem('gw_flappy_best',''+best)}checkAchievements()}
+    draw();window._fRaf=requestAnimationFrame(update);
+  }
+  function tap(){if(dead){reset();return}if(!started){started=true;addPipe()}bird.vy=-7.5}
+  cv.addEventListener('touchstart',function(e){e.preventDefault();tap()},{passive:false});
+  cv.addEventListener('click',tap);
+  update();
+  document.querySelector('#gp-flappy .gp-close').addEventListener('click',function(){if(window._fRaf)cancelAnimationFrame(window._fRaf)});
+}
+
+/* ========== GLOW JUMP ========== */
+function initGlowJump(){
+  trackGame('glowjump');
+  if(window._gjRaf)cancelAnimationFrame(window._gjRaf);
+  var b=document.getElementById('gjBody');
+  var emoji=LS.getItem('gw_gj_char')||'\u{1F3C3}\u{200D}\u{2640}\u{FE0F}';
+  var gjchars=['\u{1F3C3}\u{200D}\u{2640}\u{FE0F}','\u{1F3C3}\u{200D}\u{2642}\u{FE0F}','\u{1F9CD}\u{200D}\u{2640}\u{FE0F}','\u{1F9CD}\u{200D}\u{2642}\u{FE0F}','\u{1F6B6}\u{200D}\u{2640}\u{FE0F}','\u{1F6B6}\u{200D}\u{2642}\u{FE0F}','\u{1F9DA}','\u{1F478}'];
+  b.style.padding='0';
+  b.innerHTML='<div style="position:absolute;top:4px;left:0;right:0;z-index:3;text-align:center"><p style="font-size:.65rem;color:rgba(255,255,255,.5)">Tap left/right</p><div style="display:flex;gap:3px;justify-content:center;margin-top:2px" id="gjCharSel"></div></div><canvas id="gjCv" style="display:block;width:100%;height:100%"></canvas>';
+  var gjSel=document.getElementById('gjCharSel');gjchars.forEach(function(c){var s=document.createElement('span');s.textContent=c;s.style.cssText='font-size:1.1rem;cursor:pointer;padding:3px 5px;border-radius:6px;'+(c===emoji?'background:rgba(216,71,115,.3);border:1px solid var(--carn)':'border:1px solid rgba(255,255,255,.1)');s.onclick=function(){LS.setItem('gw_gj_char',c);initGlowJump()};gjSel.appendChild(s)});
+  var cv=document.getElementById('gjCv');
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext('2d');
+  var player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24},platforms=[],score=0,camY=0,dead=false;
+  function genPlatforms(){platforms=[];for(var i=0;i<8;i++){platforms.push({x:20+Math.random()*(W-80),y:H-60-i*(H/8),w:50+Math.random()*30})}}
+  genPlatforms();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1A0A1E');bg.addColorStop(1,'#2D1B30');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    platforms.forEach(function(p){var sy=p.y-camY;if(sy<-20||sy>H+20)return;ctx.fillStyle='rgba(200,168,233,.3)';ctx.shadowColor='rgba(200,168,233,.4)';ctx.shadowBlur=10;ctx.fillRect(p.x,sy,p.w,8);ctx.shadowBlur=0});
+    var py=player.y-camY;
+    ctx.font='40px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(emoji,player.x,py);
+    ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,40);
+    if(dead){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='16px Outfit';ctx.fillText('Tap to retry',W/2,H/2+24)}
+  }
+  function update(){
+    if(dead){draw();window._gjRaf=requestAnimationFrame(update);return}
+    player.vy+=.35;player.x+=player.vx;player.y+=player.vy;
+    if(player.x<0)player.x=W;if(player.x>W)player.x=0;
+    if(player.vy>0){platforms.forEach(function(p){var py=player.y+player.h/2;if(py>p.y&&py<p.y+12&&player.x>p.x-10&&player.x<p.x+p.w+10){player.vy=-10}})}
+    if(player.y-camY<200){camY=player.y-200;score=Math.max(score,Math.floor(-camY/10));while(platforms[0].y-camY>-20){var ny=platforms[0].y-50-Math.random()*30;platforms.unshift({x:20+Math.random()*(W-80),y:ny,w:50+Math.random()*30})}platforms=platforms.filter(function(p){return p.y-camY<H+40})}
+    if(player.y-camY>H+50){dead=true;addXP(Math.max(1,Math.floor(score/10)),'Glow Jump: '+score+'pts')}
+    draw();window._gjRaf=requestAnimationFrame(update);
+  }
+  cv.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    if(dead){player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
+    var x=e.touches[0].clientX-cv.getBoundingClientRect().left;
+    player.vx=x<W/2?-4:4;
+  },{passive:false});
+  cv.addEventListener('touchend',function(){player.vx=0});
+  cv.addEventListener('click',function(e){
+    if(dead){player={x:Math.round(W/2),y:Math.round(H*.83),vx:0,vy:-8,w:24,h:24};camY=0;score=0;dead=false;genPlatforms();return}
+    var x=e.clientX-cv.getBoundingClientRect().left;player.vx=x<W/2?-4:4;setTimeout(function(){player.vx=0},200);
+  });
+  update();
+  document.querySelector('#gp-glowjump .gp-close').addEventListener('click',function(){if(window._gjRaf)cancelAnimationFrame(window._gjRaf)});
+}
+
+/* ========== 2048 GLAM ========== */
+var GLAM_TILES={2:'💅',4:'👑',8:'✨',16:'💎',32:'🌸',64:'🦋',128:'🔮',256:'⭐',512:'🌙',1024:'👸',2048:'🫅'};
+var g2048grid,g2048score,g2048over;
+function init2048(){
+  trackGame('2048');g2048grid=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];g2048score=0;g2048over=false;
+  addTile();addTile();render2048();
+  // Swipe detection
+  var body=document.getElementById('g2048Body');
+  var sx=0,sy=0;
+  body.ontouchstart=function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY};
+  body.ontouchend=function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)){if(dx>30)move2048('right');else if(dx<-30)move2048('left')}
+    else{if(dy>30)move2048('down');else if(dy<-30)move2048('up')}};
+}
+function addTile(){var empty=[];for(var r=0;r<4;r++)for(var c=0;c<4;c++)if(!g2048grid[r][c])empty.push([r,c]);if(!empty.length)return;var p=empty[Math.floor(Math.random()*empty.length)];g2048grid[p[0]][p[1]]=Math.random()<.9?2:4}
+function render2048(){
+  var h='<div style="text-align:center;margin-bottom:12px"><span style="font-family:Space Mono,monospace;font-size:.8rem;color:var(--gold)">Score: '+g2048score+'</span></div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;background:rgba(255,255,255,.04);padding:6px;border-radius:14px;box-sizing:border-box">';
+  for(var r=0;r<4;r++)for(var c=0;c<4;c++){var v=g2048grid[r][c];var bg=v?'rgba(216,71,115,'+(Math.min(v/512,.8)+.05)+')':'rgba(255,255,255,.03)';
+    h+='<div style="aspect-ratio:1;background:'+bg+';border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:'+(v>64?'2.8rem':'2.2rem')+'">'+(v?(GLAM_TILES[v]||v):'')+'</div>'}
+  h+='</div>';
+  if(g2048over)h+='<p style="text-align:center;font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-top:14px">Game Over! Score: '+g2048score+'</p>';
+  h+='<button style="display:block;margin:14px auto 0;padding:8px 20px;border-radius:100px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.4);font-family:Outfit,sans-serif;font-size:.65rem;cursor:pointer" onclick="init2048()">New Game</button>';
+  document.getElementById('g2048Body').style.padding='10px';document.getElementById('g2048Body').innerHTML=h;
+  // Re-attach swipe
+  var body=document.getElementById('g2048Body');var sx=0,sy=0;
+  body.ontouchstart=function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY};
+  body.ontouchend=function(e){var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>Math.abs(dy)){if(dx>30)move2048('right');else if(dx<-30)move2048('left')}else{if(dy>30)move2048('down');else if(dy<-30)move2048('up')}};
+}
+function move2048(dir){
+  if(g2048over)return;var moved=false;var g=g2048grid;
+  function slide(row){var f=row.filter(function(v){return v});for(var i=0;i<f.length-1;i++){if(f[i]===f[i+1]){f[i]*=2;g2048score+=f[i];f.splice(i+1,1)}}while(f.length<4)f.push(0);return f}
+  if(dir==='left'){for(var r=0;r<4;r++){var nw=slide(g[r]);if(nw.join()!==g[r].join())moved=true;g[r]=nw}}
+  if(dir==='right'){for(var r=0;r<4;r++){var nw=slide(g[r].slice().reverse()).reverse();if(nw.join()!==g[r].join())moved=true;g[r]=nw}}
+  if(dir==='up'){for(var c=0;c<4;c++){var col=[g[0][c],g[1][c],g[2][c],g[3][c]];var nw=slide(col);var ch=nw.join()!==col.join();if(ch)moved=true;for(var r=0;r<4;r++)g[r][c]=nw[r]}}
+  if(dir==='down'){for(var c=0;c<4;c++){var col=[g[3][c],g[2][c],g[1][c],g[0][c]];var nw=slide(col);var ch=nw.join()!==col.join();if(ch)moved=true;for(var r=0;r<4;r++)g[3-r][c]=nw[r]}}
+  if(moved){addTile();
+    // Check game over
+    var hasMove=false;for(var r=0;r<4;r++)for(var c=0;c<4;c++){if(!g[r][c])hasMove=true;if(c<3&&g[r][c]===g[r][c+1])hasMove=true;if(r<3&&g[r][c]===g[r+1][c])hasMove=true}
+    if(!hasMove){g2048over=true;addXP(Math.max(1,Math.floor(g2048score/50)),'2048: '+g2048score+'pts')}
+  }
+  render2048();
+}
+
+/* ========== CASINO ========== */
+var CASINO_SYMBOLS=['💎','👑','🌸','💅','🦋','✨','🎀'];
+function initCasino(){
+  trackGame('casino');
+  var xp=getXP();
+  var h='<div class="casino-wrap"><p style="font-family:Playfair Display,serif;font-size:1.3rem;color:var(--gold);margin-bottom:4px">Gurlwurl Casino</p><p style="font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:16px">Spend XP, win big</p>';
+  h+='<p style="font-size:.8rem;color:var(--gold)">Balance: <strong>'+xp+' XP</strong></p>';
+  h+='<div class="casino-machine"><div class="casino-reels"><div class="casino-reel" id="cr1">🎀</div><div class="casino-reel" id="cr2">💎</div><div class="casino-reel" id="cr3">👑</div></div><button class="casino-pull" id="casinoPull" onclick="casinoSpin()">PULL</button><div class="casino-cost">10 XP per spin</div></div>';
+  h+='<div class="casino-result" id="casinoResult"></div></div>';
+  document.getElementById('casinoBody').style.padding='16px';document.getElementById('casinoBody').innerHTML=h;
+}
+function casinoSpin(){
+  if(!spendXP(10,'Casino spin')){document.getElementById('casinoResult').textContent='Not enough XP!';return}
+  var reels=[document.getElementById('cr1'),document.getElementById('cr2'),document.getElementById('cr3')];
+  reels.forEach(function(r){r.classList.add('spin')});
+  var results=[];
+  setTimeout(function(){
+    results=[CASINO_SYMBOLS[Math.floor(Math.random()*CASINO_SYMBOLS.length)],CASINO_SYMBOLS[Math.floor(Math.random()*CASINO_SYMBOLS.length)],CASINO_SYMBOLS[Math.floor(Math.random()*CASINO_SYMBOLS.length)]];
+    reels[0].classList.remove('spin');reels[0].textContent=results[0];
+    setTimeout(function(){reels[1].classList.remove('spin');reels[1].textContent=results[1];
+      setTimeout(function(){reels[2].classList.remove('spin');reels[2].textContent=results[2];
+        // Check win
+        if(results[0]===results[1]&&results[1]===results[2]){
+          var win=50;addXP(win,'Casino jackpot!');document.getElementById('casinoResult').textContent='JACKPOT! +50 XP!';LS.setItem('gw_casino_won','1');fireConfetti();
+        }else if(results[0]===results[1]||results[1]===results[2]||results[0]===results[2]){
+          var win=10;addXP(win,'Casino match');document.getElementById('casinoResult').textContent='Match! +10 XP';
+        }else{document.getElementById('casinoResult').textContent='No luck this time'}
+        checkAchievements();
+      },400);
+    },400);
+  },300);
+}
+
+/* ========== WHAT SHOULD I EAT ========== */
+function initWheel(){
+  var items=JSON.parse(LS.getItem('gw_wheel')||'["Pizza","Sushi","Thai","Mexican","Indian","Salad","Brunch","Ramen","Mediterranean","Burgers"]');
+  var h='<div style="text-align:center"><p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px">Add your spots, spin the wheel</p>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:14px;max-width:300px;margin-left:auto;margin-right:auto"><input class="dp-input" id="wheelInput" placeholder="Add restaurant..." style="margin:0;flex:1"><button class="dp-btn" onclick="addWheelItem()">+</button></div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:16px;max-width:300px;margin-left:auto;margin-right:auto">';
+  items.forEach(function(item,i){h+='<span style="padding:4px 10px;border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);font-size:.65rem;color:rgba(255,255,255,.5)">'+item+' <span style="cursor:pointer;opacity:.4" onclick="removeWheelItem('+i+')">✕</span></span>'});
+  h+='</div><div class="wheel-container"><div class="wheel-pointer">▼</div><canvas id="wheelCv" class="wheel-canvas" width="260" height="260"></canvas></div>';
+  h+='<button class="dp-btn" style="margin-top:16px" onclick="spinWheel()">🎡 Spin!</button>';
+  h+='<div class="wheel-result" id="wheelResult"></div></div>';
+  document.getElementById('wheelBody').style.padding='12px';document.getElementById('wheelBody').innerHTML=h;
+  drawWheel(items,0);
+}
+function drawWheel(items,rotation){
+  var cv=document.getElementById('wheelCv');if(!cv)return;var ctx=cv.getContext('2d');
+  var W=260,cx=W/2,cy=W/2,r=120;ctx.clearRect(0,0,W,W);
+  var colors=['#D84773','#C8A8E9','#A8D8EA','#B5C9A8','#FFDAB9','#E8637A','#FFD700','#F4A0B0','#98D8A0','#C7405A'];
+  var n=items.length;var arc=Math.PI*2/n;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);
+  for(var i=0;i<n;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,i*arc,(i+1)*arc);ctx.fillStyle=colors[i%colors.length];ctx.fill();ctx.save();ctx.rotate(i*arc+arc/2);ctx.fillStyle='#fff';ctx.font='bold 10px Outfit,sans-serif';ctx.textAlign='center';ctx.fillText(items[i].slice(0,10),r*.6,4);ctx.restore()}
+  ctx.restore();
+}
+function spinWheel(){
+  var items=JSON.parse(LS.getItem('gw_wheel')||'["Pizza","Sushi","Thai"]');
+  if(items.length<2)return;
+  var spins=5+Math.random()*5;var target=Math.random()*Math.PI*2;var total=spins*Math.PI*2+target;
+  var start=performance.now();var dur=3000;
+  function anim(now){var t=Math.min((now-start)/dur,1);var ease=1-Math.pow(1-t,3);var rot=total*ease;drawWheel(items,rot);
+    if(t<1)requestAnimationFrame(anim);
+    else{var idx=Math.floor(((Math.PI*2-target%(Math.PI*2))/(Math.PI*2)*items.length))%items.length;document.getElementById('wheelResult').textContent='🍽️ '+items[idx]+'!';addXP(1,'Wheel spin')}}
+  requestAnimationFrame(anim);
+}
+function addWheelItem(){var v=document.getElementById('wheelInput').value.trim();if(!v)return;var items=JSON.parse(LS.getItem('gw_wheel')||'[]');items.push(v);LS.setItem('gw_wheel',JSON.stringify(items));initWheel()}
+function removeWheelItem(i){var items=JSON.parse(LS.getItem('gw_wheel')||'[]');items.splice(i,1);LS.setItem('gw_wheel',JSON.stringify(items));initWheel()}
+
+/* ========== GUESTBOOK ========== */
+function initGuestbook(){
+  var h='<div style="margin-bottom:16px"><textarea class="dp-textarea" id="gbText" placeholder="Leave a message on the wall..." style="min-height:60px"></textarea><button class="dp-btn" onclick="postGuestbook()">Sign the Wall</button></div><div id="gbEntries"><p style="font-size:.7rem;color:rgba(255,255,255,.25)">Loading...</p></div>';
+  document.getElementById('gbBody').innerHTML=h;
+  api({action:'load',name:'__guestbook',key:'entries'}).then(function(r){
+    var entries=(r.ok&&r.data)?r.data:[];
+    var el=document.getElementById('gbEntries');
+    if(!entries.length){el.innerHTML='<p style="font-size:.7rem;color:rgba(255,255,255,.25)">Be the first to sign!</p>';return}
+    var h='';entries.slice(-20).reverse().forEach(function(e){
+      h+='<div class="gb-entry"><div class="gb-entry-header"><span class="gb-entry-name">'+(e.emoji||'👩')+' '+e.name+'</span><span class="gb-entry-date">'+e.date+'</span></div><div class="gb-entry-text">'+e.text+'</div></div>';
+    });el.innerHTML=h;
+  }).catch(function(){document.getElementById('gbEntries').innerHTML='<p style="font-size:.7rem;color:rgba(255,255,255,.25)">Guestbook loading failed</p>'});
+}
+function postGuestbook(){
+  var text=document.getElementById('gbText').value.trim();if(!text)return;
+  var name=currentUser?currentUser.name:'Visitor';
+  var emoji=currentUser?(currentUser.status||'👩'):'🌸';
+  api({action:'load',name:'__guestbook',key:'entries'}).then(function(r){
+    var entries=(r.ok&&r.data)?r.data:[];
+    entries.push({name:name,emoji:emoji,text:text,date:new Date().toLocaleDateString()});
+    api({action:'save',name:'__guestbook',key:'entries',data:entries}).then(function(){addXP(5,'Guestbook post');initGuestbook()});
+  });
+}
+
+/* ========== AMBIENT MIXER ========== */
+var mixerCtx=null;var mixerNodes={};
+function initMixer(){
+  var h='<p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:16px">Layer sounds to create your vibe</p>';
+  var channels=[{id:'ocean',name:'Ocean',ico:'🌊'},{id:'rain',name:'Rain',ico:'🌧️'},{id:'fire',name:'Fire',ico:'🔥'},{id:'birds',name:'Birds',ico:'🐦'},{id:'wind',name:'Wind',ico:'💨'},{id:'cafe',name:'Cafe',ico:'☕'}];
+  channels.forEach(function(c){
+    h+='<div class="mixer-channel"><span class="mixer-ico">'+c.ico+'</span><span class="mixer-name">'+c.name+'</span><input type="range" min="0" max="100" value="0" class="mixer-slider" oninput="setMixerVol(\''+c.id+'\',this.value)"></div>';
+  });
+  h+='<button class="dp-btn-outline" style="margin-top:12px;display:block;margin-left:auto;margin-right:auto" onclick="stopMixer()">Stop All</button>';
+  document.getElementById('mixerBody').innerHTML=h;
+  if(!mixerCtx){mixerCtx=new(window.AudioContext||window.webkitAudioContext)()}if(mixerCtx.state==='suspended')mixerCtx.resume();
+}
+function setMixerVol(id,val){
+  var v=val/100;
+  if(!mixerNodes[id]&&v>0){
+    var ctx=mixerCtx;var node;
+    if(id==='ocean'||id==='rain'||id==='wind'){
+      // White/brown noise
+      var bufSize=2*ctx.sampleRate;var buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);var data=buf.getChannelData(0);
+      var last=0;for(var i=0;i<bufSize;i++){var white=Math.random()*2-1;
+        if(id==='ocean'){last=(last+(.02*white))/.98;data[i]=last*3.5}
+        else if(id==='rain'){data[i]=white*.5}
+        else{last=(last+(.01*white))/.99;data[i]=last*5}}
+      node=ctx.createBufferSource();node.buffer=buf;node.loop=true;
+    }else if(id==='fire'){
+      var bufSize=2*ctx.sampleRate;var buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);var data=buf.getChannelData(0);
+      var last=0;for(var i=0;i<bufSize;i++){last=(last+(.04*(Math.random()*2-1)))/.96;data[i]=last*2.5*(0.5+Math.random()*.5)}
+      node=ctx.createBufferSource();node.buffer=buf;node.loop=true;
+    }else if(id==='birds'){
+      var osc=ctx.createOscillator();osc.type='sine';osc.frequency.value=2000+Math.random()*1000;
+      var lfo=ctx.createOscillator();lfo.frequency.value=3+Math.random()*5;var lfoGain=ctx.createGain();lfoGain.gain.value=500;
+      lfo.connect(lfoGain);lfoGain.connect(osc.frequency);lfo.start();node=osc;
+    }else if(id==='cafe'){
+      var bufSize=2*ctx.sampleRate;var buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);var data=buf.getChannelData(0);
+      for(var i=0;i<bufSize;i++){data[i]=(Math.random()*2-1)*.15}
+      node=ctx.createBufferSource();node.buffer=buf;node.loop=true;
+    }
+    var gain=ctx.createGain();gain.gain.value=v;
+    node.connect(gain);gain.connect(ctx.destination);node.start();
+    mixerNodes[id]={node:node,gain:gain};
+  }else if(mixerNodes[id]){
+    if(v===0){mixerNodes[id].node.stop();delete mixerNodes[id]}
+    else{mixerNodes[id].gain.gain.value=v}
+  }
+}
+function stopMixer(){Object.keys(mixerNodes).forEach(function(id){try{mixerNodes[id].node.stop()}catch(e){}});mixerNodes={};initMixer()}
+
+
+
+/* ========== COLOR RUSH ========== */
+function initColorRush(){
+  trackGame('colorrush');
+  var b=document.getElementById('crBody');
+  var W=b.clientWidth||window.innerWidth;var H=b.clientHeight||(window.innerHeight-60);
+  b.innerHTML='<canvas id="crCv" style="width:100%;height:100%;display:block;touch-action:none" width="'+W+'" height="'+H+'"></canvas>';
+  var cv=document.getElementById('crCv');var ctx=cv.getContext('2d');
+  var lanes=4,lw=W/lanes,notes=[],score=0,combo=0,misses=0,speed=3,spawnRate=50,frame=0,dead=false,raf=null,started=false;
+  var colors=['#D84773','#C8A8E9','#A8D8EA','#B5C9A8'];
+  var audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  var freqs=[261.6,329.6,392,523.3];
+  function playNote(lane){var o=audioCtx.createOscillator();var g=audioCtx.createGain();o.type='sine';o.frequency.value=freqs[lane];g.gain.value=.15;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.3);o.stop(audioCtx.currentTime+.3)}
+  function spawn(){var lane=Math.floor(Math.random()*lanes);notes.push({x:lane*lw,y:-80,w:lw-4,h:70,lane:lane,hit:false})}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#0D0A0F';ctx.fillRect(0,0,W,H);
+    for(var i=0;i<lanes;i++){ctx.strokeStyle='rgba(255,255,255,.04)';ctx.beginPath();ctx.moveTo(i*lw,0);ctx.lineTo(i*lw,H);ctx.stroke()}
+    var hitZoneY=Math.round(H*0.7);ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(0,hitZoneY,W,H-hitZoneY);
+    ctx.strokeStyle='rgba(216,71,115,.25)';ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(0,hitZoneY);ctx.lineTo(W,hitZoneY);ctx.stroke();ctx.setLineDash([]);
+    notes.forEach(function(n){if(n.hit)return;ctx.fillStyle=colors[n.lane];ctx.beginPath();var r=10;ctx.moveTo(n.x+2+r,n.y);ctx.lineTo(n.x+n.w-r,n.y);ctx.quadraticCurveTo(n.x+n.w,n.y,n.x+n.w,n.y+r);ctx.lineTo(n.x+n.w,n.y+n.h-r);ctx.quadraticCurveTo(n.x+n.w,n.y+n.h,n.x+n.w-r,n.y+n.h);ctx.lineTo(n.x+2+r,n.y+n.h);ctx.quadraticCurveTo(n.x+2,n.y+n.h,n.x+2,n.y+n.h-r);ctx.lineTo(n.x+2,n.y+r);ctx.quadraticCurveTo(n.x+2,n.y,n.x+2+r,n.y);ctx.fill()});
+    ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.textAlign='center';ctx.fillText(score,W/2,40);
+    if(combo>2){ctx.font='14px Outfit,sans-serif';ctx.fillStyle='var(--gold)';ctx.fillText(combo+'x combo',W/2,60)}
+    if(!started){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='18px Outfit,sans-serif';ctx.textAlign='center';ctx.fillText('Tap to start',W/2,H/2)}
+    if(dead){ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 28px Playfair Display,serif';ctx.fillText('Score: '+score,W/2,H/2-20);ctx.font='14px Outfit,sans-serif';ctx.fillText('Tap to retry',W/2,H/2+20)}
+  }
+  function update(){
+    if(!started||dead){draw();window._crRaf=requestAnimationFrame(update);return}
+    frame++;if(frame%Math.max(20,spawnRate-Math.floor(score/5))===0)spawn();
+    speed=3+score*.03;
+    notes.forEach(function(n){n.y+=speed});
+    notes=notes.filter(function(n){
+      if(n.y>H&&!n.hit){misses++;combo=0;if(misses>=3){dead=true;addXP(Math.max(1,Math.floor(score/8)),'Color Rush: '+score+'pts')}return false}
+      return !n.hit&&n.y<=H;
+    });
+    draw();window._fRaf=requestAnimationFrame(update);
+  }
+  function tap(x){
+    if(dead){score=0;combo=0;misses=0;frame=0;notes=[];dead=false;speed=3;return}
+    if(!started){started=true;if(audioCtx.state==='suspended')audioCtx.resume();return}
+    var lane=Math.floor(x/lw);var hitZoneY=H-80;
+    var hit=false;
+    for(var i=notes.length-1;i>=0;i--){var n=notes[i];if(n.lane===lane&&!n.hit&&n.y+n.h>hitZoneY-30&&n.y<hitZoneY+80){n.hit=true;score++;combo++;playNote(lane);hit=true;break}}
+    if(!hit){misses++;combo=0;if(misses>=3){dead=true;addXP(Math.max(1,Math.floor(score/8)),'Color Rush: '+score+'pts')}}
+  }
+  cv.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.touches.length;i++)tap(e.touches[i].clientX)},{passive:false});
+  cv.addEventListener('click',function(e){tap(e.clientX)});
+  update();
+  document.querySelector('#gp-colorrush .gp-close').addEventListener('click',function(){if(window._crRaf)cancelAnimationFrame(window._crRaf)});
+}
+
+/* ========== DESK ========== */
+function initDesk(){
+  if(!currentUser){document.getElementById('deskContent').innerHTML='<div style="text-align:center;padding:60px 20px"><p style="font-size:3rem;margin-bottom:16px">\u{1F512}</p><h2 style="font-family:Playfair Display,serif;font-size:1.4rem;color:#fff;margin-bottom:8px">Citizens Only</h2><p style="font-size:.85rem;color:rgba(255,255,255,.4)">Enroll in citizenship to unlock your personal desk</p><button class="auth-btn" style="margin-top:20px" onclick="document.getElementById(\'authModal\').classList.add(\'open\')">Become a Citizen</button></div>';return}
+  var vibes=["main character energy","soft launch goddess","chaotic good with a glow","delulu is the solulu","certified moment","too cute to be stressed","hot girl walk activated","romanticizing everything","unbothered queen era"];
+  var di=new Date().getDate();
+  var streakData=JSON.parse(LS.getItem('gw_streak')||'{"count":0}');
+  var displayEmoji=currentUser.status||'\u{1F469}';
+  var activeTab=LS.getItem('gw_desk_tab')||'daily';
+  var h='<div class="desk-welcome"><h2>Welcome, <span>'+currentUser.name+'</span> '+displayEmoji+'</h2><p>Your personal corner of Gurlwurl</p></div>';
+  if(streakData.count>1)h+='<div style="text-align:center;margin-bottom:8px"><span style="font-size:.55rem;color:var(--gold);background:rgba(212,168,83,.08);padding:3px 12px;border-radius:100px">\u{1F525} '+streakData.count+' day streak</span></div>';
+  h+='<div class="desk-daily"><div class="desk-daily-label">Today\'s Vibe</div><div class="desk-daily-vibe">'+vibes[di%vibes.length]+'</div></div>';
+  h+='<div class="desk-tabs">';
+  h+='<div class="desk-stab'+(activeTab==='daily'?' active':'')+'" onclick="switchDeskTab(\'daily\')">\u{2728} Daily</div>';
+  h+='<div class="desk-stab'+(activeTab==='journal'?' active':'')+'" onclick="switchDeskTab(\'journal\')">\u{1F4D4} Journal</div>';
+  h+='<div class="desk-stab'+(activeTab==='tools'?' active':'')+'" onclick="switchDeskTab(\'tools\')">\u{1F6E0} Tools</div>';
+  h+='</div>';
+
+  // DAILY TAB
+  h+='<div class="desk-section'+(activeTab==='daily'?' active':'')+'" id="ds-daily">';
+  h+='<div class="desk-grid">';
+  h+='<div class="desk-btn" onclick="openPanel(\'habits\')"><div class="desk-btn-ico">\u{2705}</div><div class="desk-btn-label">Habits</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'water\')"><div class="desk-btn-ico">\u{1F4A7}</div><div class="desk-btn-label">Water</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'breathe\')"><div class="desk-btn-ico">\u{1FAC1}</div><div class="desk-btn-label">Breathe</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'hype\')"><div class="desk-btn-ico">\u{1F4E2}</div><div class="desk-btn-label">Hype Me Up</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'rate\')"><div class="desk-btn-ico">\u{2B50}</div><div class="desk-btn-label">Rate Day</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'checkin\')"><div class="desk-btn-ico">\u{2600}</div><div class="desk-btn-label">Check-in</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'highlight\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Highlight</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'sleep\')"><div class="desk-btn-ico">\u{1F634}</div><div class="desk-btn-label">Sleep</div></div>';
+  h+='</div></div>';
+
+  // JOURNAL TAB (password locked)
+  h+='<div class="desk-section'+(activeTab==='journal'?' active':'')+'" id="ds-journal">';
+  h+='<div id="journalLock"><div style="text-align:center;padding:30px 0"><p style="font-size:2rem;margin-bottom:10px">\u{1F512}</p><p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:12px">Enter your passcode to unlock</p><div class="emoji-grid" id="journalEmojis"></div><div class="auth-err" id="journalErr"></div></div></div>';
+  h+='<div id="journalContent" style="display:none"><div class="desk-grid">';
+  h+='<div class="desk-btn" onclick="openPanel(\'diary\')"><div class="desk-btn-ico">\u{1F4D4}</div><div class="desk-btn-label">Diary</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'dreams\')"><div class="desk-btn-ico">\u{1F4AD}</div><div class="desk-btn-label">Dreams</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'gratitude\')"><div class="desk-btn-ico">\u{1F338}</div><div class="desk-btn-label">Gratitude</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'vision\')"><div class="desk-btn-ico">\u{1F4CB}</div><div class="desk-btn-label">Vision Board</div></div>';
+  if(currentUser&&currentUser.name.toLowerCase()==='akash')h+='<div class="desk-btn" onclick="openPanel(\'admin\')"><div class="desk-btn-ico">\u{1F4CA}</div><div class="desk-btn-label">Admin</div></div>';
+
+  h+='</div></div></div>';
+
+  // TOOLS TAB
+  h+='<div class="desk-section'+(activeTab==='tools'?' active':'')+'" id="ds-tools">';
+  h+='<div class="desk-grid">';
+  h+='<div class="desk-btn" onclick="openPanel(\'bucket\')"><div class="desk-btn-ico">\u{1F3AF}</div><div class="desk-btn-label">Bucket List</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'countdown\')"><div class="desk-btn-ico">\u{23F0}</div><div class="desk-btn-label">Countdown</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'skincare\')"><div class="desk-btn-ico">\u{1F9F4}</div><div class="desk-btn-label">Skincare</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'shop\')"><div class="desk-btn-ico">\u{1F6D2}</div><div class="desk-btn-label">Shopping</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'guestbook\')"><div class="desk-btn-ico">\u{1F4D6}</div><div class="desk-btn-label">Guestbook</div></div>';
+  h+='<div class="desk-btn" onclick="openGame(\'wheel\')"><div class="desk-btn-ico">\u{1F3A1}</div><div class="desk-btn-label">What to Eat</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'gazette\')"><div class="desk-btn-ico">\u{1F4F0}</div><div class="desk-btn-label">Gazette</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'hub\')"><div class="desk-btn-ico">\u{1FA2A}</div><div class="desk-btn-label">My Hub</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'leaderboard\')"><div class="desk-btn-ico">\u{1F3C6}</div><div class="desk-btn-label">Leaderboard</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'recipe\')"><div class="desk-btn-ico">\u{1F373}</div><div class="desk-btn-label">Recipes</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'theme\')"><div class="desk-btn-ico">\u{1F3A8}</div><div class="desk-btn-label">Theme</div></div>';
+  
+  h+='</div></div>';
+
+  document.getElementById('deskContent').innerHTML=h;
+
+  // Setup journal lock emojis
+  if(activeTab==='journal'){setupJournalLock()}
+}
+
+function switchDeskTab(tab){
+  LS.setItem('gw_desk_tab',tab);
+  document.querySelectorAll('.desk-stab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.desk-section').forEach(function(s){s.classList.remove('active')});
+  document.querySelector('.desk-stab:nth-child('+(tab==='daily'?'1':tab==='journal'?'2':'3')+')').classList.add('active');
+  document.getElementById('ds-'+tab).classList.add('active');
+  if(tab==='journal'){journalUnlocked=false;setupJournalLock()}
+}
+
+var journalUnlocked=false;
+function setupJournalLock(){
+  if(journalUnlocked){document.getElementById('journalLock').style.display='none';document.getElementById('journalContent').style.display='block';return}
+  document.getElementById('journalLock').style.display='block';document.getElementById('journalContent').style.display='none';
+  var grid=document.getElementById('journalEmojis');grid.innerHTML='';
+  var shuffled=GIRLY_EMOJIS.slice().sort(function(){return Math.random()-.5}).slice(0,12);
+  shuffled.forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;d.onclick=function(){
+    if(e===currentUser.emoji){journalUnlocked=true;document.getElementById('journalLock').style.display='none';document.getElementById('journalContent').style.display='block'}
+    else{document.getElementById('journalErr').textContent='Wrong passcode';setTimeout(function(){document.getElementById('journalErr').textContent=''},1500)}
+  };grid.appendChild(d)});
+  // Ensure their actual emoji is in the grid
+  var hasIt=shuffled.includes(currentUser.emoji);
+  if(!hasIt){var last=grid.lastChild;last.textContent=currentUser.emoji;last.onclick=function(){journalUnlocked=true;document.getElementById('journalLock').style.display='none';document.getElementById('journalContent').style.display='block'}}
+}
+
+function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
+function closePanel(id){document.getElementById('dp-'+id).classList.remove('open')}
+function initPanel(id){var fn={hub:initHub,admin:initAdmin,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
+function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);LS.setItem(key,JSON.stringify(e));triggerSync();cb()}
+
+function initGratitude(){var entries=JSON.parse(LS.getItem('gw_grat')||'[]');var h='<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:16px">';entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_grat\','+i+',initGratitude)">✕</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});h+='</div>';document.getElementById('gratBody').innerHTML=h}
+function saveGrat(){var t=document.getElementById('gratText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_grat')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t});LS.setItem('gw_grat',JSON.stringify(e));addXP(5,'Gratitude note');triggerSync();initGratitude()}
+
+function initHabits(){var habits=['💧 Drank 8 glasses','🧴 Skincare routine','🚶‍♀️ Moved my body','🌿 Touched grass','📖 Read something','💤 8hrs sleep','🧘‍♀️ Mindfulness','💅 Self care moment'];var done=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');var h='';habits.forEach(function(hab,i){h+='<div class="habit-row'+(done.includes(i)?' done':'')+'" onclick="toggleHabit('+i+')"><div class="habit-check">'+(done.includes(i)?'✓':'')+'</div><div class="habit-label">'+hab+'</div></div>'});document.getElementById('habitsBody').innerHTML=h}
+function toggleHabit(i){var d=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');if(d.includes(i))d=d.filter(function(x){return x!==i});else d.push(i);LS.setItem('gw_habits_'+today,JSON.stringify(d));if(d.includes(i))addXP(3,'Habit completed');triggerSync();initHabits()}
+
+function initWater(){var c=parseInt(LS.getItem('gw_water_'+today)||'0');document.getElementById('waterBody').innerHTML='<div class="water-display"><div class="water-glass"><div class="water-fill" style="height:'+Math.min(c/8*100,100)+'%"></div></div><div class="water-count">'+c+'/8</div><div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:14px">glasses today</div><button class="dp-btn" onclick="addWater()">+ Add Glass</button></div>'}
+function addWater(){LS.setItem('gw_water_'+today,''+(parseInt(LS.getItem('gw_water_'+today)||'0')+1));addXP(2,'Water glass');triggerSync();initWater()}
+
+function initBreathe(){document.getElementById('breatheBody').innerHTML='<div style="text-align:center;padding:20px"><p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:10px">Tap to begin</p><div class="breathe-circle" id="bc" onclick="startBreathe()">tap to start</div></div>'}
+function startBreathe(){var c=document.getElementById('bc');if(window._bi){clearInterval(window._bi);window._bi=null;c.className='breathe-circle';c.textContent='tap to start';return}var inh=true;function step(){c.className='breathe-circle '+(inh?'inhale':'exhale');c.textContent=inh?'breathe in...':'breathe out...';inh=!inh}step();window._bi=setInterval(step,4000)}
+
+function initRate(){var ratings=JSON.parse(LS.getItem('gw_ratings')||'[]');var tr=ratings.find(function(r){return r.date===today});var cur=tr?tr.stars:0;var h='<div style="text-align:center"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:8px">How was today?</p><div class="rate-stars">';for(var i=1;i<=5;i++)h+='<div class="rate-star'+(i<=cur?' lit':'')+'" onclick="rateDay('+i+')">⭐</div>';h+='</div></div><div style="margin-top:16px">';ratings.slice(-10).reverse().forEach(function(r,ri){var i=ratings.length-1-ri;h+='<div class="rate-row"><div class="rate-row-date">'+r.date.split(' ').slice(0,3).join(' ')+'</div><div class="rate-row-stars">'+'⭐'.repeat(r.stars)+'</div><span style="cursor:pointer;opacity:.3;font-size:.6rem;margin-left:auto" onclick="delEntry(\'gw_ratings\','+i+',initRate)">✕</span></div>'});h+='</div>';document.getElementById('rateBody').innerHTML=h}
+function rateDay(n){var r=JSON.parse(LS.getItem('gw_ratings')||'[]');r=r.filter(function(x){return x.date!==today});r.push({date:today,stars:n});LS.setItem('gw_ratings',JSON.stringify(r));addXP(3,'Rated day');triggerSync();initRate()}
+
+function initBucket(){var items=JSON.parse(LS.getItem('gw_bucket')||'[]');var h='<div style="display:flex;gap:8px;margin-bottom:14px"><input class="dp-input" id="bucketIn" placeholder="Add a dream..." style="margin:0;flex:1"><button class="dp-btn" onclick="addBucket()">+</button></div>';items.forEach(function(item,i){h+='<div class="bucket-item'+(item.done?' done':'')+'"><div class="bucket-check" onclick="toggleBucket('+i+')">'+(item.done?'✓':'')+'</div><div class="bucket-text">'+item.text+'</div><span style="cursor:pointer;opacity:.3;font-size:.6rem" onclick="delBucket('+i+')">✕</span></div>'});document.getElementById('bucketBody').innerHTML=h}
+function addBucket(){var t=document.getElementById('bucketIn').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_bucket')||'[]');items.push({text:t,done:false});LS.setItem('gw_bucket',JSON.stringify(items));initBucket()}
+function toggleBucket(i){var items=JSON.parse(LS.getItem('gw_bucket')||'[]');var wasDone=items[i].done;items[i].done=!items[i].done;LS.setItem('gw_bucket',JSON.stringify(items));if(!wasDone)addXP(10,'Bucket list item!');triggerSync();initBucket()}
+function delBucket(i){var items=JSON.parse(LS.getItem('gw_bucket')||'[]');items.splice(i,1);LS.setItem('gw_bucket',JSON.stringify(items));initBucket()}
+
+var comps=["You light up every room","Your energy is unmatched","You're the main character","The world is better with you","Your smile could end wars","Everything you touch is gold","You deserve every good thing","You're THE girl","Your vibe is immaculate","Someone's smiling because of you","You make hard things look easy","Your confidence is contagious","You're the blueprint","Your aura could power a city","Your heart is as beautiful as your face","Your laugh is the best sound","You're an entire vibe","You're the calm in someone's storm","You could wear a trash bag and serve","Your kindness makes the world less scary","You were born to stand out","You set the bar then float above it","Your intelligence is stunning","You make people want to be better","You're the plot twist everyone needed","You turned pain into power","Your boundaries are beautiful","You're a limited edition","The stars aligned for you","You bring out the best in everyone","You're proof magic is real","You handle business like a CEO","Your growth is beautiful","You turn moments into core memories","You love people so well","Your glow up isn't done yet","You're the embodiment of she did THAT","Your standards are high because you know your worth","You're not for everyone and that's your flex","You're someone's answered prayer","Your future self is proud","You've survived 100% of your worst days","You're not lucky you're just that good","You deserve a standing ovation","Your comeback stories are legendary","You make growth look glamorous","Your intuition is elite","The universe keeps receipts and yours are immaculate","Your softness is revolutionary","You ARE the crown"];
+function initCompliments(){document.getElementById('compBody').innerHTML='<div class="compliment-card"><div class="compliment-text" id="compText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" onclick="document.getElementById(\'compText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one 💕</button></div>'}
+
+function initCountdown(){var target=LS.getItem('gw_countdown');var h='<div class="countdown-display">';if(target){var days=Math.max(0,Math.ceil((new Date(target)-new Date())/864e5));h+='<div class="countdown-num">'+days+'</div><div class="countdown-unit">days to go</div><p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-top:12px">'+new Date(target).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</p><button class="dp-btn-outline" style="margin-top:16px" onclick="LS.removeItem(\'gw_countdown\');initCountdown()">change date</button>'}else{h+='<p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:14px">Count down to something special</p><input type="date" class="dp-input" id="countDate" style="color-scheme:dark"><button class="dp-btn" style="margin-top:8px" onclick="var d=document.getElementById(\'countDate\').value;if(d){LS.setItem(\'gw_countdown\',d);initCountdown()}">Set</button>'}h+='</div>';document.getElementById('countBody').innerHTML=h}
+
+function getSkSteps(){return JSON.parse(LS.getItem('gw_skincare')||'null')||[{ico:'🧼',name:'Cleanser',time:60},{ico:'🧪',name:'Toner',time:30},{ico:'💧',name:'Serum',time:30},{ico:'👁️',name:'Eye Cream',time:15},{ico:'🧴',name:'Moisturizer',time:30},{ico:'☀️',name:'Sunscreen',time:20}]}
+function initSkincare(){var steps=getSkSteps();var h='<p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px;text-align:center">Tap to start timer</p>';steps.forEach(function(s,i){h+='<div class="skincare-step" id="sk'+i+'" onclick="startSkin('+i+','+s.time+')"><span style="font-size:1.3rem">'+s.ico+'</span><span style="font-size:.82rem;flex:1">'+s.name+'</span><span style="font-family:\'Space Mono\',monospace;font-size:.68rem;color:var(--carn)" id="skt'+i+'">'+s.time+'s</span><span style="cursor:pointer;opacity:.3;font-size:.65rem" onclick="event.stopPropagation();delSkin('+i+')">✕</span></div>'});h+='<div style="margin-top:14px;display:flex;gap:8px"><input class="dp-input" id="skName" placeholder="Add step" style="margin:0;flex:1"><input class="dp-input" id="skTime" type="number" placeholder="Sec" style="margin:0;width:55px"><button class="dp-btn" onclick="addSkin()">+</button></div>';document.getElementById('skinBody').innerHTML=h}
+function startSkin(i,total){if(window._si)clearInterval(window._si);document.querySelectorAll('.skincare-step').forEach(function(x){x.classList.remove('active')});document.getElementById('sk'+i).classList.add('active');var t=total;var el=document.getElementById('skt'+i);window._si=setInterval(function(){t--;el.textContent=t+'s';if(t<=0){clearInterval(window._si);window._si=null;el.textContent='✓';document.getElementById('sk'+i).classList.remove('active')}},1000)}
+function addSkin(){var n=document.getElementById('skName').value.trim(),t=parseInt(document.getElementById('skTime').value)||30;if(!n)return;var steps=getSkSteps();steps.push({ico:'✨',name:n,time:t});LS.setItem('gw_skincare',JSON.stringify(steps));initSkincare()}
+function delSkin(i){var steps=getSkSteps();steps.splice(i,1);LS.setItem('gw_skincare',JSON.stringify(steps));initSkincare()}
+
+function initShop(){var items=JSON.parse(LS.getItem('gw_shop')||'[]');var h='<div style="display:flex;gap:8px;margin-bottom:14px"><input class="dp-input" id="shopIn" placeholder="Add item..." style="margin:0;flex:1"><button class="dp-btn" onclick="addShop()">+</button></div>';items.forEach(function(item,i){h+='<div class="bucket-item'+(item.done?' done':'')+'"><div class="bucket-check" onclick="toggleShop('+i+')">'+(item.done?'✓':'')+'</div><div class="bucket-text">'+item.text+'</div><span style="cursor:pointer;opacity:.3;font-size:.6rem" onclick="delShop('+i+')">✕</span></div>'});document.getElementById('shopBody').innerHTML=h}
+function addShop(){var t=document.getElementById('shopIn').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_shop')||'[]');items.push({text:t,done:false});LS.setItem('gw_shop',JSON.stringify(items));triggerSync();initShop()}
+function toggleShop(i){var items=JSON.parse(LS.getItem('gw_shop')||'[]');items[i].done=!items[i].done;LS.setItem('gw_shop',JSON.stringify(items));triggerSync();initShop()}
+function delShop(i){var items=JSON.parse(LS.getItem('gw_shop')||'[]');items.splice(i,1);LS.setItem('gw_shop',JSON.stringify(items));triggerSync();initShop()}
+
+function initAnalytics(){
+  var diary=JSON.parse(LS.getItem('gw_diary')||'[]'),grat=JSON.parse(LS.getItem('gw_grat')||'[]'),ratings=JSON.parse(LS.getItem('gw_ratings')||'[]'),bucket=JSON.parse(LS.getItem('gw_bucket')||'[]'),shop=JSON.parse(LS.getItem('gw_shop')||'[]');
+  var todayH=JSON.parse(LS.getItem('gw_habits_'+today)||'[]'),water=parseInt(LS.getItem('gw_water_'+today)||'0');
+  var avgR=ratings.length?(ratings.reduce(function(a,r){return a+r.stars},0)/ratings.length).toFixed(1):0;
+  var h='<div style="text-align:center;margin-bottom:20px"><p style="font-family:\'Cormorant Garamond\',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,.4)">Your journey</p></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
+  h+='<div style="background:rgba(216,71,115,.1);border:1px solid rgba(216,71,115,.15);border-radius:14px;padding:16px;text-align:center"><div style="font-family:\'Playfair Display\',serif;font-size:1.8rem;font-weight:700;color:var(--carn)">'+Math.round(todayH.length/8*100)+'%</div><div style="font-size:.55rem;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:2px">Habits Today</div></div>';
+  h+='<div style="background:rgba(168,216,234,.08);border:1px solid rgba(168,216,234,.12);border-radius:14px;padding:16px;text-align:center"><div style="font-family:\'Playfair Display\',serif;font-size:1.8rem;font-weight:700;color:var(--sky)">'+water+'/8</div><div style="font-size:.55rem;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:2px">Water</div></div></div>';
+  var rows=[{l:'Gratitude Notes',v:grat.length},{l:'Avg Rating',v:avgR?avgR+' ⭐':'—'},{l:'Bucket List',v:bucket.filter(function(b){return b.done}).length+'/'+bucket.length},{l:'Shopping',v:shop.filter(function(s){return s.done}).length+'/'+shop.length}];
+  h+='<div style="display:flex;flex-direction:column;gap:6px">';rows.forEach(function(r){h+='<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:.8rem;color:rgba(255,255,255,.5)">'+r.l+'</span><span style="font-family:\'Space Mono\',monospace;font-size:.8rem;color:var(--carn)">'+r.v+'</span></div>'});h+='</div>';
+  document.getElementById('analyticsBody').innerHTML=h;
+}
+
+/* PASSPORT */
+function openPassport(){
+  var selfie=LS.getItem('gw_selfie');
+  var h='<div style="text-align:center;padding:20px">';
+  h+='<div style="width:80px;height:80px;border-radius:50%;margin:0 auto 12px;border:3px solid var(--carn);overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05)">';
+  if(selfie)h+='<img src="'+selfie+'" style="width:100%;height:100%;object-fit:cover">';
+  else h+='<span style="font-size:2.5rem">'+(currentUser.status||'👩')+'</span>';
+  h+='</div>';
+  h+='<div style="font-size:1.4rem;margin-top:-6px;text-align:center">'+(currentUser.status||'\u{1F469}')+'</div>';
+  h+='<h3 style="font-family:Playfair Display,serif;font-size:1.3rem;color:#fff;margin-bottom:2px">'+currentUser.name+'</h3>';
+  h+='<p style="font-family:Space Mono,monospace;font-size:.6rem;color:rgba(255,255,255,.3);margin-bottom:4px">CITIZEN #'+String(currentUser.number||3).padStart(3,'0')+'</p>';
+  h+='<p style="font-size:.7rem;color:var(--carn);margin-bottom:20px">'+(currentUser.title||'Certified Citizen')+'</p>';
+  h+='<p style="font-size:.65rem;color:rgba(255,255,255,.25);margin-bottom:8px">Change your secret passcode emoji</p>';
+  h+='<div class="emoji-grid" id="passportEmojis"></div>';
+  h+='<button class="dp-btn" id="changeEmojiBtn" style="margin-top:12px;display:none" onclick="changeEmoji()">Update Passcode</button>';
+  h+='<p style="font-size:.65rem;color:rgba(255,255,255,.25);margin-top:20px">Update photo</p>';
+  h+='<label style="display:inline-block;padding:8px 18px;border-radius:12px;border:1px dashed rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-size:.68rem;cursor:pointer;margin-top:6px"><input type="file" accept="image/*" capture="user" style="display:none" onchange="updateSelfie(this)">📸 Change Photo</label>';
+  h+='</div>';
+  // Reuse analytics panel temporarily
+  document.getElementById('analyticsBody').innerHTML=h;
+  document.getElementById('dp-analytics').querySelector('.dp-title').textContent='🪪 My Passport';
+  document.getElementById('dp-analytics').classList.add('open');
+  // Render emoji grid
+  var grid=document.getElementById('passportEmojis');
+  var showing=12;
+  function renderPE(){grid.innerHTML='';GIRLY_EMOJIS.slice(0,showing).forEach(function(e){
+    var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;
+    if(e===currentUser.emoji)d.classList.add('selected');
+    d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e;document.getElementById('changeEmojiBtn').style.display='inline-block'};
+    grid.appendChild(d);
+  });if(showing<GIRLY_EMOJIS.length){var more=document.createElement('div');more.className='emoji-opt';more.textContent='...';more.style.color='rgba(255,255,255,.3)';more.style.fontSize='.8rem';more.onclick=function(){showing=Math.min(showing+12,GIRLY_EMOJIS.length);renderPE()};grid.appendChild(more)}}
+  renderPE();
+}
+function changeEmoji(){
+  if(!selectedEmoji||selectedEmoji===currentUser.emoji)return;
+  // Update on server
+  api({action:'register',name:currentUser.name+'__update',emoji:selectedEmoji}).catch(function(){});
+  currentUser.emoji=selectedEmoji;
+  LS.setItem('gw_user',JSON.stringify(currentUser));
+  document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+currentUser.emoji+'</span>'+currentUser.name;
+  openPassport();
+}
+function updateSelfie(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){LS.setItem('gw_selfie',e.target.result);openPassport()};
+  reader.readAsDataURL(file);
+}
+
+
+/* DIARY */
+function initDiary(){
+  var entries=JSON.parse(LS.getItem('gw_diary')||'[]');
+  var h='<textarea class="dp-textarea" id="diaryText" placeholder="Dear diary..." style="min-height:120px"></textarea><button class="dp-btn" onclick="saveDiary()">Save Entry</button><div style="margin-top:16px">';
+  entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_diary\','+i+',initDiary)">\u2715</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});
+  h+='</div>';document.getElementById('diaryBody').innerHTML=h;
+}
+function saveDiary(){var t=document.getElementById('diaryText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_diary')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}),text:t});LS.setItem('gw_diary',JSON.stringify(e));addXP(5,'Diary entry');triggerSync();initDiary()}
+
+/* DREAM JOURNAL */
+function initDreams(){
+  var entries=JSON.parse(LS.getItem('gw_dreams')||'[]');
+  var h='<textarea class="dp-textarea" id="dreamText" placeholder="I dreamt that..." style="min-height:100px"></textarea>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">';
+  ['\u{1F60A} Happy','\u{1F628} Scary','\u{1F914} Weird','\u{1F60D} Romantic','\u{1F3C3} Adventure','\u{1F4AB} Vivid'].forEach(function(tag){
+    h+='<span class="dream-tag" style="padding:5px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.1);font-size:.6rem;color:rgba(255,255,255,.4);cursor:pointer" onclick="toggleDreamTag(this)">'+tag+'</span>';
+  });
+  h+='</div><button class="dp-btn" onclick="saveDream()">Save Dream</button><div style="margin-top:16px">';
+  entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+(e.tags?' '+e.tags:'')+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_dreams\','+i+',initDreams)">\u2715</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});
+  h+='</div>';document.getElementById('dreamsBody').innerHTML=h;
+}
+function toggleDreamTag(el){el.classList.toggle('selected');el.style.borderColor=el.classList.contains('selected')?'var(--carn)':'';el.style.background=el.classList.contains('selected')?'rgba(216,71,115,.1)':'';el.style.color=el.classList.contains('selected')?'var(--carn-light)':''}
+function saveDream(){var t=document.getElementById('dreamText').value.trim();if(!t)return;var tags=[];document.querySelectorAll('.dream-tag.selected').forEach(function(s){tags.push(s.textContent.trim())});var e=JSON.parse(LS.getItem('gw_dreams')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t,tags:tags.join(' ')});LS.setItem('gw_dreams',JSON.stringify(e));addXP(5,'Dream logged');triggerSync();initDreams()}
+
+/* GAZETTE */
+function initGazette(){
+  var h='<div style="text-align:center;padding:10px 0 16px"><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em">The Gurlwurl Gazette</p><p style="font-size:.55rem;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;margin-top:2px">Women Making Headlines</p><div style="width:60px;height:1px;background:var(--carn);margin:10px auto"></div></div><div id="gazetteNews"><p style="font-size:.7rem;color:rgba(255,255,255,.3);text-align:center">Loading...</p></div>';
+  document.getElementById('gazetteBody').innerHTML=h;
+  fetch('/api/news').then(function(r){return r.json()}).then(function(data){
+    if(!data.ok||!data.articles||!data.articles.length){gazetteLocal();return}
+    var nh='';data.articles.slice(0,15).forEach(function(a,i){
+      nh+='<a href="'+a.url+'" target="_blank" rel="noopener" style="display:flex;gap:12px;padding:12px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+';text-decoration:none;align-items:center">';
+      if(a.image)nh+='<img src="'+a.image+'" style="width:60px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display=\'none\'">';
+      nh+='<div><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'.95rem':'.8rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+a.title+'</p>';
+      if(a.desc)nh+='<p style="font-size:.6rem;color:rgba(255,255,255,.3);margin-top:3px;line-height:1.3">'+a.desc.slice(0,80)+'...</p>';
+      nh+='<p style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:4px">'+a.source+' \u{2022} '+a.date+'</p></div></a>'});
+    document.getElementById('gazetteNews').innerHTML=nh;
+  }).catch(gazetteLocal);
+}
+function gazetteLocal(){
+  var week=Math.floor(Date.now()/(7*864e5));
+  var headlines=[["Pool Robot Union Strikes for Better Tips","Sephora Row Reports Record Foot Traffic","President Barbie Signs Historic Guac Treaty","Matcha Meadows Harvest Exceeds Expectations","Coke Zero Rain Forecasted All Weekend"],["New TJ Maxx Opens in Cake Pop Boulevard","Court of Appeals Rules on Brunch Dispute","EBT Payments Increase for Q2","Immortal Flower Festival Draws Record Crowd","Pool Quarter Real Estate Prices Skyrocket"],["Breaking: New County Proposed in Eastern Gurlwurl","Farmers Market Mile Introduces Overnight Hours","President Barbie Vetoes Bad Vibes Bill","Self-Washing Hair Technology Receives Upgrade","Citizens Report Unusually Good Hair Week"],["Gurlwurl Stock Exchange Hits All-Time High","Mandatory Guac Supply Chain Strengthened","Lychee Shower Season Officially Begins","Robot Bartenders Now Accept EBT","Cake Pop Quality Control Standards Raised"]];
+  var wh=headlines[week%headlines.length];var nh='<p style="font-size:.5rem;color:rgba(255,255,255,.15);text-align:center;margin-bottom:8px">Gurlwurl Internal News</p>';
+  wh.forEach(function(hl,i){nh+='<div style="padding:14px;background:rgba(255,255,255,.03);border-radius:12px;margin-bottom:8px;border-left:3px solid '+(i===0?'var(--carn)':'rgba(255,255,255,.06)')+'"><p style="font-family:Playfair Display,serif;font-size:'+(i===0?'1rem':'.85rem')+';font-weight:600;color:'+(i===0?'var(--carn-light)':'rgba(255,255,255,.6)')+';line-height:1.3">'+hl+'</p></div>'});
+  document.getElementById('gazetteNews').innerHTML=nh;
+}
+
+/* COMPLIMENT GENERATOR (game) */
+function initComplimentGen(){
+  trackGame('compliment');
+  document.getElementById('complimentBody').style.padding='16px';
+  document.getElementById('complimentBody').innerHTML='<div class="compliment-card"><div class="compliment-text" id="compText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" onclick="document.getElementById(\'compText\').textContent=comps[Math.floor(Math.random()*comps.length)];addXP(1,\'Compliment\')">another one \u{1F495}</button></div>';
+}
+
+function initMixerGame(){
+  trackGame('beatmaker');
+  var body=document.getElementById('mixerGameBody');body.style.padding='10px';
+  var bpm=120,playing=false,step=0,beats=8,metronome=false;window._bmTimer=null;
+  var instruments=['Kick','Snare','HiHat','Clap','Tom','Rim','Cow','Cym'];
+  var grid={};instruments.forEach(function(inst){grid[inst]=[]});
+  var actx=new(window.AudioContext||window.webkitAudioContext)();
+
+  function synthDrum(type,time){
+    var t=time||actx.currentTime;
+    if(type==='Kick'){var o=actx.createOscillator();var g=actx.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(30,t+.15);g.gain.setValueAtTime(.8,t);g.gain.exponentialRampToValueAtTime(.01,t+.3);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+.3)}
+    if(type==='Snare'){var n=actx.createBufferSource();var buf=actx.createBuffer(1,actx.sampleRate*.15,actx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.6;n.buffer=buf;var g=actx.createGain();g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.01,t+.15);var f=actx.createBiquadFilter();f.type='highpass';f.frequency.value=2000;n.connect(f);f.connect(g);g.connect(actx.destination);n.start(t);var o2=actx.createOscillator();var g2=actx.createGain();o2.type='triangle';o2.frequency.value=200;g2.gain.setValueAtTime(.3,t);g2.gain.exponentialRampToValueAtTime(.01,t+.1);o2.connect(g2);g2.connect(actx.destination);o2.start(t);o2.stop(t+.1)}
+    if(type==='HiHat'){var n=actx.createBufferSource();var buf=actx.createBuffer(1,actx.sampleRate*.05,actx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.3;n.buffer=buf;var g=actx.createGain();g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.01,t+.05);var f=actx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);g.connect(actx.destination);n.start(t)}
+    if(type==='Clap'){for(var c=0;c<3;c++){var n=actx.createBufferSource();var buf=actx.createBuffer(1,actx.sampleRate*.02,actx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1);n.buffer=buf;var g=actx.createGain();g.gain.setValueAtTime(.35,t+c*.01);g.gain.exponentialRampToValueAtTime(.01,t+c*.01+.08);var f=actx.createBiquadFilter();f.type='bandpass';f.frequency.value=1500;n.connect(f);f.connect(g);g.connect(actx.destination);n.start(t+c*.01)}}
+    if(type==='Tom'){var o=actx.createOscillator();var g=actx.createGain();o.type='sine';o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(60,t+.2);g.gain.setValueAtTime(.6,t);g.gain.exponentialRampToValueAtTime(.01,t+.25);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+.25)}
+    if(type==='Rim'){var n=actx.createBufferSource();var buf=actx.createBuffer(1,actx.sampleRate*.02,actx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.4;n.buffer=buf;var g=actx.createGain();g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.01,t+.03);n.connect(g);g.connect(actx.destination);n.start(t);var o=actx.createOscillator();var g2=actx.createGain();o.type='square';o.frequency.value=800;g2.gain.setValueAtTime(.15,t);g2.gain.exponentialRampToValueAtTime(.01,t+.02);o.connect(g2);g2.connect(actx.destination);o.start(t);o.stop(t+.02)}
+    if(type==='Cow'){var o=actx.createOscillator();var o2=actx.createOscillator();var g=actx.createGain();o.type='square';o.frequency.value=560;o2.type='square';o2.frequency.value=845;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.01,t+.15);o.connect(g);o2.connect(g);g.connect(actx.destination);o.start(t);o2.start(t);o.stop(t+.15);o2.stop(t+.15)}
+    if(type==='Cym'){var n=actx.createBufferSource();var buf=actx.createBuffer(1,actx.sampleRate*.4,actx.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.25;n.buffer=buf;var g=actx.createGain();g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.01,t+.4);var f=actx.createBiquadFilter();f.type='highpass';f.frequency.value=5000;n.connect(f);f.connect(g);g.connect(actx.destination);n.start(t)}
+    if(type==='Metro'){var o=actx.createOscillator();var g=actx.createGain();o.type='sine';o.frequency.value=1000;g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.01,t+.05);o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+.05)}
+  }
+
+  function render(){
+    var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
+    h+='<button id="bmPlay" style="padding:8px 16px;border-radius:100px;border:none;background:'+(playing?'rgba(255,80,80,.3)':'var(--carn)')+';color:#fff;font-size:.7rem;font-weight:600;cursor:pointer" onclick="bmToggle()">'+(playing?'Stop':'Play')+'</button>';
+    h+='<span style="font-size:.6rem;color:rgba(255,255,255,.3)">BPM</span>';
+    h+='<input type="range" min="60" max="200" value="'+bpm+'" style="width:80px;-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.1);outline:none" oninput="bmBPM(this.value)">';
+    h+='<span style="font-family:Space Mono,monospace;font-size:.6rem;color:var(--gold);min-width:30px" id="bmBpmVal">'+bpm+'</span>';
+    h+='<label style="font-size:.55rem;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px"><input type="checkbox" '+(metronome?'checked':'')+' onchange="bmMetro(this.checked)">Metro</label>';
+    h+='</div>';
+    h+='<div style="display:flex;gap:4px;margin-bottom:10px">';
+    [4,8,12,16].forEach(function(b){h+='<button style="padding:5px 10px;border-radius:8px;border:1px solid '+(beats===b?'var(--carn)':'rgba(255,255,255,.08)')+';background:'+(beats===b?'rgba(216,71,115,.15)':'transparent')+';color:'+(beats===b?'var(--carn-light)':'rgba(255,255,255,.3)')+';font-size:.6rem;cursor:pointer" onclick="bmBeats('+b+')">'+b+'</button>'});
+    h+='</div>';
+    h+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">';
+    h+='<div style="display:grid;grid-template-columns:45px repeat('+beats+',1fr);gap:2px;min-width:'+(beats>8?beats*28+50:0)+'px">';
+    // Step indicators
+    h+='<div></div>';
+    for(var s=0;s<beats;s++){h+='<div style="text-align:center;font-size:.45rem;color:'+(s===step&&playing?'var(--carn)':'rgba(255,255,255,.15)')+';font-weight:'+(s===step&&playing?'700':'400')+'">'+(s+1)+'</div>'}
+    instruments.forEach(function(inst){
+      h+='<div style="font-size:.65rem;color:rgba(255,255,255,.5);display:flex;align-items:center;cursor:pointer;font-weight:500;-webkit-tap-highlight-color:transparent" onclick="synthDrum(\''+inst+'\')">'+inst+'</div>';
+      for(var s=0;s<beats;s++){
+        var on=grid[inst]&&grid[inst][s];
+        var isActive=s===step&&playing;
+        h+='<div style="aspect-ratio:1;border-radius:6px;background:'+(on?(isActive?'var(--carn)':'rgba(216,71,115,.4)'):(isActive?'rgba(255,255,255,.08)':'rgba(255,255,255,.03)'))+';border:1px solid '+(on?'rgba(216,71,115,.3)':'rgba(255,255,255,.04)')+';cursor:pointer;min-height:36px;-webkit-tap-highlight-color:transparent" onclick="bmToggleCell(\''+inst+'\','+s+')"></div>';
+      }
+    });
+    h+='</div></div>';
+    body.innerHTML=h;
+  }
+
+  window.bmToggle=function(){
+    if(actx.state==='suspended')actx.resume();
+    playing=!playing;
+    if(playing){step=0;tick()}else{clearTimeout(window._bmTimer)}
+    render();
+  };
+  window.bmBPM=function(v){bpm=parseInt(v);var el=document.getElementById('bmBpmVal');if(el)el.textContent=bpm};
+  window.bmBeats=function(b){beats=b;instruments.forEach(function(inst){grid[inst]=grid[inst].slice(0,b)});render()};
+  window.bmMetro=function(v){metronome=v};
+  window.bmToggleCell=function(inst,s){if(!grid[inst])grid[inst]=[];grid[inst][s]=!grid[inst][s];render()};
+  window.synthDrum=function(type){if(actx.state==='suspended')actx.resume();synthDrum(type)};
+
+  function tick(){
+    if(!playing)return;
+    instruments.forEach(function(inst){if(grid[inst]&&grid[inst][step])synthDrum(inst)});
+    if(metronome)synthDrum('Metro');
+    render();
+    step=(step+1)%beats;
+    window._bmTimer=setTimeout(tick,60000/bpm);
+  }
+  render();
+}
+function initChillMixer(){
+  var el=document.getElementById('chillMixerBody');
+  var channels=[{id:'ocean',name:'Ocean',ico:'\u{1F30A}'},{id:'rain',name:'Rain',ico:'\u{1F327}'},{id:'fire',name:'Fire',ico:'\u{1F525}'},{id:'birds',name:'Birds',ico:'\u{1F426}'},{id:'wind',name:'Wind',ico:'\u{1F4A8}'},{id:'cafe',name:'Cafe',ico:'\u2615'}];
+  var h='<p style="text-align:center;font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:16px">Layer your perfect vibe</p>';
+  channels.forEach(function(c){h+='<div class="mixer-channel"><span class="mixer-ico">'+c.ico+'</span><span class="mixer-name">'+c.name+'</span><input type="range" min="0" max="100" value="0" class="mixer-slider" oninput="setMixerVol(\''+c.id+'\',this.value)"></div>'});
+  h+='<button class="dp-btn-outline" style="margin:12px auto;display:block" onclick="stopMixer()">Stop All</button>';
+  el.innerHTML=h;
+  if(!mixerCtx){mixerCtx=new(window.AudioContext||window.webkitAudioContext)()}if(mixerCtx.state==='suspended')mixerCtx.resume();
+}
+
+/* LEADERBOARD */
+function initLeaderboard(){
+  var h='<div style="text-align:center;margin-bottom:20px"><p style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff;margin-bottom:4px">Citizen Rankings</p><p style="font-size:.7rem;color:rgba(255,255,255,.35)">Earn XP to climb the ranks</p></div>';
+  h+='<div style="background:rgba(216,71,115,.06);border:1px solid rgba(216,71,115,.1);border-radius:14px;padding:16px;margin-bottom:20px">';
+  h+='<p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin-bottom:10px">How to Earn XP</p>';
+  var rules=[['Gratitude note','+5'],['Habit completed','+3'],['Water glass','+2'],['Rate your day','+3'],['Bucket list done','+10'],['Diary entry','+5'],['Dream logged','+5'],['Log period','+3'],['Guestbook post','+5'],['Flappy game','+1-5'],['Glow Jump game','+1-5'],['2048 game','+1-5'],['Color Rush game','+1-5'],['Wheel spin','+1'],['Achievement earned','+25'],['5 min on site','+5'],['Casino spin','-10'],['Casino match','+10'],['Casino jackpot','+50']];
+  rules.forEach(function(r){h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="font-size:.7rem;color:rgba(255,255,255,.5)">'+r[0]+'</span><span style="font-family:Space Mono,monospace;font-size:.65rem;color:'+(r[1].charAt(0)==='-'?'#ff6b6b':'var(--sage)')+'">'+r[1]+' XP</span></div>'});
+  h+='</div>';
+  h+='<div style="background:rgba(200,168,233,.06);border:1px solid rgba(200,168,233,.1);border-radius:14px;padding:16px;margin-bottom:20px">';
+  h+='<p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--lavender);margin-bottom:10px">Rank Tiers & Emoji Unlocks</p>';
+  XP_LEVELS.forEach(function(lvl,i){var emojis=STATUS_EMOJIS[lvl.xp]||[];var prev=i>0?(STATUS_EMOJIS[XP_LEVELS[i-1].xp]||[]):[];var newOnes=emojis.filter(function(e){return !prev.includes(e)});h+='<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)"><span style="font-family:Space Mono,monospace;font-size:.6rem;color:var(--gold);width:50px">'+lvl.xp+'</span><span style="font-size:.75rem;color:rgba(255,255,255,.6);flex:1">'+lvl.name+'</span><span style="font-size:.85rem">'+newOnes.join('')+'</span></div>'});
+  h+='</div>';
+  var xp=getXP();var lvl=getLevel();
+  h+='<div style="background:rgba(255,255,255,.03);border-radius:14px;padding:16px;text-align:center"><p style="font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px">Your Position</p><p style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:700;color:var(--gold)">'+xp+' XP</p><p style="font-size:.8rem;color:var(--carn-light)">'+lvl.name+'</p></div>';
+  document.getElementById('lbBody').innerHTML=h;
+}
+
+
+/* VISION BOARD */
+function initVision(){
+  var items=JSON.parse(LS.getItem('gw_vision')||'[]');
+  var h='<p style="text-align:center;font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:14px">Write down who you are becoming</p>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:12px"><input class="dp-input" id="visionText" placeholder="A dream, goal, or intention..." style="margin:0;flex:1"><button class="dp-btn" onclick="addVision()">+</button></div>';
+  var cats=['Career','Love','Health','Travel','Growth','Creative','Money','Spirit'];
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px">';
+  cats.forEach(function(c){h+='<span style="padding:4px 10px;border-radius:100px;border:1px solid rgba(255,255,255,.08);font-size:.55rem;color:rgba(255,255,255,.3);cursor:pointer" onclick="document.getElementById(\'visionText\').value+=\' #'+c.toLowerCase()+'\'">#'+c+'</span>'});
+  h+='</div>';
+  var colors=['rgba(216,71,115,.08)','rgba(200,168,233,.08)','rgba(168,216,234,.08)','rgba(181,201,168,.08)','rgba(255,218,185,.08)'];
+  if(items.length){items.slice().reverse().forEach(function(item,ri){var i=items.length-1-ri;h+='<div style="background:'+colors[i%colors.length]+';border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:16px;margin-bottom:8px"><p style="font-family:Playfair Display,serif;font-size:.9rem;color:rgba(255,255,255,.7);line-height:1.4">'+item.text+'</p><div style="display:flex;justify-content:space-between;margin-top:8px"><span style="font-size:.5rem;color:rgba(255,255,255,.2)">'+item.date+'</span><span style="cursor:pointer;font-size:.55rem;opacity:.3" onclick="delEntry(\'gw_vision\','+i+',initVision)">x</span></div></div>'})}
+  else{h+='<div style="text-align:center;padding:30px;opacity:.3"><p style="font-size:2rem;margin-bottom:8px">\u{2728}</p><p style="font-size:.75rem">Your vision board is empty. Start dreaming.</p></div>'}
+  document.getElementById('visionBody').innerHTML=h;
+}
+function addVision(){var t=document.getElementById('visionText').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_vision')||'[]');items.push({text:t,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});LS.setItem('gw_vision',JSON.stringify(items));addXP(5,'Vision board');triggerSync();initVision()}
+
+function initCycle(){
+  var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');
+  var periods=data.periods||[];var cycleLen=data.cycleLen||28;var periodLen=data.periodLen||5;
+  var lastStart=periods.length?new Date(periods[periods.length-1]):null;
+  var td=new Date();td.setHours(0,0,0,0);
+  var daysSince=lastStart?Math.floor((td-lastStart)/864e5):null;
+  var nextP=lastStart?new Date(lastStart.getTime()+cycleLen*864e5):null;
+  var daysUntil=nextP?Math.ceil((nextP-td)/864e5):null;
+
+  var phases={menstrual:{name:'Rose Phase',e:'\u{1F339}',tip:'Rest, iron-rich foods, gentle movement. Be extra kind to yourself.'},follicular:{name:'Sprout Phase',e:'\u{1F331}',tip:'Great time for new projects and harder workouts. Energy is climbing.'},ovulation:{name:'Glow Phase',e:'\u{1F31F}',tip:'You are most social and confident. Schedule important things now.'},luteal:{name:'Moon Phase',e:'\u{1F319}',tip:'Cravings are normal. Prioritize sleep and journaling.'},unknown:{name:'Waiting',e:'\u{1F319}',tip:'Log your first period to start tracking.'}};
+  var phase='unknown';
+  if(daysSince!==null){if(daysSince<periodLen)phase='menstrual';else if(daysSince<cycleLen*.45)phase='follicular';else if(daysSince<cycleLen*.55)phase='ovulation';else phase='luteal'}
+  var ph=phases[phase];
+
+  var h='<div style="text-align:center;margin-bottom:16px"><div style="font-size:2.5rem;margin-bottom:6px">'+ph.e+'</div>';
+  h+='<p style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light)">'+ph.name+'</p>';
+  if(daysUntil!==null&&daysUntil>0)h+='<p style="font-family:Space Mono,monospace;font-size:.7rem;color:var(--gold);margin-top:6px">Next period in '+daysUntil+' days</p>';
+  h+='<p style="font-size:.7rem;color:rgba(255,255,255,.4);margin-top:8px;line-height:1.4;max-width:280px;margin-left:auto;margin-right:auto;font-style:italic">'+ph.tip+'</p></div>';
+
+  // CALENDAR
+  var now=new Date();var year=now.getFullYear();var month=now.getMonth();
+  var firstDay=new Date(year,month,1).getDay();var daysInMonth=new Date(year,month+1,0).getDate();
+  var monthName=now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  h+='<div style="margin-bottom:16px"><p style="text-align:center;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:8px">'+monthName+'</p>';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center">';
+  ['S','M','T','W','T','F','S'].forEach(function(d){h+='<div style="font-size:.5rem;color:rgba(255,255,255,.2);padding:4px">'+d+'</div>'});
+  for(var i=0;i<firstDay;i++)h+='<div></div>';
+  for(var d=1;d<=daysInMonth;d++){
+    var thisDate=new Date(year,month,d);thisDate.setHours(0,0,0,0);
+    var isPeriod=false;var isPredicted=false;var isFertile=false;var isToday=d===now.getDate();
+    periods.forEach(function(p){var ps=new Date(p);ps.setHours(0,0,0,0);var diff=Math.floor((thisDate-ps)/864e5);if(diff>=0&&diff<periodLen)isPeriod=true});
+    if(lastStart&&!isPeriod){var dFromLast=Math.floor((thisDate-lastStart)/864e5);if(dFromLast>=cycleLen&&dFromLast<cycleLen+periodLen)isPredicted=true;var ovDay=cycleLen-14;if(dFromLast>=ovDay-2&&dFromLast<=ovDay+1)isFertile=true}
+    var bg='transparent';var border='1px solid rgba(255,255,255,.04)';var color='rgba(255,255,255,.4)';
+    if(isPeriod){bg='rgba(216,71,115,.3)';border='1px solid rgba(216,71,115,.4)';color='var(--carn-light)'}
+    if(isPredicted){bg='rgba(216,71,115,.1)';border='1px dashed rgba(216,71,115,.3)';color='rgba(216,71,115,.5)'}
+    if(isFertile){bg='rgba(200,168,233,.15)';border='1px solid rgba(200,168,233,.3)';color='var(--lavender)'}
+    if(isToday)border='2px solid var(--gold)';
+    h+='<div style="padding:6px 2px;border-radius:8px;background:'+bg+';border:'+border+';font-size:.65rem;color:'+color+';font-weight:'+(isToday?'700':'400')+'">'+d+'</div>';
+  }
+  h+='</div>';
+  h+='<div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:.5rem;color:rgba(255,255,255,.25)">';
+  h+='<span>\u{1F534} Period</span><span>\u{1F7E0} Predicted</span><span>\u{1F7E3} Fertile</span><span>\u{1F7E1} Today</span></div></div>';
+
+  h+='<div style="display:flex;gap:8px;margin-bottom:16px"><button class="dp-btn" onclick="logPeriodStart()">\u{1F339} Log Start</button><button class="dp-btn-outline" onclick="logSymptom()">Log Symptom</button></div>';
+
+  // Mood/Energy
+  h+='<div style="display:flex;gap:12px;margin-bottom:16px"><div style="flex:1"><p style="font-size:.55rem;color:rgba(255,255,255,.3);margin-bottom:4px">Mood</p><input type="range" min="1" max="5" value="'+(LS.getItem('gw_mood_'+today)||'3')+'" class="mixer-slider" id="cycleMood"></div><div style="flex:1"><p style="font-size:.55rem;color:rgba(255,255,255,.3);margin-bottom:4px">Energy</p><input type="range" min="1" max="5" value="'+(LS.getItem('gw_energy_'+today)||'3')+'" class="mixer-slider" id="cycleEnergy"></div></div>';
+
+  h+='<details style="margin-bottom:12px"><summary style="font-size:.55rem;color:rgba(255,255,255,.3);cursor:pointer">Settings</summary><div style="padding:8px 0">';
+  h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="font-size:.7rem;color:rgba(255,255,255,.4);width:80px">Cycle</span><input type="number" class="dp-input" value="'+cycleLen+'" style="width:55px;margin:0;text-align:center" id="cycCycleLen"><span style="font-size:.6rem;color:rgba(255,255,255,.2)">days</span></div>';
+  h+='<div style="display:flex;gap:8px;align-items:center"><span style="font-size:.7rem;color:rgba(255,255,255,.4);width:80px">Period</span><input type="number" class="dp-input" value="'+periodLen+'" style="width:55px;margin:0;text-align:center" id="cycPeriodLen"><span style="font-size:.6rem;color:rgba(255,255,255,.2)">days</span></div></div></details>';
+
+  var symptoms=JSON.parse(LS.getItem('gw_symptoms')||'[]');
+  if(symptoms.length){h+='<details><summary style="font-size:.55rem;color:rgba(255,255,255,.3);cursor:pointer">Recent Logs ('+symptoms.length+')</summary><div style="padding:8px 0">';symptoms.slice(-8).reverse().forEach(function(s,ri){var i=symptoms.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+s.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_symptoms\','+i+',initCycle)">x</span></div><div class="dp-entry-text">'+s.text+'</div></div>'});h+='</div></details>'}
+
+  document.getElementById('cycleBody').innerHTML=h;
+  var moodEl=document.getElementById('cycleMood');if(moodEl)moodEl.oninput=function(){LS.setItem('gw_mood_'+today,this.value);triggerSync()};
+  var clEl=document.getElementById('cycCycleLen');if(clEl)clEl.onchange=function(){updateCycleSetting('cycleLen',this.value)};
+  var plEl=document.getElementById('cycPeriodLen');if(plEl)plEl.onchange=function(){updateCycleSetting('periodLen',this.value)};
+  var energyEl=document.getElementById('cycleEnergy');if(energyEl)energyEl.oninput=function(){LS.setItem('gw_energy_'+today,this.value);triggerSync()};
+}
+function logPeriodStart(){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');var td=new Date();td.setHours(0,0,0,0);data.periods.push(td.toISOString());if(data.periods.length>=2){var l=new Date(data.periods[data.periods.length-1]);var p=new Date(data.periods[data.periods.length-2]);var d=Math.round((l-p)/864e5);if(d>20&&d<45)data.cycleLen=d}LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();addXP(3,'Logged period');initCycle()}
+function logSymptom(){var syms=['😖 Cramps','😢 Mood swings','😠 Irritable','😴 Fatigue','🤔 Headache','😋 Cravings','💧 Bloating','🩸 Heavy flow','✨ Light flow','😊 Good mood'];var h='<div style="text-align:center;padding:16px"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:12px">How are you feeling?</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';syms.forEach(function(s){h+='<button style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer" onclick="saveSymptom(\''+s+'\')">'+s+'</button>'});h+='</div></div>';document.getElementById('cycleBody').innerHTML=h}
+function saveSymptom(sym){var s=JSON.parse(LS.getItem('gw_symptoms')||'[]');s.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:sym});LS.setItem('gw_symptoms',JSON.stringify(s));triggerSync();initCycle()}
+function updateCycleSetting(key,val){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data[key]=parseInt(val);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync()}
+function delPeriod(i){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data.periods.splice(i,1);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();initCycle()}
+
+/* LOGIN STREAK */
+function checkStreak(){
+  if(!currentUser)return;
+  var data=JSON.parse(LS.getItem('gw_streak')||'{"count":0,"last":""}');
+  var today2=new Date().toLocaleDateString('en-US');
+  if(data.last===today2)return;
+  var yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+  var yStr=yesterday.toLocaleDateString('en-US');
+  if(data.last===yStr){data.count++;data.last=today2}
+  else if(data.last!==today2){data.count=1;data.last=today2}
+  LS.setItem('gw_streak',JSON.stringify(data));triggerSync();
+  if(data.count===1)showNotif('\u{1F44B}','Welcome back!','Day 1 streak started');
+  if(data.count===3){addXP(10,'3-day streak');showNotif('\u{1F525}','3-Day Streak!','+10 XP bonus')}
+  if(data.count===7){addXP(25,'7-day streak');showNotif('\u{2B50}','7-Day Streak!','+25 XP and a fortune: '+fortunes[Math.floor(Math.random()*fortunes.length)])}
+  if(data.count===14){addXP(50,'14-day streak');showNotif('\u{1F451}','14-Day Streak!','+50 XP, legendary dedication')}
+  if(data.count===30){addXP(100,'30-day streak');showNotif('\u{1F48E}','30-Day Streak!','Permanent Resident status earned!')}
+}
+
+/* MORNING CHECK-IN */
+function initCheckin(){
+  var data=JSON.parse(LS.getItem('gw_checkin_'+today)||'{}');
+  var h='<div style="text-align:center;margin-bottom:16px"><p style="font-family:Playfair Display,serif;font-size:1rem;color:var(--carn-light)">Morning check-in</p><p style="font-size:.65rem;color:rgba(255,255,255,.3)">3 quick taps to start your day</p></div>';
+  var items=[{key:'energy',label:'Energy',e:'\u{26A1}'},{key:'social',label:'Social battery',e:'\u{1F4AC}'},{key:'cute',label:'How cute today',e:'\u{1F48B}'}];
+  items.forEach(function(it){
+    var val=data[it.key]||3;
+    h+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:.7rem;color:rgba(255,255,255,.4)">'+it.e+' '+it.label+'</span><span style="font-size:.7rem;color:var(--gold)" id="chk_'+it.key+'_val">'+val+'/5</span></div>';
+    h+='<input type="range" min="1" max="5" value="'+val+'" class="mixer-slider" id="chk_'+it.key+'"></div>';
+  });
+  h+='<button class="dp-btn" style="width:100%;margin-top:8px" id="chkSave">Save check-in</button>';
+  var el=document.getElementById('checkinBody');el.innerHTML=h;
+  items.forEach(function(it){
+    document.getElementById('chk_'+it.key).oninput=function(){document.getElementById('chk_'+it.key+'_val').textContent=this.value+'/5'};
+  });
+  document.getElementById('chkSave').onclick=function(){
+    var d={};items.forEach(function(it){d[it.key]=parseInt(document.getElementById('chk_'+it.key).value)});
+    LS.setItem('gw_checkin_'+today,JSON.stringify(d));addXP(3,'Morning check-in');triggerSync();showXPToast('Check-in saved!');
+  };
+}
+
+/* DAILY HIGHLIGHT */
+function initHighlight(){
+  var entries=JSON.parse(LS.getItem('gw_highlights')||'[]');
+  var todayEntry=entries.find(function(e){return e.date===today});
+  var h='<div style="text-align:center;margin-bottom:14px"><p style="font-size:1.5rem">'+'\u{2728}'+'</p><p style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--carn-light)">Best part of today</p></div>';
+  h+='<input class="dp-input" id="hlText" placeholder="One sentence..." value="'+(todayEntry?todayEntry.text:'')+'"><button class="dp-btn" style="width:100%;margin-top:8px" id="hlSave">Save</button>';
+  h+='<div style="margin-top:16px">';
+  entries.slice(-14).reverse().forEach(function(e){h+='<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03)"><p style="font-size:.8rem;color:rgba(255,255,255,.5)">'+e.text+'</p><p style="font-size:.5rem;color:rgba(255,255,255,.15)">'+e.date+'</p></div>'});
+  h+='</div>';
+  document.getElementById('highlightBody').innerHTML=h;
+  document.getElementById('hlSave').onclick=function(){
+    var t=document.getElementById('hlText').value.trim();if(!t)return;
+    var arr=JSON.parse(LS.getItem('gw_highlights')||'[]');
+    var idx=arr.findIndex(function(e){return e.date===today});
+    if(idx>=0)arr[idx].text=t;else arr.push({date:today,text:t});
+    LS.setItem('gw_highlights',JSON.stringify(arr));addXP(3,'Daily highlight');triggerSync();initHighlight();
+  };
+}
+
+/* SLEEP LOG */
+function initSleep(){
+  var entries=JSON.parse(LS.getItem('gw_sleep')||'[]');
+  var h='<div style="text-align:center;margin-bottom:14px"><p style="font-size:1.5rem">'+'\u{1F634}'+'</p><p style="font-family:Playfair Display,serif;font-size:.95rem;color:var(--carn-light)">Sleep log</p></div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:8px"><div style="flex:1"><label style="font-size:.55rem;color:rgba(255,255,255,.3);display:block;margin-bottom:3px">Bedtime</label><input type="time" class="dp-input" id="slBed" style="margin:0" value="23:00"></div>';
+  h+='<div style="flex:1"><label style="font-size:.55rem;color:rgba(255,255,255,.3);display:block;margin-bottom:3px">Wake up</label><input type="time" class="dp-input" id="slWake" style="margin:0" value="07:00"></div></div>';
+  h+='<div style="margin-bottom:10px"><label style="font-size:.55rem;color:rgba(255,255,255,.3);display:block;margin-bottom:3px">Quality</label><div style="display:flex;gap:6px" id="slQual">';
+  for(var q=1;q<=5;q++)h+='<div style="flex:1;padding:10px 0;text-align:center;border-radius:10px;border:1px solid rgba(255,255,255,.08);font-size:.8rem;color:rgba(255,255,255,.3);cursor:pointer" data-q="'+q+'">'+q+'</div>';
+  h+='</div></div><button class="dp-btn" style="width:100%" id="slSave">Log sleep</button>';
+  if(entries.length){
+    h+='<div style="margin-top:16px;display:flex;gap:3px;align-items:flex-end;height:80px">';
+    entries.slice(-7).forEach(function(e){var pct=Math.max(10,e.hours/10*100);h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:100%;height:'+pct+'%;background:linear-gradient(to top,var(--carn),var(--lavender));border-radius:4px;min-height:6px"></div><span style="font-size:.45rem;color:rgba(255,255,255,.2)">'+e.hours.toFixed(1)+'h</span></div>'});
+    h+='</div>';
+  }
+  if(entries.length){h+='<div style="margin-top:8px">';entries.slice(-5).reverse().forEach(function(e){h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.65rem"><span style="color:rgba(255,255,255,.4)">'+e.date+'</span><span style="color:rgba(255,255,255,.3)">'+e.hours.toFixed(1)+'h</span><span style="color:var(--gold)">'+'*'.repeat(e.quality)+'</span></div>'});h+='</div>'}
+  document.getElementById('sleepBody').innerHTML=h;
+  var selectedQ=3;
+  document.getElementById('slQual').onclick=function(e){var t=e.target.closest('[data-q]');if(!t)return;selectedQ=parseInt(t.dataset.q);document.querySelectorAll('#slQual>div').forEach(function(d){d.style.borderColor=parseInt(d.dataset.q)<=selectedQ?'var(--carn)':'rgba(255,255,255,.08)';d.style.color=parseInt(d.dataset.q)<=selectedQ?'var(--carn-light)':'rgba(255,255,255,.3)';d.style.background=parseInt(d.dataset.q)<=selectedQ?'rgba(216,71,115,.1)':'transparent'})};
+  document.getElementById('slSave').onclick=function(){
+    var bed=document.getElementById('slBed').value;var wake=document.getElementById('slWake').value;
+    var bm=parseInt(bed.split(':')[0])*60+parseInt(bed.split(':')[1]);var wm=parseInt(wake.split(':')[0])*60+parseInt(wake.split(':')[1]);
+    var diff=wm-bm;if(diff<0)diff+=1440;var hours=diff/60;
+    var arr=JSON.parse(LS.getItem('gw_sleep')||'[]');arr.push({date:today,bed:bed,wake:wake,hours:hours,quality:selectedQ});
+    LS.setItem('gw_sleep',JSON.stringify(arr));addXP(3,'Sleep logged');triggerSync();initSleep();
+  };
+}
+
+/* THEME SWITCHER */
+var themes={
+  default:{bg:'#0D0A0F',card:'rgba(255,255,255,.04)',carn:'#D84773',lav:'#C8A8E9',gold:'#D4A853',name:'Default'},
+  dark:{bg:'#000000',card:'rgba(255,255,255,.03)',carn:'#E8637A',lav:'#B89ADB',gold:'#CCA040',name:'Midnight'},
+  cottage:{bg:'#1A1F15',card:'rgba(181,201,168,.06)',carn:'#8CAA72',lav:'#B5C9A8',gold:'#C4A955',name:'Cottagecore'},
+  coastal:{bg:'#0A1520',card:'rgba(168,216,234,.05)',carn:'#5AACCC',lav:'#A8D8EA',gold:'#D4B873',name:'Coastal'},
+  mob:{bg:'#1A0808',card:'rgba(180,40,40,.06)',carn:'#CC3333',lav:'#8B4444',gold:'#D4A040',name:'Mob Wife'},
+  y2k:{bg:'#12081A',card:'rgba(200,168,233,.05)',carn:'#CC66FF',lav:'#E0CCFF',gold:'#CCCCCC',name:'Y2K'}
+};
+function applyTheme(id){
+  if(typeof themes==='undefined')return;var t=themes[id]||themes['default']||{bg:'#0D0A0F',carn:'#D84773',lav:'#C8A8E9',gold:'#D4A853'};
+  document.body.style.setProperty('--midnight',t.bg);
+  document.body.style.setProperty('--carn',t.carn);
+  document.body.style.setProperty('--lavender',t.lav);
+  document.body.style.setProperty('--gold',t.gold);
+  LS.setItem('gw_theme',id);triggerSync();
+}
+function initThemePicker(){
+  var cur=LS.getItem('gw_theme')||'default';
+  var h='<p style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px;text-align:center">Pick your vibe</p><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">';
+  for(var k in themes){var t=themes[k];h+='<div style="padding:12px 8px;border-radius:12px;border:1px solid '+(k===cur?'var(--carn)':'rgba(255,255,255,.06)')+';background:'+(k===cur?'rgba(216,71,115,.08)':'rgba(255,255,255,.03)')+';text-align:center;cursor:pointer" onclick="applyTheme(\''+k+'\');initThemePicker()"><div style="display:flex;gap:3px;justify-content:center;margin-bottom:6px"><div style="width:12px;height:12px;border-radius:50%;background:'+t.carn+'"></div><div style="width:12px;height:12px;border-radius:50%;background:'+t.lav+'"></div><div style="width:12px;height:12px;border-radius:50%;background:'+t.gold+'"></div></div><span style="font-size:.6rem;color:rgba(255,255,255,.5)">'+t.name+'</span></div>'}
+  h+='</div>';
+  document.getElementById('themeBody').innerHTML=h;
+}
+
+/* RECIPE BOX */
+/* RECIPE BOX - FULL */
+var RECIPES=[
+{n:'Dal Tadka',t:'indian',m:25,s:4,ing:['1 cup red lentils','1 onion, diced','2 tomatoes, chopped','3 cloves garlic, minced','1 tsp cumin seeds','1 tsp turmeric','1 tsp garam masala','2 tbsp ghee','1 green chili, slit','Fresh cilantro','Salt to taste','3 cups water'],steps:['Wash lentils until water runs clear. Boil with turmeric and 3 cups water until soft (15 min).','Mash lightly with a spoon. Add salt.','In a pan, heat ghee. Add cumin seeds until they splutter.','Add garlic, green chili, and onion. Cook until golden (5 min).','Add tomatoes and garam masala. Cook until soft.','Pour the tempering over the dal. Garnish with cilantro.']},
+{n:'Chana Masala',t:'indian',m:25,s:4,ing:['2 cans chickpeas, drained','1 onion, diced','2 tomatoes, pureed','1 inch ginger, grated','3 cloves garlic, minced','2 tsp chana masala powder','1 tsp cumin','1 tsp coriander','0.5 tsp turmeric','2 tbsp oil','Cilantro, lemon','Salt to taste'],steps:['Heat oil, add cumin seeds until they pop.','Add onion, cook 5 min until golden.','Add ginger and garlic, cook 1 min.','Add tomato puree and all spices. Cook 5 min until oil separates.','Add chickpeas and 0.5 cup water. Simmer 15 min.','Squeeze lemon, garnish with cilantro. Serve with rice or naan.']},
+{n:'Palak Paneer',t:'indian',m:25,s:4,ing:['250g paneer, cubed','300g spinach, blanched','1 onion, diced','2 tomatoes, chopped','1 inch ginger','3 cloves garlic','1 green chili','1 tsp cumin seeds','1 tsp garam masala','2 tbsp cream','2 tbsp oil','Salt to taste'],steps:['Blanch spinach in boiling water 2 min. Transfer to ice water. Blend into smooth puree.','Heat oil, add cumin seeds. Add onion, cook until golden.','Add ginger, garlic, green chili. Cook 1 min.','Add tomatoes, cook 5 min until soft. Add garam masala.','Add spinach puree. Simmer 5 min.','Add paneer cubes and cream. Cook 3 min. Serve with naan.']},
+{n:'Aloo Gobi',t:'indian',m:30,s:4,ing:['2 potatoes, cubed','1 cauliflower, florets','1 onion, diced','2 tomatoes, chopped','1 tsp cumin seeds','1 tsp turmeric','1 tsp coriander powder','0.5 tsp red chili powder','2 tbsp oil','Cilantro','Salt to taste'],steps:['Heat oil, add cumin seeds until they splutter.','Add onion, cook until translucent (4 min).','Add potatoes, turmeric, salt. Cover and cook 8 min on low.','Add cauliflower, coriander, chili powder. Mix gently.','Add tomatoes. Cover and cook 12 min until veggies are tender.','Garnish with cilantro. Serve with roti.']},
+{n:'Paneer Butter Masala',t:'indian',m:30,s:4,ing:['250g paneer, cubed','3 tomatoes, pureed','10 cashews, soaked','1 onion, sliced','2 tbsp butter','1 tbsp cream','1 tsp garam masala','1 tsp red chili powder','1 tsp kasuri methi','1 inch ginger','3 cloves garlic','Salt, sugar to taste'],steps:['Blend cashews with 2 tbsp water into paste.','Heat butter, add onion, ginger, garlic. Cook until soft.','Add tomato puree. Cook 10 min until thick.','Add cashew paste, garam masala, chili powder, pinch of sugar.','Simmer 5 min. Add paneer cubes.','Finish with cream and kasuri methi. Serve with naan or rice.']},
+{n:'Vegetable Biryani',t:'indian',m:40,s:4,ing:['2 cups basmati rice, soaked 30 min','1 cup mixed veggies (carrot, peas, beans)','1 onion, sliced thin','2 tbsp yogurt','1 tsp biryani masala','4 cardamom pods','4 cloves','1 bay leaf','1 cinnamon stick','Pinch saffron in 2 tbsp warm milk','2 tbsp ghee','Fried onions, mint, cilantro','Salt to taste'],steps:['Parboil rice with whole spices until 70% done. Drain.','Heat ghee, fry onion until deep golden.','Add veggies, yogurt, biryani masala. Cook 5 min.','In a heavy pot, layer: half the veggie mix, half the rice, saffron milk, mint.','Repeat layers. Top with fried onions and cilantro.','Cover tightly. Cook on lowest heat 20 min (dum).','Let rest 5 min. Gently fluff and serve.']},
+{n:'Black Bean Tacos',t:'mexican',m:15,s:4,ing:['1 can black beans, drained','8 small tortillas','2 avocados','1 cup salsa','1 lime','0.5 cup cilantro, chopped','0.5 red onion, diced','1 tsp cumin','1 tsp chili powder','Salt, pepper','Sour cream (optional)'],steps:['Heat beans in a pan with cumin, chili powder, and a splash of water. Mash slightly.','Warm tortillas in a dry pan or microwave.','Mash avocados with lime juice and salt for quick guac.','Assemble: beans, guac, salsa, onion, cilantro on each tortilla.','Top with sour cream if desired. Squeeze extra lime.']},
+{n:'Veggie Burrito Bowl',t:'mexican',m:25,s:4,ing:['2 cups cooked rice','1 can black beans','1 cup corn kernels','2 avocados','1 cup salsa','1 lime','1 cup lettuce, shredded','0.5 cup sour cream','1 tsp cumin','Hot sauce','Cilantro','Salt to taste'],steps:['Cook rice with a squeeze of lime and cilantro stirred in.','Heat black beans with cumin and salt.','Char corn in a hot pan with a little oil (3 min).','Slice avocados.','Build bowls: rice base, beans, corn, lettuce, avocado, salsa.','Top with sour cream and hot sauce.']},
+{n:'Cheese Enchiladas',t:'mexican',m:30,s:4,ing:['8 flour tortillas','2 cups shredded cheese','1 can enchilada sauce','1 can black beans','1 onion, diced','1 cup sour cream','Cilantro','1 tsp cumin'],steps:['Preheat oven to 375F (190C).','Mix beans, half the cheese, onion, cumin.','Fill each tortilla with the mixture. Roll up and place seam-down in baking dish.','Pour enchilada sauce over the rolls. Top with remaining cheese.','Bake 20 min until bubbly and golden.','Top with sour cream and cilantro.']},
+{n:'Pad Thai (Tofu)',t:'asian',m:25,s:4,ing:['200g rice noodles','200g firm tofu, cubed','2 cups bean sprouts','3 tbsp tamarind paste','2 tbsp soy sauce','1 tbsp sugar','2 tbsp peanuts, crushed','2 cloves garlic','1 lime','2 scallions, sliced','1 tbsp chili flakes','2 tbsp oil'],steps:['Soak rice noodles in hot water 8 min. Drain.','Mix tamarind paste, soy sauce, and sugar for sauce.','Heat oil, fry tofu until golden on all sides (5 min). Remove.','Add garlic, cook 30 sec. Add noodles and sauce.','Toss until noodles absorb sauce (2 min).','Add tofu, bean sprouts, scallions. Toss.','Serve with crushed peanuts, lime wedge, chili flakes.']},
+{n:'Thai Green Curry',t:'asian',m:25,s:4,ing:['1 can coconut milk','3 tbsp green curry paste','200g tofu, cubed','1 eggplant, cubed','1 cup bamboo shoots','1 cup Thai basil','2 tbsp soy sauce','1 tbsp sugar','1 kaffir lime leaf','1 tbsp oil','Jasmine rice for serving'],steps:['Heat oil, fry curry paste 1 min until fragrant.','Add thick part of coconut milk. Stir and cook 3 min.','Add tofu, eggplant, bamboo shoots.','Pour in remaining coconut milk. Add soy sauce, sugar, lime leaf.','Simmer 12 min until eggplant is tender.','Stir in Thai basil. Serve over jasmine rice.']},
+{n:'Vegetable Ramen',t:'asian',m:25,s:2,ing:['2 packs ramen noodles (discard seasoning)','4 cups vegetable broth','2 tbsp miso paste','1 tbsp soy sauce','1 tsp sesame oil','100g mushrooms, sliced','1 cup corn','2 scallions, sliced','1 sheet nori, torn','1 inch ginger, sliced','1 clove garlic','Chili oil'],steps:['Simmer broth with ginger and garlic 10 min.','Remove ginger and garlic. Whisk in miso paste and soy sauce.','Cook noodles according to package. Drain.','Saute mushrooms in sesame oil until golden.','Divide noodles into bowls. Ladle broth over.','Top with mushrooms, corn, scallions, nori, and chili oil.']},
+{n:'Korean Bibimbap',t:'asian',m:30,s:2,ing:['2 cups cooked rice','1 cup spinach','1 carrot, julienned','1 zucchini, sliced','100g mushrooms','1 cup bean sprouts','2 tbsp gochujang','1 tbsp sesame oil','1 tbsp soy sauce','Sesame seeds','1 clove garlic','Kimchi (optional)'],steps:['Saute each vegetable separately with a drop of sesame oil and pinch of salt (2 min each).','Blanch spinach, squeeze dry, season with soy sauce and garlic.','Place hot rice in bowls.','Arrange all vegetables on top of rice in sections.','Add a big spoonful of gochujang in the center.','Drizzle sesame oil, sprinkle seeds. Mix everything together before eating.']},
+{n:'Tofu Stir Fry',t:'asian',m:20,s:4,ing:['300g firm tofu, cubed','2 cups broccoli florets','1 bell pepper, sliced','2 tbsp soy sauce','1 tbsp oyster sauce (vegetarian)','1 tsp cornstarch','1 tbsp sesame oil','2 cloves garlic','1 inch ginger','Cooked rice','Sesame seeds'],steps:['Press tofu 10 min. Cut into cubes.','Mix soy sauce, oyster sauce, cornstarch, and 2 tbsp water for sauce.','Heat sesame oil. Fry tofu until crispy on all sides (6 min). Remove.','Add garlic, ginger, broccoli, pepper. Stir fry 3 min.','Return tofu. Pour sauce over. Toss until thickened.','Serve over rice with sesame seeds.']},
+{n:'Mushroom Risotto',t:'comfort',m:35,s:4,ing:['1.5 cups arborio rice','300g mixed mushrooms, sliced','4 cups vegetable broth, warm','0.5 cup white wine','1 onion, diced fine','2 cloves garlic','0.5 cup parmesan, grated','2 tbsp butter','1 tbsp olive oil','Fresh thyme','Salt, pepper'],steps:['Heat broth and keep warm on low.','Heat oil and 1 tbsp butter. Saute mushrooms until golden (5 min). Remove.','Add onion, cook until soft. Add garlic, cook 1 min.','Add rice, stir 1 min until translucent edges.','Add wine, stir until absorbed.','Add broth one ladle at a time, stirring frequently. Wait until each is absorbed before adding next (18 min).','Stir in mushrooms, parmesan, remaining butter, thyme.','Rest 2 min. Serve immediately.']},
+{n:'Margherita Pizza',t:'quick',m:20,s:2,ing:['1 pizza dough (store-bought)','0.5 cup marinara sauce','200g fresh mozzarella, sliced','Fresh basil leaves','1 tbsp olive oil','Pinch of salt'],steps:['Preheat oven to highest setting (475-500F / 250C). Place pizza stone or inverted baking sheet inside.','Stretch dough on floured surface to 12 inches.','Spread marinara, leaving 1 inch border.','Arrange mozzarella slices evenly.','Slide onto hot stone. Bake 8-10 min until crust is golden and cheese bubbles.','Top with fresh basil and drizzle of olive oil.']},
+{n:'Mac and Cheese',t:'comfort',m:20,s:4,ing:['350g elbow pasta','2 cups sharp cheddar, shredded','2 cups milk','2 tbsp butter','2 tbsp flour','1 tsp mustard powder','0.5 tsp paprika','Salt, pepper'],steps:['Cook pasta 1 min less than package says. Drain.','Melt butter in the same pot. Add flour, whisk 1 min.','Slowly pour in milk, whisking constantly. Cook until thickened (3 min).','Remove from heat. Stir in cheese until melted and smooth.','Add mustard, paprika, salt, pepper.','Fold in pasta. Serve immediately or transfer to baking dish, top with breadcrumbs, and broil 3 min.']},
+{n:'Veggie Fried Rice',t:'asian',m:15,s:4,ing:['3 cups cooked rice (day-old is best)','1 cup mixed veggies (peas, corn, carrot)','2 cloves garlic, minced','1 inch ginger, grated','3 tbsp soy sauce','1 tbsp sesame oil','2 scallions, sliced','1 tbsp oil','White pepper'],steps:['Heat oil and sesame oil in wok on high heat.','Add garlic and ginger, cook 30 sec.','Add veggies, stir fry 2 min.','Add rice, break up clumps. Stir fry 3 min on high heat.','Push rice to sides, pour soy sauce in center. Let it sizzle then mix through.','Top with scallions and white pepper.']},
+{n:'Avocado Toast',t:'quick',m:5,s:2,ing:['2 slices sourdough bread','1 ripe avocado','1 tbsp lemon juice','Red chili flakes','Everything bagel seasoning','Flaky salt','Olive oil'],steps:['Toast bread until golden and crispy.','Mash avocado with lemon juice and a pinch of salt.','Spread generously on toast.','Top with chili flakes, everything seasoning, flaky salt, and a drizzle of olive oil.']},
+{n:'Buddha Bowl',t:'healthy',m:25,s:2,ing:['1 cup quinoa','1 sweet potato, cubed','1 can chickpeas, drained','1 avocado','2 cups kale or spinach','2 tbsp tahini','1 tbsp lemon juice','1 tbsp maple syrup','1 tbsp olive oil','Salt, pepper, paprika'],steps:['Cook quinoa according to package.','Toss sweet potato and chickpeas with oil, salt, paprika. Roast at 400F (200C) for 20 min.','Make dressing: whisk tahini, lemon juice, maple syrup, and 2 tbsp water.','Build bowls: quinoa base, roasted sweet potato and chickpeas, fresh greens, sliced avocado.','Drizzle tahini dressing generously.']},
+{n:'Mango Sticky Rice',t:'dessert',m:30,s:4,ing:['1 cup sticky/glutinous rice, soaked 4 hours','1 can coconut milk','3 tbsp sugar','Pinch of salt','2 ripe mangoes, sliced','Sesame seeds'],steps:['Steam soaked rice in a steamer basket for 20 min until tender.','Warm half the coconut milk with 2 tbsp sugar and salt until dissolved.','Pour sweetened coconut milk over cooked rice. Stir and let absorb 10 min.','Make topping: warm remaining coconut milk with 1 tbsp sugar.','Mound rice on plates, arrange mango slices alongside.','Drizzle coconut topping over rice. Sprinkle sesame seeds.']},
+{n:'Rajma',t:'indian',m:30,s:4,ing:['2 cans kidney beans','1 onion, diced','2 tomatoes, pureed','1 inch ginger','3 cloves garlic','1 tsp cumin','1 tsp garam masala','1 tsp coriander','2 tbsp oil','Cilantro','Rice for serving'],steps:['Heat oil, add cumin. Saute onion until golden.','Add ginger, garlic. Cook 1 min.','Add tomato puree and spices. Cook 5 min.','Add kidney beans and 1 cup water. Simmer 15 min.','Garnish cilantro. Serve over rice.']},
+{n:'Masoor Dal',t:'indian',m:20,s:4,ing:['1 cup red lentils','1 onion, diced','2 tomatoes, chopped','1 tsp turmeric','1 tsp cumin seeds','2 cloves garlic','2 tbsp ghee','Lemon juice','Salt'],steps:['Boil lentils with turmeric in 3 cups water until soft.','In a pan, heat ghee. Add cumin seeds, garlic, onion.','Add tomatoes, cook until soft.','Combine with lentils. Add salt, lemon juice.']},
+{n:'Pav Bhaji',t:'indian',m:35,s:4,ing:['4 potatoes, boiled and mashed','1 cup cauliflower, chopped','1 cup peas','2 tomatoes, pureed','1 onion, diced','2 tbsp pav bhaji masala','3 tbsp butter','Pav buns','Lime, onion, cilantro'],steps:['Boil cauliflower and peas until soft. Mash.','Heat butter, saute onion. Add tomato puree.','Add pav bhaji masala, mashed potatoes and veggies.','Mash together, add water for consistency. Simmer 10 min.','Toast pav buns with butter. Serve with lime and onion.']},
+{n:'Chole Bhature',t:'indian',m:40,s:4,ing:['2 cans chickpeas','2 onions, diced','3 tomatoes, pureed','2 tsp chole masala','1 tsp amchur','2 cups flour','0.5 cup yogurt','Oil for frying','Ginger, garlic, cilantro'],steps:['Dough: Mix flour, yogurt, 1 tbsp oil, salt, water. Knead. Rest 30 min.','Heat oil, saute onion, ginger, garlic until golden.','Add tomato puree, chole masala, amchur. Cook 5 min.','Add chickpeas and water. Simmer 15 min.','Roll dough into circles. Deep fry until puffed and golden.','Serve bhature with chole, onion, and pickle.']},
+{n:'Mushroom Matar',t:'indian',m:20,s:4,ing:['200g mushrooms, sliced','1 cup green peas','1 onion, diced','2 tomatoes, pureed','1 tsp garam masala','1 tsp cumin','2 tbsp oil','Cilantro'],steps:['Heat oil, add cumin. Saute onion until golden.','Add tomato puree and spices. Cook 5 min.','Add mushrooms, cook 3 min.','Add peas and splash of water. Cover, cook 8 min.','Garnish with cilantro.']},
+{n:'Veggie Quesadilla',t:'mexican',m:10,s:2,ing:['4 flour tortillas','1.5 cups shredded cheese','1 bell pepper, diced','0.5 onion, diced','0.5 cup corn','Salsa, sour cream','1 tbsp oil'],steps:['Saute pepper, onion, corn in oil 3 min.','Place tortilla in pan, add cheese, veggies, more cheese, second tortilla.','Cook 2 min each side until golden and melty.','Cut into wedges. Serve with salsa and sour cream.']},
+{n:'Veggie Fajitas',t:'mexican',m:20,s:4,ing:['3 bell peppers, sliced','2 onions, sliced','200g mushrooms, sliced','8 tortillas','1 avocado','1 lime','2 tsp cumin','1 tsp chili powder','2 tbsp oil','Sour cream, salsa, cilantro'],steps:['Heat oil on high. Add peppers, onion, mushrooms.','Season with cumin, chili powder, salt.','Cook 6-8 min until charred and tender.','Warm tortillas.','Serve fajita veggies in tortillas with avocado, sour cream, salsa.']},
+{n:'Elote',t:'mexican',m:15,s:4,ing:['4 ears corn','3 tbsp mayo','0.5 cup cotija cheese, crumbled','1 tsp chili powder','2 limes','Cilantro'],steps:['Grill or char corn on all sides (8 min).','Spread mayo on each ear.','Sprinkle cotija cheese and chili powder.','Squeeze lime and top with cilantro.']},
+{n:'Chilaquiles',t:'mexican',m:15,s:4,ing:['8 cups tortilla chips','2 cups salsa verde','1 cup cheese, shredded','1 avocado, sliced','0.5 cup sour cream','0.5 red onion, sliced','Cilantro'],steps:['Heat salsa verde in a large pan.','Add tortilla chips, toss to coat. Cook 2 min until slightly softened.','Top with cheese, cover 1 min until melted.','Serve with avocado, sour cream, onion, cilantro.']},
+{n:'Miso Soup',t:'asian',m:10,s:4,ing:['4 cups water','3 tbsp miso paste','200g silken tofu, cubed','1 sheet wakame seaweed','2 scallions, sliced','1 tsp dashi granules'],steps:['Bring water to a simmer (not boiling). Add dashi.','Add wakame. Let rehydrate 2 min.','Add tofu cubes gently.','Remove from heat. Stir in miso paste (never boil miso).','Serve topped with scallions.']},
+{n:'Thai Peanut Noodles',t:'asian',m:15,s:4,ing:['200g rice noodles','3 tbsp peanut butter','2 tbsp soy sauce','1 tbsp sriracha','1 tbsp rice vinegar','1 tbsp sesame oil','1 lime','1 cucumber, julienned','Peanuts, cilantro, scallion'],steps:['Cook noodles per package. Drain, rinse cold.','Whisk peanut butter, soy sauce, sriracha, vinegar, sesame oil, lime juice.','Toss noodles with sauce.','Top with cucumber, crushed peanuts, cilantro, scallion.']},
+{n:'Vegetable Dumplings',t:'asian',m:35,s:4,ing:['30 dumpling wrappers','2 cups cabbage, finely shredded','1 cup mushrooms, minced','1 carrot, grated','2 cloves garlic, minced','1 inch ginger, grated','2 tbsp soy sauce','1 tsp sesame oil','Oil for frying'],steps:['Mix cabbage, mushrooms, carrot, garlic, ginger, soy sauce, sesame oil.','Place 1 tbsp filling on each wrapper. Wet edges, fold and pleat shut.','Heat oil in pan. Place dumplings flat side down. Cook 2 min until golden.','Add 0.25 cup water, cover. Steam 5 min until wrappers are translucent.','Serve with soy sauce and chili oil.']},
+{n:'Spring Rolls (Fresh)',t:'asian',m:20,s:4,ing:['12 rice paper wrappers','100g rice vermicelli, cooked','1 cucumber, julienned','2 carrots, julienned','1 cup lettuce','Fresh mint, basil','3 tbsp peanut butter','1 tbsp hoisin','1 tbsp sriracha','Warm water'],steps:['Prepare all fillings in strips.','Dip rice paper in warm water 10 sec until pliable.','Lay flat. Place lettuce, vermicelli, veggies, herbs in center.','Fold bottom up, sides in, then roll tight.','Mix peanut butter, hoisin, sriracha, 2 tbsp water for dipping sauce.']},
+{n:'Teriyaki Tofu Bowl',t:'asian',m:20,s:4,ing:['300g firm tofu, cubed','3 tbsp soy sauce','2 tbsp mirin','1 tbsp sugar','1 tsp cornstarch','2 cups rice','2 cups broccoli','1 cup edamame','Sesame seeds','1 tbsp oil'],steps:['Mix soy sauce, mirin, sugar, cornstarch for sauce.','Press and cube tofu. Pan fry in oil until crispy (6 min).','Pour sauce over tofu. Cook until glazed and sticky.','Steam broccoli and edamame.','Bowl: rice, broccoli, edamame, teriyaki tofu, sesame seeds.']},
+{n:'Pesto Pasta',t:'quick',m:15,s:4,ing:['350g pasta','0.5 cup basil pesto','1 cup cherry tomatoes, halved','0.25 cup pine nuts','0.5 cup parmesan, grated','2 tbsp olive oil','Salt, pepper'],steps:['Cook pasta al dente. Reserve 0.5 cup pasta water. Drain.','Toss hot pasta with pesto and splash of pasta water.','Add cherry tomatoes and most of the parmesan.','Top with pine nuts, remaining parmesan, drizzle of olive oil.']},
+{n:'Grilled Cheese & Tomato Soup',t:'comfort',m:20,s:2,ing:['4 slices bread','4 slices cheddar','2 tbsp butter','1 can crushed tomatoes','1 onion, diced','2 cloves garlic','0.5 cup cream','Fresh basil','Salt, pepper'],steps:['Soup: saute onion and garlic in butter 3 min. Add tomatoes. Simmer 10 min.','Blend until smooth. Stir in cream, basil, salt, pepper.','Sandwich: butter bread outsides. Fill with cheese.','Cook in pan 3 min each side until golden and melty.','Cut diagonally. Serve with soup for dipping.']},
+{n:'Lentil Soup',t:'comfort',m:30,s:6,ing:['1.5 cups lentils','1 onion, diced','2 carrots, diced','2 celery stalks, diced','3 cloves garlic','1 can diced tomatoes','6 cups vegetable broth','2 tsp cumin','1 tsp smoked paprika','Lemon juice','Olive oil'],steps:['Heat oil, saute onion, carrot, celery 5 min.','Add garlic, cumin, paprika. Cook 1 min.','Add lentils, tomatoes, broth. Bring to boil.','Reduce heat, simmer 25 min until lentils are tender.','Season with salt, pepper, lemon juice. Blend half if desired.']},
+{n:'Vegetable Lasagna',t:'comfort',m:50,s:6,ing:['12 lasagna sheets','2 cups ricotta','3 cups mozzarella, shredded','2 cups spinach','1 zucchini, sliced','2 cups marinara sauce','0.5 cup parmesan','1 tsp Italian seasoning','Salt, pepper'],steps:['Cook lasagna sheets al dente. Preheat oven to 375F.','Mix ricotta with Italian seasoning, salt, pepper.','Layer: sauce, pasta, ricotta, spinach, zucchini, mozzarella. Repeat 3x.','Top with remaining sauce and parmesan.','Cover with foil. Bake 30 min. Remove foil, bake 15 more.','Rest 10 min before cutting.']},
+{n:'Smoothie Bowl',t:'healthy',m:5,s:1,ing:['1 cup frozen berries','1 banana','0.5 cup yogurt','2 tbsp granola','1 tbsp honey','1 tbsp chia seeds','Sliced fruit for topping'],steps:['Blend frozen berries, banana, yogurt until thick (use less liquid than a smoothie).','Pour into bowl.','Top with granola, chia seeds, honey, and sliced fruit.','Eat with a spoon immediately.']},
+{n:'Falafel Bowl',t:'healthy',m:25,s:4,ing:['2 cans chickpeas, drained','1 onion, quartered','4 cloves garlic','1 cup parsley','1 cup cilantro','2 tsp cumin','1 tsp baking powder','3 tbsp flour','Oil for frying','Tahini, cucumber, tomato, pickled onion'],steps:['Pulse chickpeas, onion, garlic, herbs, cumin in food processor (dont puree).','Mix in flour and baking powder. Chill 30 min.','Form into small patties. Pan fry in oil 3 min each side until golden.','Build bowls: rice or pita, falafel, cucumber, tomato, pickled onion.','Drizzle tahini generously.']},
+{n:'Overnight Oats',t:'healthy',m:5,s:1,ing:['0.5 cup rolled oats','0.5 cup almond milk','0.25 cup yogurt','1 tbsp chia seeds','1 tbsp honey','0.5 tsp vanilla','Berries, nuts for topping'],steps:['Mix oats, milk, yogurt, chia seeds, honey, vanilla in a jar.','Stir well. Cover and refrigerate overnight (or at least 4 hours).','In the morning, top with berries and nuts.','Eat cold or microwave 1 min if preferred warm.']},
+{n:'Caprese Salad',t:'quick',m:5,s:2,ing:['3 ripe tomatoes, sliced','200g fresh mozzarella, sliced','Fresh basil leaves','3 tbsp extra virgin olive oil','1 tbsp balsamic glaze','Flaky salt, pepper'],steps:['Alternate slices of tomato and mozzarella on a plate.','Tuck basil leaves between slices.','Drizzle olive oil and balsamic glaze.','Season with flaky salt and pepper.']},
+{n:'Loaded Nachos',t:'quick',m:10,s:4,ing:['1 large bag tortilla chips','2 cups shredded cheese','1 can black beans, drained','1 jalapeno, sliced','1 avocado, diced','0.5 cup sour cream','0.5 cup salsa','Cilantro, lime'],steps:['Spread chips on oven-safe tray. Top with cheese, beans, jalapeno.','Broil 3 min until cheese melts and bubbles.','Top with avocado, sour cream, salsa, cilantro.','Squeeze lime over everything. Serve immediately.']},
+{n:'Gulab Jamun',t:'dessert',m:30,s:4,ing:['1 cup milk powder','0.25 cup flour','2 tbsp ghee','0.25 cup milk','1 cup sugar','2 cups water','4 cardamom pods','1 tsp rose water','Oil for frying'],steps:['Mix milk powder, flour, ghee. Add milk gradually to form soft dough.','Rest 10 min. Roll into small smooth balls.','Make syrup: boil sugar, water, cardamom 5 min. Add rose water.','Deep fry balls on low heat until deep golden brown (5 min).','Soak hot gulab jamuns in warm syrup for 30 min.','Serve warm or at room temperature.']},
+{n:'Kheer',t:'dessert',m:30,s:4,ing:['0.25 cup basmati rice','4 cups whole milk','0.5 cup sugar','4 cardamom pods','Pinch saffron','2 tbsp almonds, slivered','2 tbsp pistachios','1 tsp rose water'],steps:['Wash rice. Soak 20 min. Drain.','Bring milk to boil in heavy pot. Add rice.','Simmer on low, stirring often, 25 min until rice is very soft and milk thickens.','Add sugar, cardamom, saffron. Cook 5 more min.','Remove from heat. Add rose water and most nuts.','Serve warm or chilled, topped with remaining nuts.']},
+{n:'Chocolate Lava Cake',t:'dessert',m:20,s:2,ing:['100g dark chocolate','3 tbsp butter','0.25 cup sugar','2 tbsp flour','0.5 tsp vanilla','Pinch salt','Powdered sugar for dusting'],steps:['Preheat oven to 425F. Grease 2 ramekins.','Melt chocolate and butter together. Stir smooth.','Mix in sugar, then flour, vanilla, salt.','Divide between ramekins.','Bake exactly 12 min (edges set, center jiggles).','Wait 1 min, invert onto plates. Dust with powdered sugar.']},
+{n:'Masala Chai',t:'drinks',m:10,s:2,ing:['2 cups water','1 cup milk','2 tbsp loose black tea','3 cardamom pods, crushed','1 small cinnamon stick','3 slices fresh ginger','2 cloves','2 tbsp sugar'],steps:['Boil water with all spices 3 min.','Add tea leaves. Simmer 2 min.','Add milk and sugar. Bring to a rolling boil.','Strain into cups. Serve hot.']},
+{n:'Mango Lassi',t:'drinks',m:5,s:2,ing:['1 cup mango (fresh or frozen)','1 cup yogurt','0.5 cup milk','2 tbsp sugar','Pinch cardamom','Ice cubes'],steps:['Blend all ingredients until smooth and frothy.','Pour into glasses over ice.','Dust with cardamom on top.']},
+{n:'Matcha Latte',t:'drinks',m:5,s:1,ing:['1.5 tsp matcha powder','2 tbsp hot water','1 cup oat milk','1 tsp honey or maple syrup'],steps:['Sift matcha into a cup to remove clumps.','Add hot water. Whisk vigorously until frothy (use a bamboo whisk or fork).','Heat oat milk, froth if possible.','Pour frothed milk over matcha. Sweeten to taste.']},
+{n:'Indo-Chinese Manchurian',t:'fusion',m:30,s:4,ing:['1 cauliflower, florets','3 tbsp cornstarch','2 tbsp flour','2 tbsp soy sauce','1 tbsp chili sauce','1 tbsp vinegar','1 bell pepper, diced','4 cloves garlic, minced','1 inch ginger, minced','2 scallions','Oil for frying'],steps:['Mix cornstarch, flour, salt with water to make batter. Coat cauliflower.','Deep fry until crispy and golden. Drain.','Heat 1 tbsp oil. Saute garlic, ginger, pepper.','Add soy sauce, chili sauce, vinegar, 0.25 cup water.','Toss in fried cauliflower. Cook 1 min until glazed.','Garnish with scallions. Serve with fried rice.']},
+{n:'Sushi Bowl',t:'fusion',m:15,s:2,ing:['2 cups sushi rice, cooked','1 avocado, sliced','1 cucumber, diced','1 carrot, julienned','1 cup edamame','1 sheet nori, shredded','2 tbsp soy sauce','1 tbsp rice vinegar','1 tsp sesame oil','Sriracha mayo','Sesame seeds','Pickled ginger'],steps:['Season warm rice with rice vinegar.','Divide rice into bowls.','Arrange avocado, cucumber, carrot, edamame on top.','Drizzle soy sauce and sesame oil.','Top with nori, sesame seeds, pickled ginger.','Add sriracha mayo to taste.']},
+{n:'Kimchi Fried Rice',t:'fusion',m:15,s:2,ing:['3 cups cooked rice (day-old)','1 cup kimchi, chopped','100g firm tofu, crumbled','2 tbsp gochujang','1 tbsp soy sauce','1 tbsp sesame oil','2 scallions','Sesame seeds'],steps:['Heat sesame oil in wok on high.','Add crumbled tofu, cook until lightly browned.','Add kimchi, stir fry 2 min.','Add rice, soy sauce, gochujang. Toss vigorously 3 min.','Top with scallions and sesame seeds.']},
+{n:'Eggplant Parmesan',t:'comfort',m:35,s:4,ing:['2 eggplants, sliced 0.5 inch','1.5 cups marinara','1.5 cups mozzarella, shredded','0.5 cup parmesan','1 cup breadcrumbs','0.5 cup flour','0.5 cup milk','1 tsp Italian seasoning','Oil, salt'],steps:['Salt eggplant slices, rest 15 min. Pat dry.','Dip in flour, then milk, then breadcrumbs with Italian seasoning.','Pan fry in oil 3 min each side until golden.','Layer in baking dish: sauce, eggplant, mozzarella, repeat.','Top with parmesan.','Bake 375F for 20 min until bubbly.']},
+{n:'Butternut Squash Soup',t:'comfort',m:30,s:4,ing:['1 butternut squash, peeled and cubed','1 onion, diced','2 cloves garlic','2 tbsp butter','3 cups vegetable broth','0.5 cup cream','0.25 tsp nutmeg','Salt, pepper','Pumpkin seeds for topping'],steps:['Melt butter, saute onion and garlic 3 min.','Add squash and broth. Bring to boil.','Simmer 20 min until squash is very tender.','Blend until completely smooth.','Stir in cream, nutmeg, salt, pepper.','Serve topped with pumpkin seeds and a drizzle of cream.']},
+{n:'Quinoa Salad',t:'healthy',m:15,s:4,ing:['1 cup quinoa','1 cucumber, diced','1 cup cherry tomatoes, halved','0.5 cup feta, crumbled','0.25 cup kalamata olives','0.25 cup red onion, diced','3 tbsp olive oil','2 tbsp lemon juice','Fresh mint, parsley'],steps:['Cook quinoa per package. Fluff and cool.','Toss with all vegetables and feta.','Whisk olive oil and lemon juice for dressing.','Dress the salad. Add herbs, salt, pepper.','Serve at room temperature or chilled.']},
+{n:'Sweet Potato Buddha Bowl',t:'healthy',m:25,s:2,ing:['2 sweet potatoes, cubed','1 can chickpeas','2 cups kale','1 avocado','2 tbsp tahini','1 tbsp lemon juice','1 tbsp maple syrup','1 tbsp olive oil','Salt, paprika, cumin'],steps:['Toss sweet potato and chickpeas with oil, paprika, cumin, salt.','Roast at 400F for 22 min.','Massage kale with a drizzle of oil and pinch of salt.','Make dressing: whisk tahini, lemon, maple, 2 tbsp water.','Build bowls: kale, roasted sweet potato and chickpeas, avocado.','Drizzle tahini dressing.']},
+{n:'Mediterranean Wrap',t:'healthy',m:10,s:2,ing:['2 large wraps','0.5 cup hummus','1 cucumber, sliced','1 tomato, sliced','0.25 cup feta','0.25 cup kalamata olives','Lettuce','Red onion rings'],steps:['Spread hummus generously on each wrap.','Layer lettuce, cucumber, tomato, feta, olives, onion.','Roll tightly, tucking in sides.','Cut diagonally and serve.']},
+{n:'Japanese Curry',t:'fusion',m:35,s:4,ing:['1 box Japanese curry roux','2 potatoes, cubed','2 carrots, chunked','1 onion, diced','1 cup mushrooms','3 cups water','2 tbsp oil','Rice for serving'],steps:['Heat oil, saute onion until translucent.','Add carrots and potatoes. Cook 3 min.','Add water, bring to boil. Simmer 15 min until veggies tender.','Turn off heat. Add curry roux blocks. Stir until dissolved.','Simmer on low 5 more min until thickened.','Serve over hot rice.']}
+];
+var customRecipes=JSON.parse(LS.getItem('gw_custom_recipes')||'[]');
+
+function initRecipes(){
+  var h='<div style="text-align:center;padding:10px 0 20px"><p style="font-size:2rem;margin-bottom:6px">\u{1F373}</p><p style="font-family:Playfair Display,serif;font-size:1.1rem;color:var(--carn-light);margin-bottom:4px">What sounds good?</p><p style="font-size:.65rem;color:rgba(255,255,255,.3)">60+ vegetarian recipes, no eggs</p></div>';
+
+  // Mood buttons
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+  var moods=[
+    {id:'quick',ico:'\u{26A1}',name:'Quick & easy',desc:'Under 15 min'},
+    {id:'comfort',ico:'\u{1F9F8}',name:'Comfort food',desc:'Feed my soul'},
+    {id:'healthy',ico:'\u{1F96D}',name:'Something light',desc:'Healthy vibes'},
+    {id:'random',ico:'\u{1F3B2}',name:'Surprise me',desc:'Random pick'}
+  ];
+  moods.forEach(function(m){
+    h+='<div style="padding:16px 10px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="'+(m.id==='random'?'randomRecipe()':'recipeMood(\''+m.id+'\')')+'">';
+    h+='<div style="font-size:1.5rem;margin-bottom:4px">'+m.ico+'</div>';
+    h+='<div style="font-size:.75rem;color:#fff;font-weight:500">'+m.name+'</div>';
+    h+='<div style="font-size:.5rem;color:rgba(255,255,255,.25)">'+m.desc+'</div></div>';
+  });
+  h+='</div>';
+
+  // Cuisine row
+  h+='<p style="font-size:.5rem;color:rgba(255,255,255,.2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">By cuisine</p>';
+  h+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;margin-bottom:16px">';
+  [{id:'indian',ico:'\u{1F1EE}\u{1F1F3}',n:'Indian'},{id:'mexican',ico:'\u{1F1F2}\u{1F1FD}',n:'Mexican'},{id:'asian',ico:'\u{1F35C}',n:'Asian'},{id:'fusion',ico:'\u{1F30D}',n:'Fusion'},{id:'dessert',ico:'\u{1F370}',n:'Sweet'},{id:'drinks',ico:'\u{1F375}',n:'Drinks'}].forEach(function(c){
+    h+='<div style="flex-shrink:0;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);text-align:center;cursor:pointer;min-width:70px" onclick="recipeMood(\''+c.id+'\')">';
+    h+='<div style="font-size:1.2rem;margin-bottom:2px">'+c.ico+'</div>';
+    h+='<div style="font-size:.55rem;color:rgba(255,255,255,.4)">'+c.n+'</div></div>';
+  });
+  h+='</div>';
+
+  // Bottom links
+  h+='<div style="display:flex;gap:8px"><button class="dp-btn-outline" style="flex:1;font-size:.6rem" onclick="recipeMood(\'all\')">Browse all ('+RECIPES.length+')</button><button class="dp-btn-outline" style="flex:1;font-size:.6rem" onclick="showAddRecipe()">+ Add yours</button></div>';
+
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function randomRecipe(){
+  var allR=RECIPES.concat(customRecipes);
+  var idx=Math.floor(Math.random()*allR.length);
+  viewRecipe(idx,'random');
+}
+
+function recipeMood(mood){
+  var allR=RECIPES.concat(customRecipes);
+  var map={quick:function(r){return r.m<=15},comfort:function(r){return r.t==='comfort'},healthy:function(r){return r.t==='healthy'}};
+  var filtered=mood==='all'?allR:allR.filter(function(r){return map[mood]?map[mood](r):r.t===mood});
+  if(!filtered.length){showXPToast('No recipes found');return}
+
+  var tc={indian:'rgba(212,168,83,.08)',mexican:'rgba(181,201,168,.08)',asian:'rgba(168,216,234,.08)',quick:'rgba(255,218,185,.08)',comfort:'rgba(200,168,233,.08)',healthy:'rgba(168,216,234,.06)',fusion:'rgba(216,71,115,.06)',dessert:'rgba(255,218,185,.1)',drinks:'rgba(200,168,233,.06)'};
+  var h='<div style="margin-bottom:10px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span><span style="font-size:.7rem;color:rgba(255,255,255,.4);margin-left:8px">'+filtered.length+' recipes</span></div>';
+  h+='<button class="dp-btn" style="width:100%;margin-bottom:12px;font-size:.65rem" onclick="var f=document.querySelectorAll(\'[data-ridx]\');var r=f[Math.floor(Math.random()*f.length)];if(r)r.click()">\u{1F3B2} Pick one for me</button>';
+  filtered.forEach(function(r){
+    var realIdx=allR.indexOf(r);
+    h+='<div data-ridx="'+realIdx+'" style="padding:12px;background:'+(tc[r.t]||'rgba(255,255,255,.03)')+';border:1px solid rgba(255,255,255,.04);border-radius:12px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="viewRecipe('+realIdx+')">';
+    h+='<div><div style="font-size:.8rem;color:rgba(255,255,255,.6);font-weight:500">'+r.n+'</div><div style="font-size:.5rem;color:rgba(255,255,255,.2);margin-top:2px">'+r.m+' min \u{2022} '+r.s+' servings</div></div>';
+    h+='<span style="font-size:.55rem;color:rgba(255,255,255,.1)">\u203A</span></div>';
+  });
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function viewRecipe(idx,type){
+  var allR=RECIPES.concat(customRecipes);
+  var r=allR[idx];if(!r)return;
+  var servings=parseInt(LS.getItem('gw_rsrv')||r.s);
+  var ratio=servings/r.s;
+
+  var h='<div style="margin-bottom:8px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span></div>';
+  h+='<h3 style="font-family:Playfair Display,serif;font-size:1.2rem;color:#fff;margin-bottom:4px">'+r.n+'</h3>';
+  h+='<div style="display:flex;gap:12px;font-size:.55rem;color:rgba(255,255,255,.3);margin-bottom:14px"><span>'+r.m+' min</span><span>'+r.t+'</span></div>';
+
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px;background:rgba(255,255,255,.03);border-radius:10px"><span style="font-size:.65rem;color:rgba(255,255,255,.4)">Servings</span>';
+  h+='<button style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;font-size:.8rem;cursor:pointer" onclick="adjServ(-1,'+idx+',\''+type+'\')">-</button>';
+  h+='<span style="font-size:1rem;color:var(--gold);font-weight:500;min-width:24px;text-align:center" id="srvCount">'+servings+'</span>';
+  h+='<button style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:transparent;color:#fff;font-size:.8rem;cursor:pointer" onclick="adjServ(1,'+idx+',\''+type+'\')">+</button></div>';
+
+  h+='<p style="font-size:.55rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin-bottom:6px">Ingredients</p>';
+  if(r.ing){r.ing.forEach(function(ing){
+    var scaled=ing.replace(/^([\d.\/]+)/,function(m){
+      var n=m.includes('/')?eval(m):parseFloat(m);
+      if(isNaN(n))return m;
+      var v=Math.round(n*ratio*10)/10;
+      return v%1===0?v.toString():v.toFixed(1);
+    });
+    h+='<div style="padding:4px 0;font-size:.7rem;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.02)">\u2022 '+scaled+'</div>';
+  })}
+
+  if(r.steps){
+    h+='<p style="font-size:.55rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--carn);margin:14px 0 6px">Directions</p>';
+    r.steps.forEach(function(s,i){
+      h+='<div style="display:flex;gap:10px;margin-bottom:10px"><div style="width:22px;height:22px;border-radius:50%;background:rgba(216,71,115,.1);color:var(--carn-light);font-size:.55rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</div><p style="font-size:.7rem;color:rgba(255,255,255,.5);line-height:1.5;flex:1">'+s+'</p></div>';
+    });
+  }
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function adjServ(d,idx,type){
+  var cur=parseInt(document.getElementById('srvCount').textContent);
+  var nv=Math.max(1,Math.min(12,cur+d));
+  LS.setItem('gw_rsrv',nv);
+  viewRecipe(idx,type);
+}
+
+function showAddRecipe(){
+  var h='<div style="margin-bottom:8px"><span style="cursor:pointer;font-size:.65rem;color:var(--carn)" onclick="initRecipes()">\u2190 Back</span></div>';
+  h+='<h3 style="font-family:Playfair Display,serif;font-size:1rem;color:#fff;margin-bottom:12px">Add a recipe</h3>';
+  h+='<input class="dp-input" id="arName" placeholder="Recipe name">';
+  h+='<div style="display:flex;gap:6px;margin-bottom:8px"><select class="dp-input" id="arType" style="margin:0;flex:1"><option value="quick">Quick</option><option value="indian">Indian</option><option value="mexican">Mexican</option><option value="asian">Asian</option><option value="comfort">Comfort</option><option value="healthy">Healthy</option><option value="dessert">Sweet</option></select>';
+  h+='<input class="dp-input" id="arTime" placeholder="Min" type="number" style="margin:0;width:60px">';
+  h+='<input class="dp-input" id="arServ" placeholder="Srv" type="number" value="4" style="margin:0;width:60px"></div>';
+  h+='<textarea class="dp-textarea" id="arIng" placeholder="Ingredients (one per line)" style="min-height:80px"></textarea>';
+  h+='<textarea class="dp-textarea" id="arSteps" placeholder="Steps (one per line)" style="min-height:80px"></textarea>';
+  h+='<button class="dp-btn" style="width:100%" onclick="saveCustomRecipe()">Save recipe</button>';
+  document.getElementById('recipeBody').innerHTML=h;
+}
+
+function saveCustomRecipe(){
+  var name=document.getElementById('arName').value.trim();
+  if(!name){showXPToast('Name required');return}
+  var r={n:name,t:document.getElementById('arType').value,m:parseInt(document.getElementById('arTime').value)||15,s:parseInt(document.getElementById('arServ').value)||4,ing:document.getElementById('arIng').value.split('\n').filter(function(l){return l.trim()}),steps:document.getElementById('arSteps').value.split('\n').filter(function(l){return l.trim()}),custom:true};
+  customRecipes.push(r);
+  LS.setItem('gw_custom_recipes',JSON.stringify(customRecipes));
+  addXP(5,'Added recipe');triggerSync();initRecipes();
+}
+
+
+
+/* ADMIN DASHBOARD */
+function initAdmin(){
+  if(!currentUser||currentUser.name.toLowerCase()!=='akash'){document.getElementById('adminBody').innerHTML='<p style="text-align:center;color:rgba(255,255,255,.3);padding:40px">Access denied</p>';return}
+  document.getElementById('adminBody').innerHTML='<div style="text-align:center;padding:40px"><p style="font-size:.75rem;color:rgba(255,255,255,.3)">Loading analytics...</p></div>';
+  fetch('/api/admin').then(function(r){return r.json()}).then(function(d){
+    if(!d.ok){document.getElementById('adminBody').innerHTML='<p style="color:rgba(255,255,255,.3);padding:20px">Failed: '+(d.error||'')+'</p>';return}
+    var h='';
+
+    // ANNOUNCEMENT BANNER
+    if(d.announcement)h+='<div style="background:rgba(216,71,115,.08);border:1px solid rgba(216,71,115,.15);border-radius:12px;padding:10px 14px;margin-bottom:12px"><p style="font-size:.55rem;color:rgba(255,255,255,.25)">Active announcement</p><p style="font-size:.75rem;color:var(--carn-light)">'+d.announcement.text+'</p></div>';
+
+    // OVERVIEW CARDS
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">';
+    h+='<div style="background:rgba(216,71,115,.06);border:1px solid rgba(216,71,115,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--carn)">'+d.totalCitizens+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">Citizens</div></div>';
+    h+='<div style="background:rgba(106,170,100,.06);border:1px solid rgba(106,170,100,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#6AAA64">'+d.activeToday+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">Active today</div></div>';
+    h+='<div style="background:rgba(168,216,234,.06);border:1px solid rgba(168,216,234,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#A8D8EA">'+d.activeWeek+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.06em">This week</div></div>';
+    h+='</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">';
+    h+='<div style="background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--gold)">'+d.totals.xp+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase">Total XP</div></div>';
+    h+='<div style="background:rgba(200,168,233,.06);border:1px solid rgba(200,168,233,.1);border-radius:12px;padding:12px;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--lavender)">'+d.totals.diary+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2);text-transform:uppercase">Diary entries</div></div>';
+    h+='</div>';
+
+    // CHURN RISK
+    if(d.churned&&d.churned.length){h+='<div style="background:rgba(255,80,80,.06);border:1px solid rgba(255,80,80,.1);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:#ff6b6b;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Churn risk (7+ days inactive)</p><p style="font-size:.7rem;color:rgba(255,255,255,.4)">'+d.churned.join(', ')+'</p></div>'}
+
+    // PEAK HOURS
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Peak usage hours</p>';
+    var maxH=Math.max.apply(null,d.peakHours)||1;
+    h+='<div style="display:flex;align-items:flex-end;gap:2px;height:50px">';
+    d.peakHours.forEach(function(v,i){var pct=Math.max(2,(v/maxH)*100);h+='<div style="flex:1;height:'+pct+'%;background:'+(v===maxH&&v>0?'var(--carn)':'rgba(255,255,255,.08)')+';border-radius:2px" title="'+i+':00 - '+v+' actions"></div>'});
+    h+='</div><div style="display:flex;justify-content:space-between;font-size:.4rem;color:rgba(255,255,255,.1);margin-top:2px"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div></div>';
+
+    // TOP FEATURES
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Top features (by XP actions)</p>';
+    var fEntries=Object.entries(d.topFeatures);var fMax=fEntries.length?fEntries[0][1]:1;
+    fEntries.forEach(function(f){var pct=Math.round(f[1]/fMax*100);h+='<div style="margin-bottom:4px"><div style="display:flex;justify-content:space-between;font-size:.6rem;margin-bottom:2px"><span style="color:rgba(255,255,255,.4)">'+f[0]+'</span><span style="color:rgba(255,255,255,.2)">'+f[1]+'</span></div><div style="height:4px;background:rgba(255,255,255,.04);border-radius:2px"><div style="width:'+pct+'%;height:100%;background:var(--carn);border-radius:2px"></div></div></div>'});
+    h+='</div>';
+
+    // MOST PLAYED GAMES
+    var gEntries=Object.entries(d.gameStats);
+    if(gEntries.length){h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Most played games</p>';gEntries.forEach(function(g){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.65rem"><span style="color:rgba(255,255,255,.4)">'+g[0]+'</span><span style="color:var(--gold)">'+g[1]+' plays</span></div>'});h+='</div>'}
+
+    // THEME POPULARITY
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Theme choices</p>';
+    Object.entries(d.themeStats).forEach(function(t){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:.65rem"><span style="color:rgba(255,255,255,.4)">'+t[0]+'</span><span style="color:var(--lavender)">'+t[1]+' citizen'+(t[1]>1?'s':'')+'</span></div>'});
+    h+='</div>';
+
+    // PLATFORM TOTALS
+    h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px;margin-bottom:14px"><p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Content totals</p>';
+    [['Diary entries',d.totals.diary],['Dreams',d.totals.dreams],['Gratitudes',d.totals.grat],['Vision items',d.totals.vision],['Sleep logs',d.totals.sleep],['Highlights',d.totals.highlights],['Symptoms',d.totals.symptoms],['Periods',d.totals.periods],['Bucket items',d.totals.bucket],['Custom recipes',d.totals.recipes]].forEach(function(t){h+='<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:.6rem"><span style="color:rgba(255,255,255,.35)">'+t[0]+'</span><span style="color:var(--gold)">'+t[1]+'</span></div>'});
+    h+='</div>';
+
+    // CITIZEN MANAGEMENT
+    h+='<div style="background:rgba(212,168,83,.04);border:1px solid rgba(212,168,83,.1);border-radius:12px;padding:14px;margin-bottom:14px">';
+    h+='<p style="font-size:.55rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Citizen management</p>';
+    h+='<div style="margin-bottom:8px"><input class="dp-input" id="adminAnnounce" placeholder="Broadcast announcement to all citizens" style="margin:0;font-size:.7rem"><button class="dp-btn" style="width:100%;margin-top:4px;font-size:.6rem" onclick="adminAction(\'announce\',{message:document.getElementById(\'adminAnnounce\').value})">Send announcement</button></div>';
+    h+='<div style="display:flex;gap:4px;margin-bottom:8px"><input class="dp-input" id="adminXPTarget" placeholder="Name" style="margin:0;flex:1;font-size:.7rem"><input class="dp-input" id="adminXPAmt" placeholder="XP" type="number" style="margin:0;width:60px;font-size:.7rem"><button class="dp-btn-outline" style="font-size:.55rem;white-space:nowrap" onclick="adminAction(\'award_xp\',{target:document.getElementById(\'adminXPTarget\').value,amount:parseInt(document.getElementById(\'adminXPAmt\').value)})">Award XP</button></div>';
+    h+='<div style="display:flex;gap:4px"><input class="dp-input" id="adminResetTarget" placeholder="Name" style="margin:0;flex:1;font-size:.7rem"><button class="dp-btn-outline" style="font-size:.55rem;white-space:nowrap" onclick="var e=prompt(\'New emoji passcode:\');if(e)adminAction(\'reset_password\',{target:document.getElementById(\'adminResetTarget\').value,newEmoji:e})">Reset password</button></div>';
+    h+='</div>';
+
+    // PER CITIZEN
+    h+='<p style="font-size:.55rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;margin:14px 0 8px">Citizens (by XP)</p>';
+    d.citizens.forEach(function(c){
+      h+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:14px;padding:14px;margin-bottom:8px">';
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:1.4rem">'+c.status+'</span><div style="flex:1"><div style="font-size:.85rem;font-weight:600;color:#fff">'+c.name+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.2)">#'+String(c.number).padStart(3,'0')+' | Theme: '+c.theme+' | Joined: '+c.created+'</div></div><div style="text-align:right"><div style="font-size:1.1rem;font-weight:700;color:var(--gold)">'+c.xp+'</div><div style="font-size:.45rem;color:rgba(255,255,255,.15)">XP</div></div></div>';
+      h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:6px">';
+      [['S',c.streak],['B',c.achievements],['D',c.diary],['Dr',c.dreams],['G',c.gratitude],['V',c.vision],['Sl',c.sleep],['H',c.highlights],['P',c.periods],['Sy',c.symptoms],['Bu',c.bucket],['R',c.customRecipes]].forEach(function(m){h+='<div style="text-align:center;padding:4px;background:rgba(255,255,255,.02);border-radius:6px"><div style="font-size:.7rem;font-weight:600;color:rgba(255,255,255,.45)">'+m[1]+'</div><div style="font-size:.35rem;color:rgba(255,255,255,.12)">'+m[0]+'</div></div>'});
+      h+='</div>';
+      if(c.recentXP&&c.recentXP.length){h+='<details style="margin-top:4px"><summary style="font-size:.5rem;color:rgba(255,255,255,.15);cursor:pointer">Recent activity</summary><div style="padding:4px 0">';c.recentXP.forEach(function(x){h+='<div style="font-size:.5rem;color:rgba(255,255,255,.2);padding:1px 0">+'+x.amount+' '+x.reason+'</div>'});h+='</div></details>'}
+      h+='<div style="font-size:.4rem;color:rgba(255,255,255,.08);margin-top:4px">Last: '+c.lastActivity+' | Actions: '+(c.totalActions||0)+'</div></div>';
+    });
+
+    h+='<button class="dp-btn-outline" style="width:100%;margin-top:12px;font-size:.65rem" onclick="initAdmin()">Refresh</button>';
+    document.getElementById('adminBody').innerHTML=h;
+  }).catch(function(e){document.getElementById('adminBody').innerHTML='<p style="color:rgba(255,255,255,.3);padding:20px">Error: '+e.message+'</p>'});
+}
+function adminAction(act,data){fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:act},data))}).then(function(r){return r.json()}).then(function(d){showXPToast(d.message||'Done');setTimeout(initAdmin,500)}).catch(function(e){showXPToast('Error')})}
+
+
+/* STOCK TICKER */
+(function(){
+  var stocks=[
+    {sym:'SKMS',name:'Skims Inc'},
+    {sym:'SFRA',name:'Sephora Global'},
+    {sym:'GLSR',name:'Glossier'},
+    {sym:'FNTY',name:'Fenty Beauty'},
+    {sym:'ULTA',name:'Ulta Beauty'},
+    {sym:'RREV',name:'Rare Beauty'},
+    {sym:'CTLB',name:'Charlotte Tilbury'},
+    {sym:'LMND',name:'Lemonade Skincare'},
+    {sym:'GWRL',name:'Gurlwurl Inc'},
+    {sym:'MTCH',name:'Matcha Labs'},
+    {sym:'CPOP',name:'CakePop Co'},
+    {sym:'YOGA',name:'Lululemon'},
+    {sym:'GOOP',name:'Goop Wellness'},
+    {sym:'DOVE',name:'Dove Global'},
+    {sym:'OLAY',name:'Olay Corp'}
+  ];
+  function genTicker(){
+    var track=document.getElementById('tickerTrack');if(!track)return;
+    var h='';
+    for(var r=0;r<2;r++){stocks.forEach(function(s){
+      var price=(20+Math.random()*480).toFixed(2);
+      var change=((Math.random()-.42)*12).toFixed(2);
+      var pct=((change/price)*100).toFixed(1);
+      var up=parseFloat(change)>=0;
+      h+='<div class="ticker-item"><span class="ticker-dot '+(up?'up':'down')+'"></span><span class="ticker-name">'+s.sym+'</span><span class="ticker-price">$'+price+'</span><span class="'+(up?'ticker-up':'ticker-down')+'">'+(up?'+':'')+change+' ('+(up?'+':'')+pct+'%)</span></div>';
+    })}
+    track.innerHTML=h;
+  }
+  genTicker();
+  setInterval(genTicker,45000);
+})();
