@@ -167,6 +167,7 @@ section{padding:56px 20px}
 .cw-emoji{font-size:1.8rem;margin-bottom:6px}
 .cw-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:600;color:#fff}
 .cw-num{font-size:.5rem;color:rgba(212,168,83,.4);font-family:'Space Mono',monospace;margin-top:2px}
+.cw-rank{font-size:.55rem;color:var(--carn);margin-top:4px;font-weight:500}
 .cw-title{font-size:.55rem;color:var(--blush);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 
 /* GAMES */
@@ -184,7 +185,7 @@ section{padding:56px 20px}
 .game-progress{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
 .game-progress-fill{height:100%;background:linear-gradient(90deg,var(--carn),var(--lavender));border-radius:3px}
 .game-progress-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.45rem;color:rgba(255,255,255,.15)}
-.game-grid{display:flex;flex-direction:column;gap:8px;padding:8px 12px 100px}
+.game-grid{display:flex;flex-direction:column;gap:8px;padding:20px 12px 100px}
 .game-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
 .game-card:active{transform:scale(.97)}
 .game-card::before{content:'';position:absolute;inset:-1px;border-radius:16px;opacity:0;transition:opacity .4s;pointer-events:none}
@@ -573,8 +574,8 @@ section{padding:56px 20px}
 
 <section style="background:linear-gradient(180deg,var(--midnight),#0D050F);color:#fff"><div class="stag rv" style="color:var(--blush)">Citizens of Gurlwurl</div><h2 class="stitle rv" style="color:#fff">The <em>Wall</em></h2>
 <div class="citizen-wall" id="citizenWall">
-<div class="cw-card founder"><div class="cw-emoji">👸</div><div class="cw-name">Neha</div><div class="cw-num">CITIZEN #001</div><div class="cw-title">Supreme Visionary</div></div>
-<div class="cw-card founder"><div class="cw-emoji">🫡</div><div class="cw-name">Akash</div><div class="cw-num">CITIZEN #002</div><div class="cw-title">Chief Architect</div></div>
+<div class="cw-card founder"><div class="cw-emoji">👸</div><div class="cw-name">Neha</div><div class="cw-num">FOUNDER #001</div><div class="cw-rank">Supreme Visionary</div></div>
+<div class="cw-card founder"><div class="cw-emoji">🫡</div><div class="cw-name">Akash</div><div class="cw-num">FOUNDER #002</div><div class="cw-rank">Chief Architect</div></div>
 </div></section>
 
 <footer class="foot"><h2>gurl<span>wurl</span></h2><p>Where flowers live forever and guac is a right.</p><div class="foot-bot">© 2026 Gurlwurl. All vibes reserved ✿</div></footer>
@@ -698,13 +699,7 @@ section{padding:56px 20px}
 
 <script>
 
-window.onerror=function(msg,url,line,col,err){
-  var d=document.createElement('div');
-  d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:red;color:white;padding:12px;font-size:12px;font-family:monospace;word-break:break-all';
-  d.textContent='JS ERROR line '+line+': '+msg;
-  document.body.appendChild(d);
-  return false;
-};
+
 var anthem=document.getElementById('anthem'),ocean=document.getElementById('ocean');
 var playing=false,LS=localStorage,today=new Date().toDateString();
 var currentUser=JSON.parse(LS.getItem('gw_user')||'null');
@@ -898,7 +893,7 @@ function loadCitizenWall(){
     r.citizens.forEach(function(c){
       if(c.name==='Neha'||c.name==='Akash')return;
       var d=document.createElement('div');d.className='cw-card';
-      d.innerHTML='<div class="cw-emoji">'+(c.status||'👩')+'</div><div class="cw-name">'+c.name+'</div><div class="cw-num">CITIZEN #'+String(c.number).padStart(3,'0')+'</div><div class="cw-title">'+(c.title||'Certified Citizen')+'</div>';
+      d.innerHTML='<div class="cw-emoji">'+(c.status||'\u{1F469}')+'</div><div class="cw-name">'+c.name+'</div><div class="cw-rank">Citizen</div><div class="cw-num">CITIZEN #'+String(c.number).padStart(3,'0')+'</div>';
       wall.appendChild(d);
     });
   }).catch(function(){});
@@ -1380,7 +1375,12 @@ var STATUS_EMOJIS={
 function getUnlockedEmojis(){var xp=getXP();var unlocked=[];for(var t in STATUS_EMOJIS){if(xp>=parseInt(t))unlocked=STATUS_EMOJIS[t]}return unlocked}
 
 function getXP(){return parseInt(LS.getItem('gw_xp')||'0')}
-function getLevel(){if(typeof XP_LEVELS==='undefined')return{name:'Tourist',xp:0};if(currentUser&&currentUser.name==='Neha')return{name:'Supreme Visionary',xp:0};if(currentUser&&currentUser.name==='Akash')return{name:'Chief Architect',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
+function getTitle(){
+  if(currentUser&&currentUser.name==='Neha')return'Supreme Visionary';
+  if(currentUser&&currentUser.name==='Akash')return'Chief Architect';
+  return null;
+}
+function getLevel(){if(typeof XP_LEVELS==='undefined')return{name:'Tourist',xp:0};var xp=getXP();var lvl=XP_LEVELS[0];for(var i=0;i<XP_LEVELS.length;i++){if(xp>=XP_LEVELS[i].xp)lvl=XP_LEVELS[i]}return lvl}
 function getNextLevel(){if(typeof XP_LEVELS==='undefined')return null;var xp=getXP();for(var i=0;i<XP_LEVELS.length;i++){if(xp<XP_LEVELS[i].xp)return XP_LEVELS[i]}return null}
 function addXP(amount,reason){
   var cur=getXP();LS.setItem('gw_xp',''+(cur+amount));
@@ -1390,7 +1390,7 @@ function addXP(amount,reason){
   LS.setItem('gw_xp_log',JSON.stringify(log));
   showXPToast('+'+amount+' XP: '+reason);var xpEl=document.getElementById('topXP');if(xpEl)xpEl.textContent=(cur+amount)+' XP';
   var oldLvl=cur;var newLvl=cur+amount;var leveledUp=false;for(var li=0;li<XP_LEVELS.length;li++){if(oldLvl<XP_LEVELS[li].xp&&newLvl>=XP_LEVELS[li].xp){leveledUp=XP_LEVELS[li];break}}
-  if(leveledUp&&!(currentUser&&(currentUser.name==='Neha'||currentUser.name==='Akash')))showNotif('\u{2B50}','Level Up!','You are now '+leveledUp.name+'!');
+  if(leveledUp)showNotif('\u{2B50}','Level Up!','You are now '+leveledUp.name+'!');
   triggerSync();
   checkAchievements();
 }
@@ -1483,7 +1483,7 @@ function initHub(){
   h+='<label style="display:inline-block;padding:6px 14px;border-radius:12px;border:1px dashed rgba(255,255,255,.12);color:rgba(255,255,255,.3);font-size:.62rem;cursor:pointer;margin-top:4px"><input type="file" accept="image/*" capture="user" style="display:none" onchange="updateSelfie(this)">📸 Change Photo</label>';
   document.getElementById('hubBody').innerHTML=h;
   var grid=document.getElementById('hubEmojis');var showing=12;
-  var sGrid=document.getElementById('statusEmojis');if(sGrid&&typeof getUnlockedEmojis==='function'&&!(currentUser&&(currentUser.name==='Neha'||currentUser.name==='Akash'))){var unlocked2=getUnlockedEmojis();unlocked2.forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===(currentUser.status||'\u{1F469}'))d.classList.add('selected');d.onclick=function(){sGrid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');currentUser.status=e;LS.setItem('gw_user',JSON.stringify(currentUser));var de=currentUser.status;document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+de+'</span>'+currentUser.name;showXPToast('Status emoji updated!')};sGrid.appendChild(d)})}
+  var sGrid=document.getElementById('statusEmojis');if(sGrid&&typeof getUnlockedEmojis==='function'){var unlocked2=getUnlockedEmojis();unlocked2.forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===(currentUser.status||'\u{1F469}'))d.classList.add('selected');d.onclick=function(){sGrid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');currentUser.status=e;LS.setItem('gw_user',JSON.stringify(currentUser));var de=currentUser.status;document.getElementById('topUser').innerHTML='<span class="topbar-user-emoji">'+de+'</span>'+currentUser.name;showXPToast('Status emoji updated!')};sGrid.appendChild(d)})}
   function renderHE(){grid.innerHTML='';GIRLY_EMOJIS.slice(0,showing).forEach(function(e){var d=document.createElement('div');d.className='emoji-opt';d.textContent=e;if(e===currentUser.emoji)d.classList.add('selected');d.onclick=function(){grid.querySelectorAll('.emoji-opt').forEach(function(x){x.classList.remove('selected')});d.classList.add('selected');selectedEmoji=e;document.getElementById('hubChangeBtn').style.display='inline-block'};grid.appendChild(d)});if(showing<GIRLY_EMOJIS.length){var m=document.createElement('div');m.className='emoji-opt';m.textContent='...';m.style.color='rgba(255,255,255,.3)';m.onclick=function(){showing+=12;renderHE()};grid.appendChild(m)}}renderHE();
 }
 function signOut(){
