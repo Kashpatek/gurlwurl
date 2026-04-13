@@ -936,8 +936,8 @@ initDots('countyC','cDots');
 /* TUNE TABS */
 document.getElementById('tuneTabs').addEventListener('click',function(e){var t=e.target.closest('.tune-tab');if(!t)return;document.querySelectorAll('#tuneTabs .tune-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-tune .tune-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('tp-'+t.dataset.p).classList.add('active')});
 
+console.log('[GW] Chill JS loaded OK');
 /* ========== CHILL ========== */
-try{
 document.getElementById('chillTabs').addEventListener('click',function(e){var t=e.target.closest('.chill-tab');if(!t)return;document.querySelectorAll('#tab-chill .chill-tab').forEach(function(x){x.classList.remove('active')});t.classList.add('active');document.querySelectorAll('#tab-chill .chill-panel').forEach(function(x){x.classList.remove('active')});document.getElementById('cp-'+t.dataset.p).classList.add('active');setTimeout(initChillPanel,60)});
 function initChillPanel(){var p=document.querySelector('#tab-chill .chill-panel.active');if(!p)return;if(p.id==='cp-sand')initSand();if(p.id==='cp-bubbles')startBubbles();if(p.id==='cp-compliment'){document.getElementById('chillCompWrap').innerHTML='<div style="font-family:Playfair Display,serif;font-size:1.3rem;font-weight:600;color:var(--carn-light);line-height:1.3;min-height:60px" id="chillCompText">'+comps[Math.floor(Math.random()*comps.length)]+'</div><button class="dp-btn" style="margin-top:20px" onclick="document.getElementById(\'chillCompText\').textContent=comps[Math.floor(Math.random()*comps.length)]">another one \u{1F495}</button>'}}
 
@@ -977,12 +977,12 @@ function spB(){if(bw.children.length>20)return;var b=document.createElement('div
 var fortunes=["Free guac is in your forecast","A pool robot is being dispatched","Your hair will be extra good tomorrow","A Sephora is opening near you","President Barbie approved your vibe","Your next coffee is on the state","A flower is reincarnating for you","Your EBT balance just went up","Coke Zero showers in your area","Someone's about to ask your skincare routine","Your matcha lawn is growing strong","A cake pop awaits on the next block","Extended golden hour tonight","A compliment from a stranger incoming","Your skin will be extra clear","The universe is giving you what you asked for","Surprise flower delivery soon","Your next selfie breaks records","The DJ plays your song next","Perfect foam matcha incoming","Next meal unexpectedly delicious","A legendary nap awaits","Skincare routine about to show results","A text from someone you miss","Your pillow extra cold tonight","Stars rearranging for your glow up"];
 function setupFortune(cid,tid,rid){document.getElementById(cid).addEventListener('click',function(){var self=this;this.classList.add('crack');setTimeout(function(){self.style.display='none';var t=document.getElementById(tid);t.textContent='"'+fortunes[Math.floor(Math.random()*fortunes.length)]+'"';t.style.opacity='1';document.getElementById(rid).style.opacity='1'},500)});document.getElementById(rid).addEventListener('click',function(){var c=document.getElementById(cid);c.classList.remove('crack');c.style.display='';document.getElementById(tid).style.opacity='0';document.getElementById(tid).textContent='';this.style.opacity='0'})}
 setupFortune('fc3','ft3','fr3');
-}catch(e){console.error('Chill init error:',e)}
 
 
 /* GAME XP HEADER */
 function renderGameXP(){
-  if(!currentUser)return;
+  var el=document.getElementById('gameXPHeader');if(!el)return;
+  if(!currentUser){el.innerHTML='<div style="padding:14px 16px;text-align:center"><p style="font-size:.7rem;color:rgba(255,255,255,.3)">Login to track XP</p></div>';return;}
   var xp=getXP();var lvl=getLevel();var next=getNextLevel();
   var pct=next?Math.min(100,Math.round((xp-lvl.xp)/(next.xp-lvl.xp)*100)):100;
   var h='<div class="game-xp-row"><div class="game-xp-left"><span>Your rank</span><div class="game-xp-nums"><b>'+xp+' XP</b><em>'+lvl.name+'</em></div></div>';
@@ -993,9 +993,10 @@ function renderGameXP(){
 }
 
 /* GLOW OBSERVER */
-var glowObs=new IntersectionObserver(function(entries){entries.forEach(function(e){e.target.classList.toggle(e.target.classList.contains('game-card')?'gc-vis':'db-vis',e.isIntersecting)})},{threshold:0.2});
+var glowObs;try{glowObs=new IntersectionObserver(function(entries){entries.forEach(function(e){e.target.classList.toggle(e.target.classList.contains('game-card')?'gc-vis':'db-vis',e.isIntersecting)})},{threshold:0.2})}catch(e){glowObs={observe:function(){}}}
 function initGlows(){document.querySelectorAll('.game-card,.desk-btn').forEach(function(c){glowObs.observe(c)})}
 
+console.log('[GW] Core JS loaded OK');
 /* ========== GAMES ========== */
 function openGame(id){document.getElementById('gp-'+id).classList.add('open');initGame(id)}
 function closeGame(id){document.getElementById('gp-'+id).classList.remove('open')}
@@ -1843,6 +1844,7 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'water\')"><div class="desk-btn-ico">\u{1F4A7}</div><div class="desk-btn-label">Water</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'breathe\')"><div class="desk-btn-ico">\u{1FAC1}</div><div class="desk-btn-label">Breathe</div></div>';
   h+='<div class="desk-btn" onclick="openGame(\'hype\')"><div class="desk-btn-ico">\u{1F4E2}</div><div class="desk-btn-label">Hype Me Up</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'rate\')"><div class="desk-btn-ico">\u{2B50}</div><div class="desk-btn-label">Rate Day</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'checkin\')"><div class="desk-btn-ico">\u{2600}</div><div class="desk-btn-label">Check-in</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'highlight\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Highlight</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'sleep\')"><div class="desk-btn-ico">\u{1F634}</div><div class="desk-btn-label">Sleep</div></div>';
@@ -1855,7 +1857,6 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'diary\')"><div class="desk-btn-ico">\u{1F4D4}</div><div class="desk-btn-label">Diary</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'dreams\')"><div class="desk-btn-ico">\u{1F4AD}</div><div class="desk-btn-label">Dreams</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'gratitude\')"><div class="desk-btn-ico">\u{1F338}</div><div class="desk-btn-label">Gratitude</div></div>';
-  h+='<div class="desk-btn" onclick="openPanel(\'rate\')"><div class="desk-btn-ico">\u{2B50}</div><div class="desk-btn-label">Rate Day</div></div>';
   h+='<div class="desk-btn" onclick="openGame(\'tarot\')"><div class="desk-btn-ico">\u{1F52E}</div><div class="desk-btn-label">Tarot</div></div>';
   h+='<div class="desk-btn" onclick="openGame(\'oracle\')"><div class="desk-btn-ico">\u{2728}</div><div class="desk-btn-label">Oracle</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'cycle\')"><div class="desk-btn-ico">\u{1F319}</div><div class="desk-btn-label">Moon Cycle</div></div>';
