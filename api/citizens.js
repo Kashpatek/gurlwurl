@@ -82,18 +82,24 @@ export default async function handler(req, res) {
     // Load all user data keys
     if (action === 'loadall') {
       const id = (name || '').toLowerCase().trim();
-      const keys = ['grat', 'ratings', 'bucket', 'shop', 'skincare', 'countdown', 'xp', 'xp_log', 'spend_log', 'achievements', 'games_played', 'flappy_best', 'wheel', 'stamps'];
+      const keys = ['grat', 'ratings', 'bucket', 'shop', 'skincare', 'countdown', 'xp', 'xp_log', 'spend_log', 'achievements', 'games_played', 'flappy_best', 'wheel', 'stamps', 'diary', 'dreams', 'vision', 'sleep', 'highlights', 'symptoms', 'cycle', 'custom_recipes', 'theme', 'streak'];
       const result = {};
       for (const k of keys) {
         const r = await redis(['GET', `data:${id}:${k}`]);
-        if (r.result) result[k] = JSON.parse(r.result);
+        if (r.result) {
+          try { result[k] = JSON.parse(r.result); } catch (e) { result[k] = r.result; }
+        }
       }
-      // Also load today's habits and water
+      // Also load today's habits, water, mood, energy
       const today = new Date().toDateString();
       const habR = await redis(['GET', `data:${id}:habits_${today}`]);
       if (habR.result) result['habits_today'] = JSON.parse(habR.result);
       const watR = await redis(['GET', `data:${id}:water_${today}`]);
       if (watR.result) result['water_today'] = JSON.parse(watR.result);
+      const moodR = await redis(['GET', `data:${id}:mood_${today}`]);
+      if (moodR.result) { try { result['mood_today'] = JSON.parse(moodR.result); } catch (e) { result['mood_today'] = moodR.result; } }
+      const enR = await redis(['GET', `data:${id}:energy_${today}`]);
+      if (enR.result) { try { result['energy_today'] = JSON.parse(enR.result); } catch (e) { result['energy_today'] = enR.result; } }
       return res.json({ ok: true, data: result });
     }
 

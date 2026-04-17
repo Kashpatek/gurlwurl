@@ -15,12 +15,13 @@ function cloudSave(key,value){
 function syncAll(){
   if(!currentUser)return;
   var data={};
-  var keys=['grat','ratings','bucket','shop','skincare','countdown','xp','xp_log','spend_log','achievements','games_played','flappy_best','wheel','stamps'];
+  var keys=['grat','ratings','bucket','shop','skincare','countdown','xp','xp_log','spend_log','achievements','games_played','flappy_best','wheel','stamps','diary','dreams','vision','sleep','highlights','symptoms','cycle','custom_recipes','theme','streak'];
   keys.forEach(function(k){var v=LS.getItem('gw_'+k);if(v){try{data[k]=JSON.parse(v)}catch(e){data[k]=v}}});
-  // Today's habits and water
-  var hk='habits_'+today;var wk='water_'+today;
-  var hv=LS.getItem('gw_habits_'+today);if(hv)data[hk]=JSON.parse(hv);
-  var wv=LS.getItem('gw_water_'+today);if(wv)data[wk]=parseInt(wv);
+  // Today's habits, water, mood, energy
+  var hv=LS.getItem('gw_habits_'+today);if(hv)data['habits_'+today]=JSON.parse(hv);
+  var wv=LS.getItem('gw_water_'+today);if(wv)data['water_'+today]=parseInt(wv);
+  var mv=LS.getItem('gw_mood_'+today);if(mv)data['mood_'+today]=mv;
+  var ev=LS.getItem('gw_energy_'+today);if(ev)data['energy_'+today]=ev;
   api({action:'syncall',name:currentUser.name,data:data});
 }
 function cloudLoadAll(){
@@ -42,8 +43,20 @@ function cloudLoadAll(){
     if(d.flappy_best)LS.setItem('gw_flappy_best',''+d.flappy_best);
     if(d.wheel)LS.setItem('gw_wheel',JSON.stringify(d.wheel));
     if(d.stamps)LS.setItem('gw_stamps',JSON.stringify(d.stamps));
+    if(d.diary)LS.setItem('gw_diary',JSON.stringify(d.diary));
+    if(d.dreams)LS.setItem('gw_dreams',JSON.stringify(d.dreams));
+    if(d.vision)LS.setItem('gw_vision',JSON.stringify(d.vision));
+    if(d.sleep)LS.setItem('gw_sleep',JSON.stringify(d.sleep));
+    if(d.highlights)LS.setItem('gw_highlights',JSON.stringify(d.highlights));
+    if(d.symptoms)LS.setItem('gw_symptoms',JSON.stringify(d.symptoms));
+    if(d.cycle)LS.setItem('gw_cycle',JSON.stringify(d.cycle));
+    if(d.custom_recipes)LS.setItem('gw_custom_recipes',JSON.stringify(d.custom_recipes));
+    if(d.theme)LS.setItem('gw_theme',typeof d.theme==='string'?d.theme:JSON.stringify(d.theme));
+    if(d.streak)LS.setItem('gw_streak',JSON.stringify(d.streak));
     if(d.habits_today)LS.setItem('gw_habits_'+today,JSON.stringify(d.habits_today));
     if(d.water_today)LS.setItem('gw_water_'+today,''+d.water_today);
+    if(d.mood_today)LS.setItem('gw_mood_'+today,d.mood_today);
+    if(d.energy_today)LS.setItem('gw_energy_'+today,d.energy_today);
   });
 }
 // XP for time on site (5 XP every 5 minutes)
@@ -1201,6 +1214,7 @@ function initDesk(){
   h+='<div class="desk-btn" onclick="openPanel(\'leaderboard\')"><div class="desk-btn-ico">\u{1F3C6}</div><div class="desk-btn-label">Leaderboard</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'recipe\')"><div class="desk-btn-ico">\u{1F373}</div><div class="desk-btn-label">Recipes</div></div>';
   h+='<div class="desk-btn" onclick="openPanel(\'theme\')"><div class="desk-btn-ico">\u{1F3A8}</div><div class="desk-btn-label">Theme</div></div>';
+  h+='<div class="desk-btn" onclick="openPanel(\'massager\')"><div class="desk-btn-ico">\u{1F486}</div><div class="desk-btn-label">Massager</div></div>';
   
   h+='</div></div>';
 
@@ -1235,12 +1249,12 @@ function setupJournalLock(){
 }
 
 function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
-function closePanel(id){document.getElementById('dp-'+id).classList.remove('open')}
-function initPanel(id){var fn={hub:initHub,admin:initAdmin,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics};if(fn[id])fn[id]()}
-function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);LS.setItem(key,JSON.stringify(e));triggerSync();cb()}
+function closePanel(id){document.getElementById('dp-'+id).classList.remove('open');if(id==='massager'){_massagerState.running=false;if(_massagerState.timerTick){clearInterval(_massagerState.timerTick);_massagerState.timerTick=null}stopMassagerVibration()}}
+function initPanel(id){var fn={hub:initHub,admin:initAdmin,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics,massager:initMassager};if(fn[id])fn[id]()}
+function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);var sk=key.indexOf('gw_')===0?key.slice(3):key;cloudSave(sk,e);cb()}
 
 function initGratitude(){var entries=JSON.parse(LS.getItem('gw_grat')||'[]');var h='<textarea class="dp-textarea" id="gratText" placeholder="What are you grateful for?" style="min-height:80px"></textarea><button class="dp-btn" onclick="saveGrat()">Save</button><div style="margin-top:16px">';entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_grat\','+i+',initGratitude)">✕</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});h+='</div>';document.getElementById('gratBody').innerHTML=h}
-function saveGrat(){var t=document.getElementById('gratText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_grat')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t});LS.setItem('gw_grat',JSON.stringify(e));addXP(5,'Gratitude note');triggerSync();initGratitude()}
+function saveGrat(){var t=document.getElementById('gratText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_grat')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t});cloudSave('grat',e);addXP(5,'Gratitude note');initGratitude()}
 
 function initHabits(){var habits=['💧 Drank 8 glasses','🧴 Skincare routine','🚶‍♀️ Moved my body','🌿 Touched grass','📖 Read something','💤 8hrs sleep','🧘‍♀️ Mindfulness','💅 Self care moment'];var done=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');var h='';habits.forEach(function(hab,i){h+='<div class="habit-row'+(done.includes(i)?' done':'')+'" onclick="toggleHabit('+i+')"><div class="habit-check">'+(done.includes(i)?'✓':'')+'</div><div class="habit-label">'+hab+'</div></div>'});document.getElementById('habitsBody').innerHTML=h}
 function toggleHabit(i){var d=JSON.parse(LS.getItem('gw_habits_'+today)||'[]');if(d.includes(i))d=d.filter(function(x){return x!==i});else d.push(i);LS.setItem('gw_habits_'+today,JSON.stringify(d));if(d.includes(i))addXP(3,'Habit completed');triggerSync();initHabits()}
@@ -1250,6 +1264,189 @@ function addWater(){LS.setItem('gw_water_'+today,''+(parseInt(LS.getItem('gw_wat
 
 function initBreathe(){document.getElementById('breatheBody').innerHTML='<div style="text-align:center;padding:20px"><p style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:10px">Tap to begin</p><div class="breathe-circle" id="bc" onclick="startBreathe()">tap to start</div></div>'}
 function startBreathe(){var c=document.getElementById('bc');if(window._bi){clearInterval(window._bi);window._bi=null;c.className='breathe-circle';c.textContent='tap to start';return}var inh=true;function step(){c.className='breathe-circle '+(inh?'inhale':'exhale');c.textContent=inh?'breathe in...':'breathe out...';inh=!inh}step();window._bi=setInterval(step,4000)}
+
+/* MASSAGER */
+var _mSaved=(function(){try{return JSON.parse(LS.getItem('gw_massager')||'{}')}catch(e){return{}}})();
+var _massagerState={running:false,rhythm:_mSaved.rhythm||'steady',intensity:_mSaved.intensity||2,audio:_mSaved.audio!==false,timerMin:0,timerEnd:0,timerTick:null,timers:[],ac:null,osc:null,gain:null};
+var _massagerRhythms={
+  steady:{name:'Steady',desc:'Constant vibration',freq:70,pattern:function(ms){return[ms]}},
+  pulse:{name:'Pulse',desc:'Rhythmic on/off',freq:80,pattern:function(ms){return[ms*.6,ms*.4]}},
+  wave:{name:'Wave',desc:'Building intensity',freq:60,pattern:function(ms){return[ms*.2,ms*.15,ms*.4,ms*.15,ms*.6,ms*.15,ms*.8,ms*.15,ms*.6,ms*.15,ms*.4,ms*.15,ms*.2,ms*.3]}},
+  heartbeat:{name:'Heartbeat',desc:'Thu-thump rhythm',freq:50,pattern:function(ms){return[ms*.15,ms*.1,ms*.25,ms*.5]}},
+  rain:{name:'Rain',desc:'Gentle tapping',freq:90,pattern:function(ms){return[ms*.08,ms*.12,ms*.06,ms*.14,ms*.1,ms*.1,ms*.05,ms*.15,ms*.07,ms*.13]}},
+  thunder:{name:'Thunder',desc:'Deep rumble bursts',freq:40,pattern:function(ms){return[ms*.8,ms*.6,ms*.3,ms*.2,ms*.9,ms*.8]}}
+};
+function _massagerSave(){try{LS.setItem('gw_massager',JSON.stringify({rhythm:_massagerState.rhythm,intensity:_massagerState.intensity,audio:_massagerState.audio}))}catch(e){}}
+function initMassager(){
+  var s=_massagerState;
+  var timerOpts=[0,5,10,15];
+  var h='<div class="massager-wrap">';
+  h+='<div class="massager-orb-container"><div class="massager-orb'+(s.running?' active':'')+'" id="massagerOrb" onclick="toggleMassager()"><div class="massager-orb-inner"><span id="massagerIcon">'+(s.running?'✋':'💆')+'</span></div><div class="massager-orb-ring"></div><div class="massager-orb-ring r2"></div></div>';
+  h+='<p class="massager-status" id="massagerStatus">'+(s.running?'hold phone against body ✿':'tap to start')+'</p>';
+  h+='<p class="massager-timer-display" id="massagerTimerDisplay" style="'+(s.running&&s.timerMin?'':'visibility:hidden')+'">'+formatMassagerTimer()+'</p></div>';
+  h+='<div class="massager-section"><div class="massager-label">Rhythm</div><div class="massager-rhythm-grid">';
+  Object.keys(_massagerRhythms).forEach(function(k){
+    var r=_massagerRhythms[k];
+    h+='<div class="massager-rhythm-btn'+(s.rhythm===k?' active':'')+'" onclick="setMassagerRhythm(\''+k+'\',event)"><div class="massager-rhythm-name">'+r.name+'</div><div class="massager-rhythm-desc">'+r.desc+'</div></div>';
+  });
+  h+='</div></div>';
+  h+='<div class="massager-section"><div class="massager-label">Intensity</div><div class="massager-intensity">';
+  for(var i=1;i<=5;i++){
+    h+='<div class="massager-int-dot'+(i<=s.intensity?' active':'')+'" onclick="setMassagerIntensity('+i+')"><div class="massager-int-fill" style="height:'+i*20+'%"></div></div>';
+  }
+  h+='</div><div class="massager-int-labels"><span>Gentle</span><span>Strong</span></div></div>';
+  h+='<div class="massager-section"><div class="massager-label">Timer</div><div class="massager-timer-grid">';
+  timerOpts.forEach(function(t){
+    h+='<div class="massager-timer-btn'+(s.timerMin===t?' active':'')+'" onclick="setMassagerTimer('+t+',event)">'+(t===0?'Off':t+'m')+'</div>';
+  });
+  h+='</div></div>';
+  h+='<div class="massager-section"><div class="massager-audio-row" onclick="toggleMassagerAudio()"><div><div class="massager-audio-title">Audio hum</div><div class="massager-audio-sub">Low tone for silent phones (iOS)</div></div><div class="massager-toggle'+(s.audio?' on':'')+'" id="massagerToggle"><div class="massager-toggle-dot"></div></div></div></div>';
+  h+='</div>';
+  document.getElementById('massagerBody').innerHTML=h;
+  if(s.running)startMassagerVibration();
+}
+function formatMassagerTimer(){
+  var s=_massagerState;
+  if(!s.timerMin||!s.timerEnd)return'';
+  var rem=Math.max(0,s.timerEnd-Date.now());
+  var m=Math.floor(rem/60000),sec=Math.floor((rem%60000)/1000);
+  return m+':'+(sec<10?'0':'')+sec+' left';
+}
+function updateMassagerTimerDisplay(){
+  var el=document.getElementById('massagerTimerDisplay');if(!el)return;
+  var s=_massagerState;
+  if(s.running&&s.timerMin){el.textContent=formatMassagerTimer();el.style.visibility='visible'}
+  else el.style.visibility='hidden';
+}
+function toggleMassager(){
+  var s=_massagerState;
+  s.running=!s.running;
+  var orb=document.getElementById('massagerOrb');
+  var icon=document.getElementById('massagerIcon');
+  var status=document.getElementById('massagerStatus');
+  if(s.running){
+    orb.classList.add('active');
+    icon.textContent='✋';
+    status.textContent='hold phone against body ✿';
+    if(s.timerMin){s.timerEnd=Date.now()+s.timerMin*60000;s.timerTick=setInterval(function(){updateMassagerTimerDisplay();if(Date.now()>=_massagerState.timerEnd){toggleMassager()}},500)}
+    updateMassagerTimerDisplay();
+    startMassagerVibration();
+  }else{
+    orb.classList.remove('active');
+    icon.textContent='💆';
+    status.textContent='tap to start';
+    if(s.timerTick){clearInterval(s.timerTick);s.timerTick=null}
+    updateMassagerTimerDisplay();
+    stopMassagerVibration();
+  }
+}
+function startMassagerAudio(){
+  var s=_massagerState;if(!s.audio)return;
+  try{
+    if(!s.ac)s.ac=new(window.AudioContext||window.webkitAudioContext)();
+    if(s.ac.state==='suspended')s.ac.resume();
+    stopMassagerAudio();
+    var rhythm=_massagerRhythms[s.rhythm];
+    var baseMs=80+(s.intensity-1)*60;
+    var pattern=rhythm.pattern(baseMs);
+    var totalMs=pattern.reduce(function(a,b){return a+b},0);
+    var vol=.05+(s.intensity-1)*.035;
+    s.osc=s.ac.createOscillator();
+    s.osc.type='sine';
+    s.osc.frequency.value=rhythm.freq;
+    s.gain=s.ac.createGain();
+    s.gain.gain.value=0;
+    s.osc.connect(s.gain).connect(s.ac.destination);
+    var now=s.ac.currentTime;
+    s.gain.gain.cancelScheduledValues(now);
+    s.gain.gain.setValueAtTime(0,now);
+    var cycles=Math.ceil(900000/totalMs);
+    for(var c=0;c<cycles;c++){
+      var t=now+(c*totalMs)/1000;
+      for(var i=0;i<pattern.length;i++){
+        var on=i%2===0;
+        // Short ramps avoid audible clicks at transitions
+        s.gain.gain.linearRampToValueAtTime(on?vol:0,t+.005);
+        t+=pattern[i]/1000;
+      }
+    }
+    s.osc.start();
+  }catch(e){}
+}
+function stopMassagerAudio(){
+  var s=_massagerState;
+  try{if(s.osc){s.osc.stop();s.osc.disconnect();s.osc=null}}catch(e){}
+  try{if(s.gain){s.gain.disconnect();s.gain=null}}catch(e){}
+}
+function startMassagerVibration(){
+  stopMassagerVibration();
+  var s=_massagerState;
+  if(!s.running)return;
+  var baseMs=80+(s.intensity-1)*60;
+  var rhythm=_massagerRhythms[s.rhythm];
+  var pattern=rhythm.pattern(baseMs);
+  if(navigator.vibrate){
+    navigator.vibrate(pattern);
+    s.timers.push(setInterval(function(){
+      if(!s.running)return;
+      navigator.vibrate(pattern);
+    },pattern.reduce(function(a,b){return a+b},0)));
+  }
+  startMassagerAudio();
+  var orb=document.getElementById('massagerOrb');
+  if(orb){
+    var total=pattern.reduce(function(a,b){return a+b},0);
+    var vi=0;var elapsed=0;
+    function doPulse(){
+      if(!s.running)return;
+      if(vi%2===0)orb.classList.add('vibrating');
+      else orb.classList.remove('vibrating');
+      var dur=pattern[vi%pattern.length]||200;
+      vi++;elapsed+=dur;
+      if(elapsed>=total){vi=0;elapsed=0;}
+      s.timers.push(setTimeout(doPulse,dur));
+    }
+    doPulse();
+  }
+}
+function stopMassagerVibration(){
+  var s=_massagerState;
+  s.timers.forEach(function(t){clearTimeout(t);clearInterval(t)});
+  s.timers=[];
+  if(navigator.vibrate)navigator.vibrate(0);
+  stopMassagerAudio();
+  var orb=document.getElementById('massagerOrb');
+  if(orb)orb.classList.remove('vibrating');
+}
+function setMassagerRhythm(r,ev){
+  _massagerState.rhythm=r;_massagerSave();
+  document.querySelectorAll('.massager-rhythm-btn').forEach(function(b){b.classList.remove('active')});
+  if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');
+  if(_massagerState.running)startMassagerVibration();
+}
+function setMassagerIntensity(n){
+  _massagerState.intensity=n;_massagerSave();
+  document.querySelectorAll('.massager-int-dot').forEach(function(d,i){
+    if(i<n)d.classList.add('active');else d.classList.remove('active');
+  });
+  if(_massagerState.running)startMassagerVibration();
+}
+function setMassagerTimer(m,ev){
+  var s=_massagerState;s.timerMin=m;
+  document.querySelectorAll('.massager-timer-btn').forEach(function(b){b.classList.remove('active')});
+  if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');
+  if(s.running){
+    if(s.timerTick){clearInterval(s.timerTick);s.timerTick=null}
+    if(m){s.timerEnd=Date.now()+m*60000;s.timerTick=setInterval(function(){updateMassagerTimerDisplay();if(Date.now()>=_massagerState.timerEnd){toggleMassager()}},500)}
+  }
+  updateMassagerTimerDisplay();
+}
+function toggleMassagerAudio(){
+  var s=_massagerState;s.audio=!s.audio;_massagerSave();
+  var t=document.getElementById('massagerToggle');
+  if(t){if(s.audio)t.classList.add('on');else t.classList.remove('on')}
+  if(s.running){if(s.audio)startMassagerAudio();else stopMassagerAudio()}
+}
 
 function initRate(){var ratings=JSON.parse(LS.getItem('gw_ratings')||'[]');var tr=ratings.find(function(r){return r.date===today});var cur=tr?tr.stars:0;var h='<div style="text-align:center"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:8px">How was today?</p><div class="rate-stars">';for(var i=1;i<=5;i++)h+='<div class="rate-star'+(i<=cur?' lit':'')+'" onclick="rateDay('+i+')">⭐</div>';h+='</div></div><div style="margin-top:16px">';ratings.slice(-10).reverse().forEach(function(r,ri){var i=ratings.length-1-ri;h+='<div class="rate-row"><div class="rate-row-date">'+r.date.split(' ').slice(0,3).join(' ')+'</div><div class="rate-row-stars">'+'⭐'.repeat(r.stars)+'</div><span style="cursor:pointer;opacity:.3;font-size:.6rem;margin-left:auto" onclick="delEntry(\'gw_ratings\','+i+',initRate)">✕</span></div>'});h+='</div>';document.getElementById('rateBody').innerHTML=h}
 function rateDay(n){var r=JSON.parse(LS.getItem('gw_ratings')||'[]');r=r.filter(function(x){return x.date!==today});r.push({date:today,stars:n});LS.setItem('gw_ratings',JSON.stringify(r));addXP(3,'Rated day');triggerSync();initRate()}
@@ -1345,7 +1542,7 @@ function initDiary(){
   entries.slice().reverse().forEach(function(e,ri){var i=entries.length-1-ri;h+='<div class="dp-entry"><div class="dp-entry-date">'+e.date+' <span style="float:right;cursor:pointer;opacity:.4" onclick="delEntry(\'gw_diary\','+i+',initDiary)">\u2715</span></div><div class="dp-entry-text">'+e.text+'</div></div>'});
   h+='</div>';document.getElementById('diaryBody').innerHTML=h;
 }
-function saveDiary(){var t=document.getElementById('diaryText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_diary')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}),text:t});LS.setItem('gw_diary',JSON.stringify(e));addXP(5,'Diary entry');triggerSync();initDiary()}
+function saveDiary(){var t=document.getElementById('diaryText').value.trim();if(!t)return;var e=JSON.parse(LS.getItem('gw_diary')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}),text:t});cloudSave('diary',e);addXP(5,'Diary entry');initDiary()}
 
 /* DREAM JOURNAL */
 function initDreams(){
@@ -1360,7 +1557,7 @@ function initDreams(){
   h+='</div>';document.getElementById('dreamsBody').innerHTML=h;
 }
 function toggleDreamTag(el){el.classList.toggle('selected');el.style.borderColor=el.classList.contains('selected')?'var(--carn)':'';el.style.background=el.classList.contains('selected')?'rgba(216,71,115,.1)':'';el.style.color=el.classList.contains('selected')?'var(--carn-light)':''}
-function saveDream(){var t=document.getElementById('dreamText').value.trim();if(!t)return;var tags=[];document.querySelectorAll('.dream-tag.selected').forEach(function(s){tags.push(s.textContent.trim())});var e=JSON.parse(LS.getItem('gw_dreams')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t,tags:tags.join(' ')});LS.setItem('gw_dreams',JSON.stringify(e));addXP(5,'Dream logged');triggerSync();initDreams()}
+function saveDream(){var t=document.getElementById('dreamText').value.trim();if(!t)return;var tags=[];document.querySelectorAll('.dream-tag.selected').forEach(function(s){tags.push(s.textContent.trim())});var e=JSON.parse(LS.getItem('gw_dreams')||'[]');e.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:t,tags:tags.join(' ')});cloudSave('dreams',e);addXP(5,'Dream logged');initDreams()}
 
 /* GAZETTE */
 function initGazette(){
@@ -1505,7 +1702,7 @@ function initVision(){
   else{h+='<div style="text-align:center;padding:30px;opacity:.3"><p style="font-size:2rem;margin-bottom:8px">\u{2728}</p><p style="font-size:.75rem">Your vision board is empty. Start dreaming.</p></div>'}
   document.getElementById('visionBody').innerHTML=h;
 }
-function addVision(){var t=document.getElementById('visionText').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_vision')||'[]');items.push({text:t,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});LS.setItem('gw_vision',JSON.stringify(items));addXP(5,'Vision board');triggerSync();initVision()}
+function addVision(){var t=document.getElementById('visionText').value.trim();if(!t)return;var items=JSON.parse(LS.getItem('gw_vision')||'[]');items.push({text:t,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});cloudSave('vision',items);addXP(5,'Vision board');initVision()}
 
 function initCycle(){
   var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');
@@ -1568,9 +1765,9 @@ function initCycle(){
   var plEl=document.getElementById('cycPeriodLen');if(plEl)plEl.onchange=function(){updateCycleSetting('periodLen',this.value)};
   var energyEl=document.getElementById('cycleEnergy');if(energyEl)energyEl.oninput=function(){LS.setItem('gw_energy_'+today,this.value);triggerSync()};
 }
-function logPeriodStart(){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');var td=new Date();td.setHours(0,0,0,0);data.periods.push(td.toISOString());if(data.periods.length>=2){var l=new Date(data.periods[data.periods.length-1]);var p=new Date(data.periods[data.periods.length-2]);var d=Math.round((l-p)/864e5);if(d>20&&d<45)data.cycleLen=d}LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();addXP(3,'Logged period');initCycle()}
+function logPeriodStart(){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');var td=new Date();td.setHours(0,0,0,0);data.periods.push(td.toISOString());if(data.periods.length>=2){var l=new Date(data.periods[data.periods.length-1]);var p=new Date(data.periods[data.periods.length-2]);var d=Math.round((l-p)/864e5);if(d>20&&d<45)data.cycleLen=d}cloudSave('cycle',data);addXP(3,'Logged period');initCycle()}
 function logSymptom(){var syms=['😖 Cramps','😢 Mood swings','😠 Irritable','😴 Fatigue','🤔 Headache','😋 Cravings','💧 Bloating','🩸 Heavy flow','✨ Light flow','😊 Good mood'];var h='<div style="text-align:center;padding:16px"><p style="font-size:.85rem;color:rgba(255,255,255,.5);margin-bottom:12px">How are you feeling?</p><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">';syms.forEach(function(s){h+='<button style="padding:8px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer" onclick="saveSymptom(\''+s+'\')">'+s+'</button>'});h+='</div></div>';document.getElementById('cycleBody').innerHTML=h}
-function saveSymptom(sym){var s=JSON.parse(LS.getItem('gw_symptoms')||'[]');s.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:sym});LS.setItem('gw_symptoms',JSON.stringify(s));triggerSync();initCycle()}
+function saveSymptom(sym){var s=JSON.parse(LS.getItem('gw_symptoms')||'[]');s.push({date:new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),text:sym});cloudSave('symptoms',s);initCycle()}
 function updateCycleSetting(key,val){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data[key]=parseInt(val);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync()}
 function delPeriod(i){var data=JSON.parse(LS.getItem('gw_cycle')||'{"periods":[],"cycleLen":28,"periodLen":5}');data.periods.splice(i,1);LS.setItem('gw_cycle',JSON.stringify(data));triggerSync();initCycle()}
 
@@ -1628,7 +1825,7 @@ function initHighlight(){
     var arr=JSON.parse(LS.getItem('gw_highlights')||'[]');
     var idx=arr.findIndex(function(e){return e.date===today});
     if(idx>=0)arr[idx].text=t;else arr.push({date:today,text:t});
-    LS.setItem('gw_highlights',JSON.stringify(arr));addXP(3,'Daily highlight');triggerSync();initHighlight();
+    cloudSave('highlights',arr);addXP(3,'Daily highlight');initHighlight();
   };
 }
 
@@ -1655,7 +1852,7 @@ function initSleep(){
     var bm=parseInt(bed.split(':')[0])*60+parseInt(bed.split(':')[1]);var wm=parseInt(wake.split(':')[0])*60+parseInt(wake.split(':')[1]);
     var diff=wm-bm;if(diff<0)diff+=1440;var hours=diff/60;
     var arr=JSON.parse(LS.getItem('gw_sleep')||'[]');arr.push({date:today,bed:bed,wake:wake,hours:hours,quality:selectedQ});
-    LS.setItem('gw_sleep',JSON.stringify(arr));addXP(3,'Sleep logged');triggerSync();initSleep();
+    cloudSave('sleep',arr);addXP(3,'Sleep logged');initSleep();
   };
 }
 
