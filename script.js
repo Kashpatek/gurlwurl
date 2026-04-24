@@ -1269,41 +1269,66 @@ function startBreathe(){var c=document.getElementById('bc');if(window._bi){clear
 var _mSaved=(function(){try{return JSON.parse(LS.getItem('gw_massager')||'{}')}catch(e){return{}}})();
 var _massagerState={running:false,rhythm:_mSaved.rhythm||'steady',intensity:_mSaved.intensity||2,audio:_mSaved.audio!==false,timerMin:0,timerEnd:0,timerTick:null,timers:[],ac:null,osc:null,gain:null};
 var _massagerRhythms={
-  steady:{name:'Steady',desc:'Constant vibration',freq:70,pattern:function(ms){return[ms]}},
-  pulse:{name:'Pulse',desc:'Rhythmic on/off',freq:80,pattern:function(ms){return[ms*.6,ms*.4]}},
-  wave:{name:'Wave',desc:'Building intensity',freq:60,pattern:function(ms){return[ms*.2,ms*.15,ms*.4,ms*.15,ms*.6,ms*.15,ms*.8,ms*.15,ms*.6,ms*.15,ms*.4,ms*.15,ms*.2,ms*.3]}},
-  heartbeat:{name:'Heartbeat',desc:'Thu-thump rhythm',freq:50,pattern:function(ms){return[ms*.15,ms*.1,ms*.25,ms*.5]}},
-  rain:{name:'Rain',desc:'Gentle tapping',freq:90,pattern:function(ms){return[ms*.08,ms*.12,ms*.06,ms*.14,ms*.1,ms*.1,ms*.05,ms*.15,ms*.07,ms*.13]}},
-  thunder:{name:'Thunder',desc:'Deep rumble bursts',freq:40,pattern:function(ms){return[ms*.8,ms*.6,ms*.3,ms*.2,ms*.9,ms*.8]}}
+  steady:{name:'Steady',icon:'∿',freq:70,pattern:function(ms){return[ms]}},
+  pulse:{name:'Pulse',icon:'💗',freq:80,pattern:function(ms){return[ms*.6,ms*.4]}},
+  wave:{name:'Wave',icon:'🌊',freq:60,pattern:function(ms){return[ms*.2,ms*.15,ms*.4,ms*.15,ms*.6,ms*.15,ms*.8,ms*.15,ms*.6,ms*.15,ms*.4,ms*.15,ms*.2,ms*.3]}},
+  heartbeat:{name:'Heartbeat',icon:'💓',freq:50,pattern:function(ms){return[ms*.15,ms*.1,ms*.25,ms*.5]}},
+  rain:{name:'Rain',icon:'💧',freq:90,pattern:function(ms){return[ms*.08,ms*.12,ms*.06,ms*.14,ms*.1,ms*.1,ms*.05,ms*.15,ms*.07,ms*.13]}},
+  thunder:{name:'Thunder',icon:'⚡',freq:40,pattern:function(ms){return[ms*.8,ms*.6,ms*.3,ms*.2,ms*.9,ms*.8]}}
 };
+function _mHaptic(){if(navigator.vibrate&&!_massagerState.running)try{navigator.vibrate(8)}catch(e){}}
 function _massagerSave(){try{LS.setItem('gw_massager',JSON.stringify({rhythm:_massagerState.rhythm,intensity:_massagerState.intensity,audio:_massagerState.audio}))}catch(e){}}
 function initMassager(){
   var s=_massagerState;
   var timerOpts=[0,5,10,15];
   var h='<div class="massager-wrap">';
-  h+='<div class="massager-orb-container"><div class="massager-orb'+(s.running?' active':'')+'" id="massagerOrb" onclick="toggleMassager()"><div class="massager-orb-inner"><span id="massagerIcon">'+(s.running?'✋':'💆')+'</span></div><div class="massager-orb-ring"></div><div class="massager-orb-ring r2"></div></div>';
-  h+='<p class="massager-status" id="massagerStatus">'+(s.running?'hold phone against body ✿':'tap to start')+'</p>';
-  h+='<p class="massager-timer-display" id="massagerTimerDisplay" style="'+(s.running&&s.timerMin?'':'visibility:hidden')+'">'+formatMassagerTimer()+'</p></div>';
-  h+='<div class="massager-section"><div class="massager-label">Rhythm</div><div class="massager-rhythm-grid">';
+  h+='<div class="massager-ambient"><div class="massager-amb-orb amb1"></div><div class="massager-amb-orb amb2"></div><div class="massager-amb-orb amb3"></div></div>';
+  h+='<div class="massager-hero">';
+  h+='<div class="massager-orb'+(s.running?' active':'')+'" id="massagerOrb" onclick="toggleMassager()">';
+  h+='<svg class="massager-progress" viewBox="0 0 200 200"><circle class="mp-track" cx="100" cy="100" r="96"/><circle class="mp-fill" cx="100" cy="100" r="96" id="massagerProgress"/></svg>';
+  h+='<div class="massager-orb-aura"></div>';
+  h+='<div class="massager-orb-glow"></div>';
+  h+='<div class="massager-orb-core"><span class="massager-orb-icon" id="massagerIcon">'+(s.running?'✋':'💆')+'</span></div>';
+  h+='</div>';
+  h+='<p class="massager-status" id="massagerStatus">'+(s.running?'hold against body':'tap to begin')+'</p>';
+  h+='<p class="massager-timer-display" id="massagerTimerDisplay">'+(s.running&&s.timerMin?formatMassagerTimer():'')+'</p>';
+  h+='</div>';
+  h+='<div class="massager-section"><div class="massager-label"><span>Rhythm</span></div><div class="massager-rhythm-grid">';
   Object.keys(_massagerRhythms).forEach(function(k){
     var r=_massagerRhythms[k];
-    h+='<div class="massager-rhythm-btn'+(s.rhythm===k?' active':'')+'" onclick="setMassagerRhythm(\''+k+'\',event)"><div class="massager-rhythm-name">'+r.name+'</div><div class="massager-rhythm-desc">'+r.desc+'</div></div>';
+    h+='<div class="massager-rhythm-btn'+(s.rhythm===k?' active':'')+'" onclick="setMassagerRhythm(\''+k+'\',event)"><div class="massager-rhythm-ico">'+r.icon+'</div><div class="massager-rhythm-name">'+r.name+'</div></div>';
   });
   h+='</div></div>';
-  h+='<div class="massager-section"><div class="massager-label">Intensity</div><div class="massager-intensity">';
+  h+='<div class="massager-section"><div class="massager-label"><span>Intensity</span><span class="massager-label-val" id="massagerIntVal">'+s.intensity+' / 5</span></div>';
+  h+='<div class="massager-int-rail">';
+  h+='<div class="massager-int-rail-track"></div>';
+  h+='<div class="massager-int-rail-fill" id="massagerIntFill" style="width:'+((s.intensity-1)/4*100)+'%"></div>';
   for(var i=1;i<=5;i++){
-    h+='<div class="massager-int-dot'+(i<=s.intensity?' active':'')+'" onclick="setMassagerIntensity('+i+')"><div class="massager-int-fill" style="height:'+i*20+'%"></div></div>';
+    h+='<div class="massager-int-node'+(i<=s.intensity?' active':'')+'" style="left:'+((i-1)/4*100)+'%" onclick="setMassagerIntensity('+i+')"></div>';
   }
-  h+='</div><div class="massager-int-labels"><span>Gentle</span><span>Strong</span></div></div>';
-  h+='<div class="massager-section"><div class="massager-label">Timer</div><div class="massager-timer-grid">';
+  h+='</div>';
+  h+='<div class="massager-int-labels"><span>gentle</span><span>strong</span></div></div>';
+  h+='<div class="massager-section"><div class="massager-label"><span>Timer</span></div><div class="massager-timer-grid">';
   timerOpts.forEach(function(t){
-    h+='<div class="massager-timer-btn'+(s.timerMin===t?' active':'')+'" onclick="setMassagerTimer('+t+',event)">'+(t===0?'Off':t+'m')+'</div>';
+    h+='<div class="massager-timer-btn'+(s.timerMin===t?' active':'')+'" onclick="setMassagerTimer('+t+',event)"><span>'+(t===0?'Off':t+'m')+'</span></div>';
   });
   h+='</div></div>';
-  h+='<div class="massager-section"><div class="massager-audio-row" onclick="toggleMassagerAudio()"><div><div class="massager-audio-title">Audio hum</div><div class="massager-audio-sub">Low tone for silent phones (iOS)</div></div><div class="massager-toggle'+(s.audio?' on':'')+'" id="massagerToggle"><div class="massager-toggle-dot"></div></div></div></div>';
+  h+='<div class="massager-section"><div class="massager-audio-row" onclick="toggleMassagerAudio()"><div class="massager-audio-icon">🔊</div><div style="flex:1"><div class="massager-audio-title">Audio hum</div><div class="massager-audio-sub">Low tone for silent phones</div></div><div class="massager-toggle'+(s.audio?' on':'')+'" id="massagerToggle"><div class="massager-toggle-dot"></div></div></div></div>';
   h+='</div>';
   document.getElementById('massagerBody').innerHTML=h;
+  // Init progress ring dash
+  var ring=document.getElementById('massagerProgress');
+  if(ring){var C=2*Math.PI*96;ring.style.strokeDasharray=C;ring.style.strokeDashoffset=s.running&&s.timerMin?0:C}
+  updateMassagerProgressRing();
   if(s.running)startMassagerVibration();
+}
+function updateMassagerProgressRing(){
+  var ring=document.getElementById('massagerProgress');if(!ring)return;
+  var s=_massagerState;var C=2*Math.PI*96;
+  if(!s.running||!s.timerMin){ring.style.strokeDashoffset=C;return}
+  var dur=s.timerMin*60000;
+  var elapsed=dur-Math.max(0,s.timerEnd-Date.now());
+  ring.style.strokeDashoffset=C*Math.min(1,elapsed/dur);
 }
 function formatMassagerTimer(){
   var s=_massagerState;
@@ -1315,8 +1340,9 @@ function formatMassagerTimer(){
 function updateMassagerTimerDisplay(){
   var el=document.getElementById('massagerTimerDisplay');if(!el)return;
   var s=_massagerState;
-  if(s.running&&s.timerMin){el.textContent=formatMassagerTimer();el.style.visibility='visible'}
-  else el.style.visibility='hidden';
+  if(s.running&&s.timerMin){el.textContent=formatMassagerTimer();el.style.opacity='1'}
+  else{el.textContent='';el.style.opacity='0'}
+  updateMassagerProgressRing();
 }
 function toggleMassager(){
   var s=_massagerState;
@@ -1327,14 +1353,14 @@ function toggleMassager(){
   if(s.running){
     orb.classList.add('active');
     icon.textContent='✋';
-    status.textContent='hold phone against body ✿';
+    status.textContent='hold against body';
     if(s.timerMin){s.timerEnd=Date.now()+s.timerMin*60000;s.timerTick=setInterval(function(){updateMassagerTimerDisplay();if(Date.now()>=_massagerState.timerEnd){toggleMassager()}},500)}
     updateMassagerTimerDisplay();
     startMassagerVibration();
   }else{
     orb.classList.remove('active');
     icon.textContent='💆';
-    status.textContent='tap to start';
+    status.textContent='tap to begin';
     if(s.timerTick){clearInterval(s.timerTick);s.timerTick=null}
     updateMassagerTimerDisplay();
     stopMassagerVibration();
@@ -1419,19 +1445,26 @@ function stopMassagerVibration(){
   if(orb)orb.classList.remove('vibrating');
 }
 function setMassagerRhythm(r,ev){
+  _mHaptic();
   _massagerState.rhythm=r;_massagerSave();
   document.querySelectorAll('.massager-rhythm-btn').forEach(function(b){b.classList.remove('active')});
   if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');
   if(_massagerState.running)startMassagerVibration();
 }
 function setMassagerIntensity(n){
+  _mHaptic();
   _massagerState.intensity=n;_massagerSave();
-  document.querySelectorAll('.massager-int-dot').forEach(function(d,i){
+  document.querySelectorAll('.massager-int-node').forEach(function(d,i){
     if(i<n)d.classList.add('active');else d.classList.remove('active');
   });
+  var fill=document.getElementById('massagerIntFill');
+  if(fill)fill.style.width=((n-1)/4*100)+'%';
+  var val=document.getElementById('massagerIntVal');
+  if(val)val.textContent=n+' / 5';
   if(_massagerState.running)startMassagerVibration();
 }
 function setMassagerTimer(m,ev){
+  _mHaptic();
   var s=_massagerState;s.timerMin=m;
   document.querySelectorAll('.massager-timer-btn').forEach(function(b){b.classList.remove('active')});
   if(ev&&ev.currentTarget)ev.currentTarget.classList.add('active');
@@ -1442,6 +1475,7 @@ function setMassagerTimer(m,ev){
   updateMassagerTimerDisplay();
 }
 function toggleMassagerAudio(){
+  _mHaptic();
   var s=_massagerState;s.audio=!s.audio;_massagerSave();
   var t=document.getElementById('massagerToggle');
   if(t){if(s.audio)t.classList.add('on');else t.classList.remove('on')}
