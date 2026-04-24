@@ -59,6 +59,68 @@ function cloudLoadAll(){
     if(d.energy_today)LS.setItem('gw_energy_'+today,d.energy_today);
   });
 }
+/* ✨ SPARK LAYER */
+var SPARK_EMOJIS=['✨','✦','✧','⭐','💖','🌸','⚡','✿','♡','🩷'];
+function injectSparkField(el,count){
+  if(!el||el.querySelector('.spark-field'))return;
+  count=count||8;
+  var f=document.createElement('div');f.className='spark-field';
+  for(var i=0;i<count;i++){
+    var s=document.createElement('span');s.className='spark';
+    s.textContent=SPARK_EMOJIS[Math.floor(Math.random()*SPARK_EMOJIS.length)];
+    s.style.left=(Math.random()*100)+'%';
+    s.style.fontSize=(.6+Math.random()*.8)+'rem';
+    s.style.animationDuration=(14+Math.random()*18)+'s';
+    s.style.animationDelay=(-Math.random()*30)+'s';
+    s.style.setProperty('--o',(.35+Math.random()*.45).toFixed(2));
+    s.style.setProperty('--dx',(Math.random()*60-30)+'px');
+    s.style.setProperty('--r',(Math.random()*360)+'deg');
+    f.appendChild(s);
+  }
+  el.appendChild(f);
+}
+function tapSparkle(x,y,n){
+  n=n||5;
+  var em=['✨','✦','🩷','💖','✿'];
+  for(var i=0;i<n;i++){
+    var s=document.createElement('span');s.className='tap-spark';
+    s.textContent=em[Math.floor(Math.random()*em.length)];
+    s.style.left=x+'px';s.style.top=y+'px';
+    var a=(Math.PI*2/n)*i+Math.random()*.6;
+    var d=28+Math.random()*36;
+    s.style.setProperty('--sdx',(Math.cos(a)*d)+'px');
+    s.style.setProperty('--sdy',(Math.sin(a)*d-10)+'px');
+    s.style.setProperty('--sr',(Math.random()*360-180)+'deg');
+    document.body.appendChild(s);
+    setTimeout(function(el){return function(){el.remove()}}(s),720);
+  }
+}
+// Attach tap-sparkle to interactive surfaces
+document.addEventListener('click',function(e){
+  var t=e.target.closest('.desk-btn,.game-card,.tab-bar-item,.massager-rhythm-btn,.massager-timer-btn,.cw-card,.auth-choice-btn,.emoji-opt');
+  if(!t)return;
+  tapSparkle(e.clientX,e.clientY,4);
+});
+// Parallax on hero orbs
+(function(){
+  var ticking=false;var lastY=0;
+  function onScroll(){
+    lastY=window.scrollY;
+    if(ticking)return;ticking=true;
+    requestAnimationFrame(function(){
+      var o1=document.querySelector('.orb.o1'),o2=document.querySelector('.orb.o2');
+      if(o1)o1.style.transform='translate(0,'+(lastY*.3)+'px)';
+      if(o2)o2.style.transform='translate(0,'+(lastY*.15)+'px)';
+      ticking=false;
+    });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+})();
+// Lazy ambient sparkles: inject the first time a panel opens
+function _ensureSparks(id,selectorPrefix){
+  var p=document.getElementById(selectorPrefix+id);
+  if(p&&!p.querySelector('.spark-field'))injectSparkField(p,6);
+}
 // XP for time on site (5 XP every 5 minutes)
 setInterval(function(){if(currentUser&&currentUser.name.toLowerCase()!=='neha'&&currentUser.name.toLowerCase()!=='akash'){addXP(5,'Time on Gurlwurl')}},300000);
 // Auto-sync every 30 seconds
@@ -327,7 +389,7 @@ function initGlows(){if(!glowObs||!glowObs.observe)return;try{document.querySele
 
 console.log('[GW] Core JS loaded OK');
 /* ========== GAMES ========== */
-function openGame(id){document.getElementById('gp-'+id).classList.add('open');initGame(id)}
+function openGame(id){document.getElementById('gp-'+id).classList.add('open');_ensureSparks(id,'gp-');initGame(id)}
 function closeGame(id){document.getElementById('gp-'+id).classList.remove('open')}
 function initGame(id){
   if(id==='ttt')initTTT();
@@ -1248,7 +1310,7 @@ function setupJournalLock(){
   if(!hasIt){var last=grid.lastChild;last.textContent=currentUser.emoji;last.onclick=function(){journalUnlocked=true;document.getElementById('journalLock').style.display='none';document.getElementById('journalContent').style.display='block'}}
 }
 
-function openPanel(id){document.getElementById('dp-'+id).classList.add('open');initPanel(id)}
+function openPanel(id){document.getElementById('dp-'+id).classList.add('open');_ensureSparks(id,'dp-');initPanel(id)}
 function closePanel(id){document.getElementById('dp-'+id).classList.remove('open');if(id==='massager'){_massagerState.running=false;if(_massagerState.timerTick){clearInterval(_massagerState.timerTick);_massagerState.timerTick=null}stopMassagerVibration()}}
 function initPanel(id){var fn={hub:initHub,admin:initAdmin,leaderboard:initLeaderboard,checkin:initCheckin,highlight:initHighlight,sleep:initSleep,theme:initThemePicker,recipe:initRecipes,cycle:initCycle,vision:initVision,diary:initDiary,dreams:initDreams,gazette:initGazette,guestbook:initGuestbook,mixer:initMixer,gratitude:initGratitude,habits:initHabits,water:initWater,breathe:initBreathe,rate:initRate,bucket:initBucket,compliments:initCompliments,countdown:initCountdown,skincare:initSkincare,shop:initShop,analytics:initAnalytics,massager:initMassager};if(fn[id])fn[id]()}
 function delEntry(key,i,cb){var e=JSON.parse(LS.getItem(key)||'[]');e.splice(i,1);var sk=key.indexOf('gw_')===0?key.slice(3):key;cloudSave(sk,e);cb()}
